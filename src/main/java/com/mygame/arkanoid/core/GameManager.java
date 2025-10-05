@@ -50,9 +50,17 @@ public class GameManager {
 
     public void updateGame() {
         paddle.update(inputHandler);
+        ball.update(inputHandler, paddle);
 
         for (PowerUp p : powerUps) {
             p.update();
+        }
+
+        //thêm mới update ball
+        if (ball.getY() > 600) {
+            ball.setStuckToPaddle(true);
+            ball.setX(paddle.getX() + paddle.getWidth() / 2 - ball.getWidth() / 2);
+            ball.setY(paddle.getY() - ball.getHeight());
         }
     }
 
