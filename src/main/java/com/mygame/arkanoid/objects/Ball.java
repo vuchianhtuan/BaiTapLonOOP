@@ -7,16 +7,30 @@ import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent; // Thêm import cho KeyEvent
 
 public class Ball extends MovableObject {
-    private int speed = 5;
+    private double speed = 5;
     //Không cần thiết vì đã có dx dy
     //private int directionX = 1, directionY = -1;
     private boolean stuckToPaddle = true;
     private String imageName;
 
     public void bounceOff(GameObject other) {
-        // Đơn giản là đổi hướng
-        //this.dx = - this.dx;
-        this.dy = - this.dy;
+        if (this.getBounds().intersects(new Rectangle(other.x, other.y, other.width, 1))) {
+            // Chạm cạnh trên
+            this.dy = -Math.abs(this.dy);
+        } else if (this.getBounds().intersects(new Rectangle(other.x, other.y + other.height - 1, other.width, 1))) {
+            // Chạm cạnh dưới
+            this.dy = Math.abs(this.dy);
+        } else if (this.getBounds().intersects(new Rectangle(other.x, other.y, 1, other.height))) {
+            // Chạm cạnh trái
+            this.dx = -Math.abs(this.dx);
+        } else if (this.getBounds().intersects(new Rectangle(other.x + other.width - 1, other.y, 1, other.height))) {
+            // Chạm cạnh phải
+            this.dx = Math.abs(this.dx);
+        } else {
+            // Trường hợp chạm góc hoặc không xác định
+            this.dx = -this.dx;
+            this.dy = -this.dy;
+        }
     }
     public boolean checkCollision(GameObject other) {
         return this.getBounds().intersects(other.getBounds());
