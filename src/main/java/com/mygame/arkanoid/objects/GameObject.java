@@ -1,6 +1,6 @@
 package com.mygame.arkanoid.objects;
 
-import java.awt.Graphics;
+import java.awt.*;
 
 public abstract class GameObject {
     protected int x, y;
@@ -22,4 +22,7 @@ public abstract class GameObject {
     public int getHeight() { return height; }
     public void setX(int x) { this.x = x; }
     public void setY(int y) { this.y = y; }
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, width, height);
+    }
 }

@@ -62,6 +62,19 @@ public class GameManager {
             ball.setX(paddle.getX() + paddle.getWidth() / 2 - ball.getWidth() / 2);
             ball.setY(paddle.getY() - ball.getHeight());
         }
+
+        if(ball.checkCollision(paddle) && !ball.isStuckToPaddle()) {
+            ball.bounceOff(paddle);
+        }
+
+        for (Brick brick : bricks) {
+            if (!brick.isDestroyed() && ball.checkCollision(brick)) {
+                brick.takeHit();
+                score += 10;
+                ball.bounceOff(brick);
+                break;
+            }
+        }
     }
 
     public void loadAssets() {

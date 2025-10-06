@@ -2,20 +2,39 @@ package com.mygame.arkanoid.objects;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.engine.InputHandler;
 
-import java.awt.Graphics;
-import java.awt.Color;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent; // Thêm import cho KeyEvent
 
 public class Ball extends MovableObject {
-    private int speed = 5;
+    private double speed = 5;
     //Không cần thiết vì đã có dx dy
     //private int directionX = 1, directionY = -1;
     private boolean stuckToPaddle = true;
     private String imageName;
 
-    public void bounceOff(GameObject other) {}
-    public boolean checkCollision(GameObject other) { return false; }
+    public void bounceOff(GameObject other) {
+        if (this.getBounds().intersects(new Rectangle(other.x, other.y, other.width, 1))) {
+            // Chạm cạnh trên
+            this.dy = -Math.abs(this.dy);
+        } else if (this.getBounds().intersects(new Rectangle(other.x, other.y + other.height - 1, other.width, 1))) {
+            // Chạm cạnh dưới
+            this.dy = Math.abs(this.dy);
+        } else if (this.getBounds().intersects(new Rectangle(other.x, other.y, 1, other.height))) {
+            // Chạm cạnh trái
+            this.dx = -Math.abs(this.dx);
+        } else if (this.getBounds().intersects(new Rectangle(other.x + other.width - 1, other.y, 1, other.height))) {
+            // Chạm cạnh phải
+            this.dx = Math.abs(this.dx);
+        } else {
+            // Trường hợp chạm góc hoặc không xác định
+            this.dx = -this.dx;
+            this.dy = -this.dy;
+        }
+    }
+    public boolean checkCollision(GameObject other) {
+        return this.getBounds().intersects(other.getBounds());
+    }
     public boolean isStuckToPaddle() { return stuckToPaddle; }
 
     @Override public void move() {
