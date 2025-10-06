@@ -2,8 +2,7 @@ package com.mygame.arkanoid.objects;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.engine.InputHandler;
 
-import java.awt.Graphics;
-import java.awt.Color;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent; // Thêm import cho KeyEvent
 
@@ -14,8 +13,14 @@ public class Ball extends MovableObject {
     private boolean stuckToPaddle = true;
     private String imageName;
 
-    public void bounceOff(GameObject other) {}
-    public boolean checkCollision(GameObject other) { return false; }
+    public void bounceOff(GameObject other) {
+        // Đơn giản là đổi hướng
+        //this.dx = - this.dx;
+        this.dy = - this.dy;
+    }
+    public boolean checkCollision(GameObject other) {
+        return this.getBounds().intersects(other.getBounds());
+    }
     public boolean isStuckToPaddle() { return stuckToPaddle; }
 
     @Override public void move() {
