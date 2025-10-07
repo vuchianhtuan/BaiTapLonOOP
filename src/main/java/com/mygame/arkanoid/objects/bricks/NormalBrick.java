@@ -5,8 +5,6 @@ import java.awt.image.BufferedImage;
 import com.mygame.arkanoid.engine.AssetManager;
 
 public class NormalBrick extends Brick {
-    @Override public void takeHit() {}
-    @Override public boolean isDestroyed() { return false; }
     @Override public void update() {}
     @Override public void render(Graphics g) {
         BufferedImage img = AssetManager.getInstance().getImage(this.imageName);

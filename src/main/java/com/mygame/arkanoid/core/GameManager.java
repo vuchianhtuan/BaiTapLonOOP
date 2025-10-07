@@ -15,6 +15,7 @@ import com.mygame.arkanoid.util.ErrorHandler;
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.*;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -56,26 +57,33 @@ public class GameManager {
             p.update();
         }
 
-        //thêm mới update ball
-        if (ball.getY() > 600) {
-            ball.setStuckToPaddle(true);
-            ball.setX(paddle.getX() + paddle.getWidth() / 2 - ball.getWidth() / 2);
-            ball.setY(paddle.getY() - ball.getHeight());
-        }
+        // ... (logic xử lý bóng rơi)
 
         if(ball.checkCollision(paddle) && !ball.isStuckToPaddle()) {
             ball.bounceOff(paddle);
         }
 
-        for (Brick brick : bricks) {
+        Iterator<Brick> brickIterator = bricks.iterator();
+        while (brickIterator.hasNext()) {
+            Brick brick = brickIterator.next();
+
+            // Chỉ kiểm tra va chạm với những viên gạch chưa bị phá hủy
             if (!brick.isDestroyed() && ball.checkCollision(brick)) {
-                brick.takeHit();
+                brick.takeHit(); // Gạch nhận sát thương
                 score += 10;
                 ball.bounceOff(brick);
-                break;
+
+                // Kiểm tra ngay sau khi nhận sát thương, nếu gạch bị phá hủy thì xóa nó
+                if (brick.isDestroyed()) {
+                    brickIterator.remove(); // Xóa gạch hiện tại khỏi danh sách bricks
+                }
+
+                break; // Thoát khỏi vòng lặp để bóng không va chạm nhiều gạch trong 1 frame
             }
         }
+        // --- KẾT THÚC PHẦN SỬA ĐỔI ---
     }
+
 
     public void loadAssets() {
         // Sử dụng AssetManager singleton để tải ảnh
