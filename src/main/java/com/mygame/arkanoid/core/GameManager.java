@@ -11,6 +11,7 @@ import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
 import com.mygame.arkanoid.engine.SoundManager;
 import com.mygame.arkanoid.util.ErrorHandler;
+import com.mygame.arkanoid.systems.MenuManager;
 
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.*;
@@ -33,10 +34,9 @@ public class GameManager {
     private Renderer renderer;
     private SoundManager soundManager;
     private InputHandler inputHandler;
+    private MenuManager menuManager;
 
     public void startGame() {
-        loadAssets();
-
         paddle = new Paddle(350, 550, 100, 20);
         ball = new Ball(390, 530, 15, 15);
 
@@ -50,53 +50,78 @@ public class GameManager {
     }
 
     public void updateGame() {
-        paddle.update(inputHandler);
-        ball.update(inputHandler, paddle);
+        if ("PLAYING".equals(gameState)) {
+            paddle.update(inputHandler);
+            ball.update(inputHandler, paddle);
 
-        for (PowerUp p : powerUps) {
-            p.update();
-        }
-
-        // ... (logic xử lý bóng rơi)
-
-        if(ball.checkCollision(paddle) && !ball.isStuckToPaddle()) {
-            ball.bounceOff(paddle);
-        }
-
-        Iterator<Brick> brickIterator = bricks.iterator();
-        while (brickIterator.hasNext()) {
-            Brick brick = brickIterator.next();
-
-            // Chỉ kiểm tra va chạm với những viên gạch chưa bị phá hủy
-            if (!brick.isDestroyed() && ball.checkCollision(brick)) {
-                brick.takeHit(); // Gạch nhận sát thương
-                score += 10;
-                ball.bounceOff(brick);
-
-                // Kiểm tra ngay sau khi nhận sát thương, nếu gạch bị phá hủy thì xóa nó
-                if (brick.isDestroyed()) {
-                    brickIterator.remove(); // Xóa gạch hiện tại khỏi danh sách bricks
-                }
-
-                break; // Thoát khỏi vòng lặp để bóng không va chạm nhiều gạch trong 1 frame
+            for (PowerUp p : powerUps) {
+                p.update();
             }
+
+            if(ball.checkCollision(paddle) && !ball.isStuckToPaddle()) {
+                ball.bounceOff(paddle);
+            }
+
+            Iterator<Brick> brickIterator = bricks.iterator();
+            while (brickIterator.hasNext()) {
+                Brick brick = brickIterator.next();
+
+                // Chỉ kiểm tra va chạm với những viên gạch chưa bị phá hủy
+                if (!brick.isDestroyed() && ball.checkCollision(brick)) {
+                    brick.takeHit(); // Gạch nhận sát thương
+                    score += 10;
+                    ball.bounceOff(brick);
+
+                    // Kiểm tra ngay sau khi nhận sát thương, nếu gạch bị phá hủy thì xóa nó
+                    if (brick.isDestroyed()) {
+                        brickIterator.remove(); // Xóa gạch hiện tại khỏi danh sách bricks
+                    }
+
+                    break; // Thoát khỏi vòng lặp để bóng không va chạm nhiều gạch trong 1 frame
+                }
+            }
+        } else if ("MENU".equals(gameState)) {
+            menuManager.update();
         }
-        // --- KẾT THÚC PHẦN SỬA ĐỔI ---
     }
 
-
     public void loadAssets() {
-        // Sử dụng AssetManager singleton để tải ảnh
         AssetManager.getInstance().loadImage("normalBrick", "/images/button_blue.png");
         AssetManager.getInstance().loadImage("ball", "/images/ball_red_large.png");
         AssetManager.getInstance().loadImage("paddle", "/images/button_yellow.png");
         AssetManager.getInstance().loadImage("expandPowerUp", "/images/hole_small_end.png");
+        AssetManager.getInstance().loadImage("menuBackground", "/images/backGroundMenu.png");
     }
 
     public GameManager() {
         inputHandler = new InputHandler();
         bricks = new ArrayList<>();
         powerUps = new ArrayList<>();
+        this.soundManager = new SoundManager();
+        loadAssets();
+        menuManager = new MenuManager(this, inputHandler);
+        // Đặt trạng thái ban đầu của game là MENU
+        this.gameState = "MENU";
+        soundManager.playBackgroundMusic("RegressiveTrip_Release.wav");
+    }
+
+    public MenuManager getMenuManager() { return menuManager; }
+    public String getGameState() { return gameState; }
+    public void setGameState(String state) {
+        if (this.gameState != null && this.gameState.equals(state)) {
+            return;
+        }
+        this.gameState = state; // Cập nhật trạng thái mới
+        // Dựa vào trạng thái mới để đổi nhạc
+        if ("PLAYING".equals(state)) {
+            // Nếu chuyển sang màn hình chơi, bật nhạc game
+            soundManager.playBackgroundMusic("DiracSea.wav");
+        } else if ("MENU".equals(state)) {
+            soundManager.playBackgroundMusic("RegressiveTrip_Release.wav");
+        } else {
+            // Nếu là các trạng thái khác (GAME_OVER,...) thì dừng nhạc
+            soundManager.stopBackgroundMusic();
+        }
     }
 
     public void handleInput() {}

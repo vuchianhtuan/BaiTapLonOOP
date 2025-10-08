@@ -1,37 +1,17 @@
 package com.mygame.arkanoid.engine;
 
-/*
-public class InputHandler {
-    public void handleKeyboardInput() {}
-    public void handleMouseInput() {}
-}
-*/
+import java.awt.event.*;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
-
-/**
- * Xử lý tất cả đầu vào từ bàn phím và chuột.
- * Lớp này cần được đăng ký với GamePanel (ví dụ: panel.addKeyListener(this)) để nhận sự kiện.
- */
-public class InputHandler implements KeyListener, MouseMotionListener {
-
-    private final boolean[] keys = new boolean[256]; // Đủ để chứa hầu hết các mã phím
-    private int mouseX;
+public class InputHandler implements KeyListener, MouseMotionListener, MouseListener {
+    private final boolean[] keys = new boolean[256];
+    private int mouseX, mouseY;
+    private boolean mouseClicked = false;
 
     public InputHandler() {
         this.mouseX = 0;
+        this.mouseY = 0;
     }
 
-    // --- CÁC PHƯƠNG THỨC CÔNG KHAI ĐỂ GAME MANAGER TRUY VẤN ---
-
-    /**
-     * Kiểm tra xem một phím có đang được nhấn hay không.
-     * @param keyCode Mã phím, ví dụ: KeyEvent.VK_SPACE
-     * @return true nếu phím đang được nhấn, ngược lại false.
-     */
     public boolean isKeyDown(int keyCode) {
         if (keyCode >= 0 && keyCode < keys.length) {
             return keys[keyCode];
@@ -39,15 +19,17 @@ public class InputHandler implements KeyListener, MouseMotionListener {
         return false;
     }
 
-    /**
-     * Lấy vị trí X hiện tại của con trỏ chuột.
-     * @return Tọa độ X của chuột.
-     */
-    public int getMouseX() {
-        return mouseX;
-    }
+    public int getMouseX() { return mouseX; }
 
-    // --- CÁC PHƯƠNG THỨC ĐƯỢC GỌI TỰ ĐỘNG BỞI HỆ THỐNG SWING/AWT ---
+    public int getMouseY() { return mouseY; }
+
+    public boolean isMouseClicked() {
+        if (mouseClicked) {
+            mouseClicked = false; // Reset lại ngay sau khi kiểm tra
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -68,9 +50,20 @@ public class InputHandler implements KeyListener, MouseMotionListener {
     @Override
     public void mouseMoved(MouseEvent e) {
         this.mouseX = e.getX(); // Cập nhật vị trí chuột
+        this.mouseY = e.getY();
     }
 
-    // Các phương thức không dùng đến nhưng bắt buộc phải có
+    @Override
+    public void mousePressed(MouseEvent e) {
+        // Đánh dấu là chuột vừa được click khi nhấn xuống
+        if (e.getButton() == MouseEvent.BUTTON1) { // Chỉ xử lý chuột trái
+            this.mouseClicked = true;
+        }
+    }
     @Override public void keyTyped(KeyEvent e) {}
     @Override public void mouseDragged(MouseEvent e) { mouseMoved(e); }
+    @Override public void mouseClicked(MouseEvent e) {}
+    @Override public void mouseReleased(MouseEvent e) {}
+    @Override public void mouseEntered(MouseEvent e) {}
+    @Override public void mouseExited(MouseEvent e) {}
 }

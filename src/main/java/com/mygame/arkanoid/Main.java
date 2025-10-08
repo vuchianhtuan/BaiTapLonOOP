@@ -10,9 +10,8 @@ public class Main {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
 
-        // Tạo và kết nối các thành phần
         GameManager gameManager = new GameManager();
-        gameManager.startGame();
+        //gameManager.startGame();
 
         GamePanel gamePanel = new GamePanel(gameManager);
         GameLoop gameLoop = new GameLoop(gameManager, gamePanel);
