@@ -2,6 +2,7 @@ package com.mygame.arkanoid.core;
 
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
+import com.mygame.arkanoid.systems.MenuManager;
 
 import javax.swing.JPanel;
 import java.awt.Dimension;
@@ -25,13 +26,21 @@ public class GamePanel extends JPanel {
 
         this.addKeyListener(inputHandler);
         this.addMouseMotionListener(inputHandler);
+        this.addMouseListener(inputHandler);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        renderer.renderGame(g, gameManager.getPaddle(), gameManager.getBall(),
-                gameManager.getBricks(), gameManager.getPowerUps());
+        String currentState = gameManager.getGameState();
+
+        if ("PLAYING".equals(currentState)) {
+            renderer.renderGame(g, gameManager.getPaddle(), gameManager.getBall(),
+                    gameManager.getBricks(), gameManager.getPowerUps());
+        } else if ("MENU".equals(currentState)) {
+            gameManager.getMenuManager().render(g);
+        }
+
         g.dispose();
     }
 }
