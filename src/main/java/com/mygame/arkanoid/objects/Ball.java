@@ -13,6 +13,10 @@ public class Ball extends MovableObject {
     private boolean stuckToPaddle = true;
     private String imageName;
 
+    public void stickToPaddle(Paddle paddle) {
+        this.stuckToPaddle = true;
+    }
+
     public void bounceOff(GameObject other) {
         if (this.getBounds().intersects(new Rectangle(other.x, other.y, other.width, 1))) {
             // Chạm cạnh trên

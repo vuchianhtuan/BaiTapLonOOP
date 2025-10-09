@@ -25,6 +25,7 @@ public class GameManager {
     private Ball ball;
     private List<Brick> bricks;
     private List<PowerUp> powerUps;
+    private PowerUp activePowerUp;
     private int score;
     private int lives;
     private String gameState;
@@ -39,6 +40,15 @@ public class GameManager {
     public void startGame() {
         paddle = new Paddle(350, 550, 100, 20);
         ball = new Ball(390, 530, 15, 15);
+        bricks.clear();
+        powerUps.clear();
+
+        // Hủy bỏ hiệu ứng power-up cũ khi bắt đầu game mới
+        if (activePowerUp != null) {
+            activePowerUp.removeEffect(paddle);
+            activePowerUp = null;
+        }
+
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 10; j++) {
                 if (i == 2 && j == 5) {
@@ -48,7 +58,6 @@ public class GameManager {
                 }
             }
         }
-        powerUps.add(new ExpandPaddlePowerUp(200, 10, 30, 30));
     }
 
     // Thêm phương thức này vào cuối lớp GameManager
@@ -97,12 +106,44 @@ public class GameManager {
             paddle.update(inputHandler);
             ball.update(inputHandler, paddle);
 
-            for (PowerUp p : powerUps) {
-                p.update();
+            // 1. CẬP NHẬT POWER-UP ĐANG RƠI VÀ KIỂM TRA VA CHẠM
+            Iterator<PowerUp> powerUpIterator = powerUps.iterator();
+            while (powerUpIterator.hasNext()) {
+                PowerUp p = powerUpIterator.next();
+                p.update(); // Cho power-up rơi xuống
+
+                // Nếu paddle hứng được power-up
+                if (paddle.getBounds().intersects(p.getBounds())) {
+                    // Hủy hiệu ứng cũ trước khi áp dụng hiệu ứng mới
+                    if (activePowerUp != null) {
+                        activePowerUp.removeEffect(paddle);
+                    }
+
+                    activePowerUp = p; // Gán power-up mới
+                    activePowerUp.applyEffect(paddle); // Áp dụng hiệu ứng
+                    powerUpIterator.remove(); // Xóa khỏi danh sách đang rơi
+                }
+                // Nếu power-up rơi ra ngoài màn hình
+                else if (p.getY() > 600) { // 600 là chiều cao màn hình
+                    powerUpIterator.remove();
+                }
+            }
+
+            // 2. QUẢN LÝ THỜI GIAN POWER-UP ĐANG CÓ HIỆU LỰC
+            if (activePowerUp != null) {
+                activePowerUp.tick(); // Đếm ngược
+                if (activePowerUp.isExpired()) {
+                    activePowerUp.removeEffect(paddle); // Hủy hiệu ứng
+                    activePowerUp = null; // Xóa power-up
+                }
             }
 
             if(ball.checkCollision(paddle) && !ball.isStuckToPaddle()) {
-                ball.bounceOff(paddle);
+                if (paddle.isSticky()) {
+                    ball.stickToPaddle(paddle);
+                } else {
+                    ball.bounceOff(paddle);
+                }
             }
 
             Iterator<Brick> brickIterator = bricks.iterator();
@@ -117,9 +158,16 @@ public class GameManager {
 
                     // Kiểm tra ngay sau khi nhận sát thương, nếu gạch bị phá hủy thì xóa nó
                     if (brick.isDestroyed()) {
+                        double rand = Math.random();
+                        if (rand < 0.15) { // 15% cơ hội ra Expand Paddle
+                            powerUps.add(new ExpandPaddlePowerUp(brick.getX(), brick.getY(), 30, 30));
+                        } else if (rand < 0.3) { // 15% cơ hội ra Sticky Paddle
+                            powerUps.add(new StickyPaddlePowerUp(brick.getX(), brick.getY(), 30, 30));
+                        }
+
+                        // (Nếu có logic cũ cho explosive brick thì giữ nguyên)
                         if (brick instanceof ExplosiveBrick) {
-                            // Nếu đúng la gach no gọi hàm nổ với bán kính 100 pixels
-                            explode(brick, 80.0); // có thể điều chỉnh bán kính
+                            explode(brick, 100.0);
                         }
                     }
                     break; // Thoát khỏi vòng lặp để bóng không va chạm nhiều gạch trong 1 frame
@@ -138,6 +186,7 @@ public class GameManager {
         AssetManager.getInstance().loadImage("expandPowerUp", "/images/hole_small_end.png");
         AssetManager.getInstance().loadImage("menuBackground", "/images/backGroundMenu.png");
         AssetManager.getInstance().loadImage("explosiveBrick", "/images/button_grey.png");
+        AssetManager.getInstance().loadImage("stickyPowerUp", "/images/star.png");
     }
 
     public GameManager() {
