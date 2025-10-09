@@ -1,6 +1,6 @@
 package com.mygame.arkanoid.objects.powerups;
 
-import com.mygame.arkanoid.objects.Paddle;
+import com.mygame.arkanoid.core.GameManager;
 
 import java.awt.*;
 import java.awt.*;
@@ -13,11 +13,11 @@ public class StickyPaddlePowerUp extends PowerUp {
         super(x, y, width, height, "sticky", 600);
     }
 
-    @Override public void applyEffect(Paddle paddle) {
-        paddle.setSticky(true);
+    @Override public void applyEffect(GameManager gameManager) {
+        gameManager.getPaddle().setSticky(true);
     }
-    @Override public void removeEffect(Paddle paddle) {
-        paddle.setSticky(false);
+    @Override public void removeEffect(GameManager gameManager) {
+        gameManager.getPaddle().setSticky(false);
     }
     @Override public void update() {
         this.y += fallSpeed;

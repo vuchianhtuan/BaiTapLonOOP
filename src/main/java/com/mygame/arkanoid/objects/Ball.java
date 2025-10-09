@@ -4,12 +4,11 @@ import com.mygame.arkanoid.engine.InputHandler;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.event.KeyEvent; // Thêm import cho KeyEvent
+import java.awt.event.KeyEvent;
 
 public class Ball extends MovableObject {
     private double speed = 5;
-    //Không cần thiết vì đã có dx dy
-    //private int directionX = 1, directionY = -1;
+    private final double originalSpeed;
     private boolean stuckToPaddle = true;
     private String imageName;
 
@@ -81,12 +80,24 @@ public class Ball extends MovableObject {
         }
     }
 
-
     public Ball(int x, int y, int width, int height) {
         super(x, y, width, height);
         dx = 1;
         dy = -1;
         this.imageName = "ball";
+        this.originalSpeed = this.speed;
+    }
+
+    public void setSpeed(double newSpeed) {
+        this.speed = newSpeed;
+    }
+
+    public void resetSpeed() {
+        this.speed = this.originalSpeed;
+    }
+
+    public double getSpeed() {
+        return speed;
     }
 
     public void setStuckToPaddle(boolean stuckToPaddle) {

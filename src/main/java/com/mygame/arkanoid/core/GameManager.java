@@ -25,7 +25,7 @@ public class GameManager {
     private Ball ball;
     private List<Brick> bricks;
     private List<PowerUp> powerUps;
-    private PowerUp activePowerUp;
+    private List<PowerUp> activePowerUps;
     private int score;
     private int lives;
     private String gameState;
@@ -44,10 +44,10 @@ public class GameManager {
         powerUps.clear();
 
         // Hủy bỏ hiệu ứng power-up cũ khi bắt đầu game mới
-        if (activePowerUp != null) {
-            activePowerUp.removeEffect(paddle);
-            activePowerUp = null;
+        for (PowerUp p : activePowerUps) {
+            p.removeEffect(this);
         }
+        activePowerUps.clear();
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 10; j++) {
@@ -106,35 +106,31 @@ public class GameManager {
             paddle.update(inputHandler);
             ball.update(inputHandler, paddle);
 
-            // 1. CẬP NHẬT POWER-UP ĐANG RƠI VÀ KIỂM TRA VA CHẠM
-            Iterator<PowerUp> powerUpIterator = powerUps.iterator();
-            while (powerUpIterator.hasNext()) {
-                PowerUp p = powerUpIterator.next();
+            Iterator<PowerUp> fallingPowerUpIterator = powerUps.iterator();
+            while (fallingPowerUpIterator.hasNext()) {
+                PowerUp p = fallingPowerUpIterator.next();
                 p.update(); // Cho power-up rơi xuống
 
-                // Nếu paddle hứng được power-up
                 if (paddle.getBounds().intersects(p.getBounds())) {
-                    // Hủy hiệu ứng cũ trước khi áp dụng hiệu ứng mới
-                    if (activePowerUp != null) {
-                        activePowerUp.removeEffect(paddle);
-                    }
-
-                    activePowerUp = p; // Gán power-up mới
-                    activePowerUp.applyEffect(paddle); // Áp dụng hiệu ứng
-                    powerUpIterator.remove(); // Xóa khỏi danh sách đang rơi
+                    // Kích hoạt power-up mới
+                    activatePowerUp(p);
+                    fallingPowerUpIterator.remove(); // Xóa khỏi danh sách đang rơi
                 }
                 // Nếu power-up rơi ra ngoài màn hình
-                else if (p.getY() > 600) { // 600 là chiều cao màn hình
-                    powerUpIterator.remove();
+                else if (p.getY() > 600) {
+                    fallingPowerUpIterator.remove();
                 }
             }
 
-            // 2. QUẢN LÝ THỜI GIAN POWER-UP ĐANG CÓ HIỆU LỰC
-            if (activePowerUp != null) {
-                activePowerUp.tick(); // Đếm ngược
-                if (activePowerUp.isExpired()) {
-                    activePowerUp.removeEffect(paddle); // Hủy hiệu ứng
-                    activePowerUp = null; // Xóa power-up
+            // 2. QUẢN LÝ THỜI GIAN CỦA TẤT CẢ POWER-UP ĐANG HOẠT ĐỘNG
+            Iterator<PowerUp> activePowerUpIterator = activePowerUps.iterator();
+            while (activePowerUpIterator.hasNext()) {
+                PowerUp p = activePowerUpIterator.next();
+                p.tick(); // Đếm ngược thời gian
+
+                if (p.isExpired()) {
+                    p.removeEffect(this); // Hủy hiệu ứng
+                    activePowerUpIterator.remove(); // Xóa khỏi danh sách đang hoạt động
                 }
             }
 
@@ -159,10 +155,12 @@ public class GameManager {
                     // Kiểm tra ngay sau khi nhận sát thương, nếu gạch bị phá hủy thì xóa nó
                     if (brick.isDestroyed()) {
                         double rand = Math.random();
-                        if (rand < 0.15) { // 15% cơ hội ra Expand Paddle
+                        if (rand < 0.1) { // 10% ra Expand
                             powerUps.add(new ExpandPaddlePowerUp(brick.getX(), brick.getY(), 30, 30));
-                        } else if (rand < 0.3) { // 15% cơ hội ra Sticky Paddle
+                        } else if (rand < 0.2) { // 10% ra Sticky
                             powerUps.add(new StickyPaddlePowerUp(brick.getX(), brick.getY(), 30, 30));
+                        } else if (rand < 0.3) { // 10% ra Slow Ball
+                            powerUps.add(new SlowBallPowerUp(brick.getX(), brick.getY(), 30, 30));
                         }
 
                         // (Nếu có logic cũ cho explosive brick thì giữ nguyên)
@@ -187,12 +185,14 @@ public class GameManager {
         AssetManager.getInstance().loadImage("menuBackground", "/images/backGroundMenu.png");
         AssetManager.getInstance().loadImage("explosiveBrick", "/images/button_grey.png");
         AssetManager.getInstance().loadImage("stickyPowerUp", "/images/star.png");
+        AssetManager.getInstance().loadImage("slowBallPowerUp", "/images/ball_blue_large.png");
     }
 
     public GameManager() {
         inputHandler = new InputHandler();
         bricks = new ArrayList<>();
         powerUps = new ArrayList<>();
+        activePowerUps = new ArrayList<>();
         this.soundManager = new SoundManager();
         loadAssets();
         menuManager = new MenuManager(this, inputHandler);
@@ -218,6 +218,24 @@ public class GameManager {
             // Nếu là các trạng thái khác (GAME_OVER,...) thì dừng nhạc
             soundManager.stopBackgroundMusic();
         }
+    }
+
+    private void activatePowerUp(PowerUp newPowerUp) {
+        // Dùng iterator để có thể xóa phần tử một cách an toàn
+        Iterator<PowerUp> iterator = activePowerUps.iterator();
+        while (iterator.hasNext()) {
+            PowerUp existingPowerUp = iterator.next();
+            // Nếu đã có power-up cùng loại đang hoạt động
+            if (existingPowerUp.getType().equals(newPowerUp.getType())) {
+                // Hủy hiệu ứng cũ và xóa nó khỏi danh sách
+                existingPowerUp.removeEffect(this);
+                iterator.remove();
+            }
+        }
+
+        // Thêm power-up mới vào danh sách và áp dụng hiệu ứng
+        activePowerUps.add(newPowerUp);
+        newPowerUp.applyEffect(this);
     }
 
     public void handleInput() {}

@@ -1,6 +1,6 @@
 package com.mygame.arkanoid.objects.powerups;
 import com.mygame.arkanoid.objects.GameObject;
-import com.mygame.arkanoid.objects.Paddle;
+import com.mygame.arkanoid.core.GameManager;
 import java.awt.Graphics;
 
 public abstract class PowerUp extends GameObject {
@@ -12,6 +12,10 @@ public abstract class PowerUp extends GameObject {
         super(x, y, width, height);
         this.type = type;
         this.duration = duration;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public void tick() {
@@ -36,10 +40,10 @@ public abstract class PowerUp extends GameObject {
     /**
      * Áp dụng hiệu ứng lên Paddle. Sẽ được implement bởi lớp con.
      */
-    public abstract void applyEffect(Paddle paddle);
+    public abstract void applyEffect(GameManager gameManager);
 
     /**
      * Gỡ bỏ hiệu ứng khỏi Paddle. Sẽ được implement bởi lớp con.
      */
-    public abstract void removeEffect(Paddle paddle);
+    public abstract void removeEffect(GameManager gameManager);
 }

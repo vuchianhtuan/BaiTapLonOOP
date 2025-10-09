@@ -1,7 +1,7 @@
 package com.mygame.arkanoid.objects.powerups;
 
 import com.mygame.arkanoid.engine.AssetManager;
-import com.mygame.arkanoid.objects.Paddle;
+import com.mygame.arkanoid.core.GameManager;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -19,14 +19,14 @@ public class ExpandPaddlePowerUp extends PowerUp {
     }
 
     @Override
-    public void applyEffect(Paddle paddle) {
-        paddle.resetWidth();
-        paddle.expand(EXPAND_AMOUNT);
+    public void applyEffect(GameManager gameManager) {
+        gameManager.getPaddle().resetWidth();
+        gameManager.getPaddle().expand(EXPAND_AMOUNT);
     }
 
     @Override
-    public void removeEffect(Paddle paddle) {
-        paddle.resetWidth();
+    public void removeEffect(GameManager gameManager) {
+        gameManager.getPaddle().resetWidth();
     }
 
     @Override

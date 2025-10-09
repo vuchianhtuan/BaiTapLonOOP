@@ -1,6 +1,7 @@
 package com.mygame.arkanoid.objects.powerups;
 
-import com.mygame.arkanoid.objects.Paddle;
+import com.mygame.arkanoid.core.GameManager;
+import com.mygame.arkanoid.core.GameManager;
 
 import java.awt.*;
 
@@ -9,8 +10,8 @@ public class MultiBallPowerUp extends PowerUp {
         super(x, y, width, height, type, duration);
     }
 
-    @Override public void applyEffect(Paddle paddle) {}
-    @Override public void removeEffect(Paddle paddle) {}
+    @Override public void applyEffect(GameManager gameManager) {}
+    @Override public void removeEffect(GameManager gameManager) {}
     @Override public void update() {}
     @Override public void render(Graphics g) {}
 }
