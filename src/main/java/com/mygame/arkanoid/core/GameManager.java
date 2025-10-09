@@ -212,7 +212,7 @@ public class GameManager {
         // Dựa vào trạng thái mới để đổi nhạc
         if ("PLAYING".equals(state)) {
             // Nếu chuyển sang màn hình chơi, bật nhạc game
-            soundManager.playBackgroundMusic("DiracSea.wav");
+            soundManager.playBackgroundMusic("ExoticBaryon_PhaseXX.wav");
         } else if ("MENU".equals(state)) {
             soundManager.playBackgroundMusic("RegressiveTrip_Release.wav");
         } else {
