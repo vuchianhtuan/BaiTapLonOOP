@@ -39,14 +39,57 @@ public class GameManager {
     public void startGame() {
         paddle = new Paddle(350, 550, 100, 20);
         ball = new Ball(390, 530, 15, 15);
-
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 10; j++) {
-                bricks.add(new NormalBrick(j * 70 + 50, i * 30 + 50, 60, 20));
+                if (i == 2 && j == 5) {
+                    bricks.add(new ExplosiveBrick(j * 70 + 50, i * 30 + 50, 60, 20));
+                } else {
+                    bricks.add(new NormalBrick(j * 70 + 50, i * 30 + 50, 60, 20));
+                }
+            }
+        }
+        powerUps.add(new ExpandPaddlePowerUp(200, 10, 30, 30));
+    }
+
+    // Thêm phương thức này vào cuối lớp GameManager
+    private void explode(Brick sourceBrick, double radius) {
+        // Lấy tọa độ trung tâm của viên gạch nổ
+        int sourceCenterX = sourceBrick.getX() + sourceBrick.getWidth() / 2;
+        int sourceCenterY = sourceBrick.getY() + sourceBrick.getHeight() / 2;
+
+        // Tạo một danh sách để chứa những viên gạch sẽ bị phá hủy bởi vụ nổ
+        List<Brick> bricksToDestroy = new ArrayList<>();
+
+        // Duyệt qua tất cả các viên gạch còn lại
+        for (Brick otherBrick : bricks) {
+            // Bỏ qua chính viên gạch vừa nổ
+            if (otherBrick == sourceBrick) {
+                continue;
+            }
+
+            int otherCenterX = otherBrick.getX() + otherBrick.getWidth() / 2;
+            int otherCenterY = otherBrick.getY() + otherBrick.getHeight() / 2;
+
+            // Tính khoảng cách giữa hai tâm gạch
+            double distance = Math.sqrt(Math.pow(sourceCenterX - otherCenterX, 2) + Math.pow(sourceCenterY - otherCenterY, 2));
+
+            // Nếu gạch khác nằm trong bán kính vụ nổ, thêm nó vào danh sách cần phá hủy
+            if (distance <= radius) {
+                bricksToDestroy.add(otherBrick);
             }
         }
 
-        powerUps.add(new ExpandPaddlePowerUp(200, 10, 30, 30));
+        // Phá hủy và cộng điểm cho những viên gạch trong danh sách
+        for (Brick brick : bricksToDestroy) {
+            // Đảm bảo không xử lý lặp lại nếu một viên gạch đã bị phá hủy
+            if (!brick.isDestroyed()) {
+                // Giảm máu của gạch về 0 để chắc chắn nó bị phá hủy
+                while(!brick.isDestroyed()) {
+                    brick.takeHit();
+                }
+                score += 10; // Cộng điểm
+            }
+        }
     }
 
     public void updateGame() {
@@ -74,12 +117,15 @@ public class GameManager {
 
                     // Kiểm tra ngay sau khi nhận sát thương, nếu gạch bị phá hủy thì xóa nó
                     if (brick.isDestroyed()) {
-                        brickIterator.remove(); // Xóa gạch hiện tại khỏi danh sách bricks
+                        if (brick instanceof ExplosiveBrick) {
+                            // Nếu đúng la gach no gọi hàm nổ với bán kính 100 pixels
+                            explode(brick, 80.0); // có thể điều chỉnh bán kính
+                        }
                     }
-
                     break; // Thoát khỏi vòng lặp để bóng không va chạm nhiều gạch trong 1 frame
                 }
             }
+            bricks.removeIf(brick -> brick.isDestroyed());
         } else if ("MENU".equals(gameState)) {
             menuManager.update();
         }
@@ -91,6 +137,7 @@ public class GameManager {
         AssetManager.getInstance().loadImage("paddle", "/images/button_yellow.png");
         AssetManager.getInstance().loadImage("expandPowerUp", "/images/hole_small_end.png");
         AssetManager.getInstance().loadImage("menuBackground", "/images/backGroundMenu.png");
+        AssetManager.getInstance().loadImage("explosiveBrick", "/images/button_grey.png");
     }
 
     public GameManager() {
