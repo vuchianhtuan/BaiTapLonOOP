@@ -40,6 +40,7 @@ public class GameManager {
     public void startGame() {
         paddle = new Paddle(350, 550, 100, 20);
         ball = new Ball(390, 530, 15, 15);
+        ball.resetBallPosition(paddle);
         bricks.clear();
         powerUps.clear();
 

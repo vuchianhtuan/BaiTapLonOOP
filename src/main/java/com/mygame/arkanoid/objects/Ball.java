@@ -11,9 +11,18 @@ public class Ball extends MovableObject {
     private final double originalSpeed;
     private boolean stuckToPaddle = true;
     private String imageName;
+    private int paddleOffsetX;
 
     public void stickToPaddle(Paddle paddle) {
         this.stuckToPaddle = true;
+        this.paddleOffsetX = this.x - paddle.getX();
+    }
+
+    public void resetBallPosition(Paddle paddle) {
+        this.stuckToPaddle = true;
+        this.paddleOffsetX = (paddle.getWidth() - this.width) / 2;
+        this.x = paddle.getX() + this.paddleOffsetX;
+        this.y = paddle.getY() - this.height;
     }
 
     public void bounceOff(GameObject other) {
@@ -57,7 +66,7 @@ public class Ball extends MovableObject {
         } else {
             this.dx = 0;
             this.dy = 0;
-            this.x = paddle.getX() + (paddle.getWidth() - this.width) / 2;
+            this.x = paddle.getX() + this.paddleOffsetX;
             this.y = paddle.getY() - this.height;
             if (inputHandler.isKeyDown(KeyEvent.VK_SPACE)) {
                 stuckToPaddle = false;
