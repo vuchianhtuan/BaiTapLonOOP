@@ -60,6 +60,8 @@ public class GameManager {
                 }
             }
         }
+        bricks.add(new MovingBrick(400, 200 ,60, 20, 2, 200));
+
     }
 
     // Thêm phương thức này vào cuối lớp GameManager
@@ -107,6 +109,10 @@ public class GameManager {
         if ("PLAYING".equals(gameState)) {
             paddle.update(inputHandler);
             ball.update(inputHandler, paddle);
+
+            for (Brick brick : bricks) {
+                brick.update();
+            }
 
             Iterator<PowerUp> fallingPowerUpIterator = powerUps.iterator();
             while (fallingPowerUpIterator.hasNext()) {
