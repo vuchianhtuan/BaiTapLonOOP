@@ -38,6 +38,7 @@ public class GameManager {
     private MenuManager menuManager;
 
     public void startGame() {
+        this.lives = 3;
         paddle = new Paddle(350, 550, 100, 20);
         ball = new Ball(390, 530, 15, 15);
         ball.resetBallPosition(paddle);
@@ -135,7 +136,7 @@ public class GameManager {
                 }
             }
 
-            if(ball.checkCollision(paddle) && !ball.isStuckToPaddle()) {
+            if(ball.checkCollision(paddle)) {
                 if (paddle.isSticky()) {
                     ball.stickToPaddle(paddle);
                 } else {
@@ -173,6 +174,16 @@ public class GameManager {
                 }
             }
             bricks.removeIf(brick -> brick.isDestroyed());
+
+            // Xử lý khi bóng rơi xuống đất.
+            if (ball.getY() > 600) {
+                lives--;
+                if (lives > 0) {
+                    ball.resetBallPosition(paddle);
+                } else {
+                    setGameState("MENU");
+                }
+            }
         } else if ("MENU".equals(gameState)) {
             menuManager.update();
         }

@@ -44,10 +44,12 @@ public class Ball extends MovableObject {
             this.dy = -this.dy;
         }
     }
-    public boolean checkCollision(GameObject other) {
-        return this.getBounds().intersects(other.getBounds());
-    }
+
     public boolean isStuckToPaddle() { return stuckToPaddle; }
+
+    public boolean checkCollision(GameObject other) {
+        return this.getBounds().intersects(other.getBounds()) && !this.isStuckToPaddle();
+    }
 
     @Override public void move() {
         this.x += this.dx * speed;
