@@ -11,6 +11,16 @@ public class Paddle extends MovableObject {
     private int speed = 10;
     private PowerUp currentPowerUp;
     private String imageName;
+    private final int originalWidth;
+    private boolean isSticky = false;
+
+    public boolean isSticky() {
+        return isSticky;
+    }
+
+    public void setSticky(boolean sticky) {
+        this.isSticky = sticky;
+    }
 
     public void moveLeft() {
         x -= speed;
@@ -26,6 +36,19 @@ public class Paddle extends MovableObject {
     public Paddle(int x, int y, int width, int height) {
         super(x, y, width, height);
         this.imageName = "paddle";
+        this.originalWidth = width;
+    }
+
+    public void expand(int amount) {
+        // Tăng chiều rộng và điều chỉnh lại vị trí x để nó mở rộng đều 2 bên
+        this.x -= amount / 2;
+        this.width += amount;
+    }
+
+    public void resetWidth() {
+        // Điều chỉnh lại vị trí x trước khi thu hẹp
+        this.x += (this.width - this.originalWidth) / 2;
+        this.width = this.originalWidth;
     }
 
     // Cập nhật vị trí paddle dựa trên InputHandler
