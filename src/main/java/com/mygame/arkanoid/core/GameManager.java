@@ -23,6 +23,7 @@ import java.util.ArrayList;
 public class GameManager {
     private Paddle paddle;
     private Ball ball;
+    private List<Ball> balls = new ArrayList<>(); // Danh sách các quả bóng (nếu có Multi-Ball)
     private List<Brick> bricks;
     private List<PowerUp> powerUps;
     private List<PowerUp> activePowerUps;
@@ -38,6 +39,7 @@ public class GameManager {
     private MenuManager menuManager;
 
     public void startGame() {
+        lives = 3;
         paddle = new Paddle(350, 550, 100, 20);
         ball = new Ball(390, 530, 15, 15);
         ball.resetBallPosition(paddle);
@@ -106,6 +108,25 @@ public class GameManager {
         if ("PLAYING".equals(gameState)) {
             paddle.update(inputHandler);
             ball.update(inputHandler, paddle);
+            for (Ball b : balls) {
+                b.update(inputHandler, paddle);
+            }
+
+            if(ball.getY() > 600 && lives > 1) {
+                /** Sử dụng khi có score
+                lives--;
+                if(lives <= 0) {
+                    setGameState("GAME_OVER");
+                    ErrorHandler.showInfoMessage("Game Over! Your score: " + score);
+                    // Lưu điểm số nếu cần
+                    scoreManager.saveScore(score);
+                } else {
+                    ball.resetBallPosition(paddle);
+                }
+                **/
+                lives--;
+                ball.resetBallPosition(paddle);
+            }
 
             Iterator<PowerUp> fallingPowerUpIterator = powerUps.iterator();
             while (fallingPowerUpIterator.hasNext()) {
@@ -143,6 +164,21 @@ public class GameManager {
                 }
             }
 
+            //Phục vụ multiball
+            for (Ball b : balls) {
+                if(b.getY() > 600) {
+                    balls.remove(b);
+                    break; // Thoát vòng lặp để tránh ConcurrentModificationException
+                }
+                if(b.checkCollision(paddle) && !b.isStuckToPaddle()) {
+                    if (paddle.isSticky()) {
+                        b.stickToPaddle(paddle);
+                    } else {
+                        b.bounceOff(paddle);
+                    }
+                }
+            }
+
             Iterator<Brick> brickIterator = bricks.iterator();
             while (brickIterator.hasNext()) {
                 Brick brick = brickIterator.next();
@@ -162,6 +198,12 @@ public class GameManager {
                             powerUps.add(new StickyPaddlePowerUp(brick.getX(), brick.getY(), 30, 30));
                         } else if (rand < 0.3) { // 10% ra Slow Ball
                             powerUps.add(new SlowBallPowerUp(brick.getX(), brick.getY(), 30, 30));
+                        } else if (rand < 0.4) { // 10% ra Fast Ball
+                            powerUps.add(new FastBallPowerUp(brick.getX(), brick.getY(), 30, 30));
+                        } else if (rand < 0.5) { // 10% ra Extra Life
+                            powerUps.add(new ExtraLifePowerUp(brick.getX(), brick.getY(), 30, 30));
+                        } else if (rand < 0.6) { // 10% ra Multi-Ball
+                            powerUps.add(new MultiBallPowerUp(brick.getX(), brick.getY(), 30, 30));
                         }
 
                         // (Nếu có logic cũ cho explosive brick thì giữ nguyên)
@@ -176,6 +218,7 @@ public class GameManager {
         } else if ("MENU".equals(gameState)) {
             menuManager.update();
         }
+
     }
 
     public void loadAssets() {
@@ -187,6 +230,9 @@ public class GameManager {
         AssetManager.getInstance().loadImage("explosiveBrick", "/images/button_grey.png");
         AssetManager.getInstance().loadImage("stickyPowerUp", "/images/star.png");
         AssetManager.getInstance().loadImage("slowBallPowerUp", "/images/ball_blue_large.png");
+        AssetManager.getInstance().loadImage("fastBallPowerUp", "/images/ball_red_large.png");
+        AssetManager.getInstance().loadImage("extraLifePowerUp", "/images/number_1.png");
+        AssetManager.getInstance().loadImage("multiBallPowerUp", "/images/hole_start.png");
     }
 
     public GameManager() {
@@ -242,6 +288,10 @@ public class GameManager {
     public void handleInput() {}
     public void checkCollisions() {}
     public void gameOver() {}
+    public int getLives () { return lives; }
+    public void setLives(int lives) { this.lives = lives; }
+    public void addball(Ball ball) { balls.add(ball); }
+    public List<Ball> getBalls() { return balls; }
     public Paddle getPaddle() { return paddle; }
     public Ball getBall() { return ball; }
     public List<Brick> getBricks() { return bricks; }
