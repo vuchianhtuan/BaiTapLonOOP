@@ -1,16 +1,32 @@
 package com.mygame.arkanoid.objects.powerups;
-
 import com.mygame.arkanoid.core.GameManager;
+import com.mygame.arkanoid.engine.AssetManager;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class ExtraLifePowerUp extends PowerUp {
-    public ExtraLifePowerUp(int x, int y, int width, int height, String type, int duration) {
-        super(x, y, width, height, type, duration);
+    private String imageName = "extraLifePowerUp";
+
+    public ExtraLifePowerUp(int x, int y, int width, int height) {
+        super(x, y, width, height, "extra_life", 300);
     }
 
-    @Override public void applyEffect(GameManager gameManager) {}
+    @Override public void applyEffect(GameManager gameManager) {
+        int pre_lives = gameManager.getLives();
+        gameManager.setLives(pre_lives + 1);
+    }
     @Override public void removeEffect(GameManager gameManager) {}
-    @Override public void update() {}
-    @Override public void render(Graphics g) {}
+    @Override public void update() {
+        this.y += fallSpeed;
+    }
+    @Override public void render(Graphics g) {
+        BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
+        if (img != null) {
+            g.drawImage(img, this.x, this.y, this.width, this.height, null);
+        } else {
+            g.setColor(Color.RED);
+            g.fillRect(this.x, this.y, this.width, this.height);
+        }
+    }
 }

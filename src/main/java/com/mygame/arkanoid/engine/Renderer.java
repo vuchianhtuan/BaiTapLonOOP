@@ -16,7 +16,7 @@ public class Renderer {
 public class Renderer {
     public Renderer() {}
 
-    public void renderGame(Graphics g, Paddle paddle, Ball ball, List<Brick> bricks, List<PowerUp> powerUps) {
+    public void renderGame(Graphics g, Paddle paddle, Ball ball, List<Brick> bricks, List<PowerUp> powerUps, List<Ball> balls) {
         // 1. Vẽ background
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, 800, 600);
@@ -36,6 +36,11 @@ public class Renderer {
         if (powerUps != null) {
             for (PowerUp powerUp : powerUps) {
                 powerUp.render(g);
+            }
+        }
+        if (balls != null) {
+            for (Ball b : balls) {
+                b.render(g);
             }
         }
     }

@@ -122,5 +122,23 @@ public class Ball extends MovableObject {
     public void setImageName(String imageName) {
         this.imageName = imageName;
     }
+
+    @Override
+    public int getX() {
+        return this.x;
+    }
+
+    @Override
+    public int getY() {
+        return this.y;
+    }
+
+    public void setDx(int dx) {
+        this.dx = dx;
+    }
+
+    public void setDy(int dy) {
+        this.dy = dy;
+    }
 }
 
