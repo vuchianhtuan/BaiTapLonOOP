@@ -23,7 +23,7 @@ public class GameLoop extends Thread {
             gameManager.updateGame();
             gamePanel.repaint();
             try {
-                Thread.sleep(40); // ~60 FPS
+                Thread.sleep(16); // ~60 FPS
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
