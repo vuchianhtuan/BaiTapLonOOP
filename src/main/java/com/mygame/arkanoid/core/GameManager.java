@@ -55,7 +55,10 @@ public class GameManager {
             for (int j = 0; j < 10; j++) {
                 if (i == 2 && j == 5) {
                     bricks.add(new ExplosiveBrick(j * 70 + 50, i * 30 + 50, 60, 20));
-                } else {
+                } else if (i == 4 && j ==5) {
+                    bricks.add(new StrongBrick(j * 70 + 50, i * 30 + 50, 60, 20));
+                }
+                else {
                     bricks.add(new NormalBrick(j * 70 + 50, i * 30 + 50, 60, 20));
                 }
             }
@@ -204,6 +207,10 @@ public class GameManager {
         AssetManager.getInstance().loadImage("explosiveBrick", "/images/button_grey.png");
         AssetManager.getInstance().loadImage("stickyPowerUp", "/images/star.png");
         AssetManager.getInstance().loadImage("slowBallPowerUp", "/images/ball_blue_large.png");
+        AssetManager.getInstance().loadImage("strongBrick", "/images/strongbrick.png");
+        AssetManager.getInstance().loadImage("strongBrick1", "/images/strongbrick1.png");
+        AssetManager.getInstance().loadImage("strongBrick2", "/images/strongbrick2.png");
+
     }
 
     public GameManager() {
