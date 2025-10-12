@@ -36,7 +36,7 @@ public class GamePanel extends JPanel {
 
         if ("PLAYING".equals(currentState)) {
             renderer.renderGame(g, gameManager.getPaddle(), gameManager.getBall(),
-                    gameManager.getBricks(), gameManager.getPowerUps());
+                    gameManager.getBricks(), gameManager.getPowerUps(), gameManager.getBalls());
         } else if ("MENU".equals(currentState)) {
             gameManager.getMenuManager().render(g);
         }
