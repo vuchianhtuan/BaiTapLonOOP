@@ -11,7 +11,7 @@ public class MultiBallPowerUp extends PowerUp {
     public static final int BALL_COUNT = 3; // Số lượng bóng thêm vào
 
     public MultiBallPowerUp(int x, int y, int width, int height) {
-        super(x, y, width, height, "multi_ball", 50); // duration = 0 vì hiệu ứng là tức thì
+        super(x, y, width, height, "multi_ball", 50);
     }
 
     @Override public void applyEffect(GameManager gameManager) {
