@@ -3,6 +3,7 @@ package com.mygame.arkanoid.core;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.Ball;
 import com.mygame.arkanoid.objects.bricks.Brick;
+import com.mygame.arkanoid.systems.HeartUI;
 import com.mygame.arkanoid.systems.LevelManager;
 import com.mygame.arkanoid.systems.ScoreManager;
 import com.mygame.arkanoid.objects.Paddle;
@@ -27,6 +28,7 @@ public class GameManager {
     private List<Brick> bricks;
     private List<PowerUp> powerUps;
     private List<PowerUp> activePowerUps;
+    private List<HeartUI> hearts;
     private int score;
     private int lives;
     private String gameState;
@@ -256,6 +258,8 @@ public class GameManager {
         AssetManager.getInstance().loadImage("fastBallPowerUp", "/images/ball_red_large.png");
         AssetManager.getInstance().loadImage("extraLifePowerUp", "/images/number_1.png");
         AssetManager.getInstance().loadImage("multiBallPowerUp", "/images/hole_start.png");
+        AssetManager.getInstance().loadImage("heart", "/images/heart.png");
+
     }
 
     public GameManager() {
@@ -264,6 +268,7 @@ public class GameManager {
         powerUps = new ArrayList<>();
         activePowerUps = new ArrayList<>();
         this.soundManager = new SoundManager();
+        this.hearts = new ArrayList<>();
         loadAssets();
         menuManager = new MenuManager(this, inputHandler);
         // Đặt trạng thái ban đầu của game là MENU

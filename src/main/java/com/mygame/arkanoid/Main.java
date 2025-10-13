@@ -1,6 +1,7 @@
 package com.mygame.arkanoid;
 
 import com.mygame.arkanoid.core.*;
+import com.mygame.arkanoid.systems.UIManager;
 
 import javax.swing.JFrame;
 
@@ -11,10 +12,11 @@ public class Main {
         window.setResizable(false);
 
         GameManager gameManager = new GameManager();
-        //gameManager.startGame();
+        UIManager uiManager = new UIManager(gameManager);
 
-        GamePanel gamePanel = new GamePanel(gameManager);
-        GameLoop gameLoop = new GameLoop(gameManager, gamePanel);
+        //gameManager.startGame();
+        GamePanel gamePanel = new GamePanel(gameManager, uiManager);
+        GameLoop gameLoop = new GameLoop(gameManager, gamePanel, uiManager);
 
         window.add(gamePanel);
         window.pack();

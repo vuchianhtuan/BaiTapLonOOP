@@ -3,10 +3,10 @@ package com.mygame.arkanoid.core;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
 import com.mygame.arkanoid.systems.MenuManager;
+import com.mygame.arkanoid.systems.UIManager;
 
 import javax.swing.JPanel;
-import java.awt.Dimension;
-import java.awt.Graphics;
+import java.awt.*;
 
 public class GamePanel extends JPanel {
 
@@ -14,14 +14,16 @@ public class GamePanel extends JPanel {
     public static final int HEIGHT = 600;
 
     private final GameManager gameManager;
+    private final UIManager uiManager;
     private final Renderer renderer;
 
-    public GamePanel(GameManager gameManager) {
+    public GamePanel(GameManager gameManager, UIManager uiManager) {
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setFocusable(true);
 
         this.gameManager = gameManager;
         this.renderer = new Renderer();
+        this.uiManager = uiManager;
         InputHandler inputHandler = gameManager.getInputHandler();
 
         this.addKeyListener(inputHandler);
@@ -37,6 +39,8 @@ public class GamePanel extends JPanel {
         if ("PLAYING".equals(currentState)) {
             renderer.renderGame(g, gameManager.getPaddle(), gameManager.getBall(),
                     gameManager.getBricks(), gameManager.getPowerUps(), gameManager.getBalls());
+            Graphics2D g2d = (Graphics2D) g;
+            uiManager.draw(g2d);
         } else if ("MENU".equals(currentState)) {
             gameManager.getMenuManager().render(g);
         }
