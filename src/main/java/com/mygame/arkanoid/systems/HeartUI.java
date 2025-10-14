@@ -1,78 +1,68 @@
 package com.mygame.arkanoid.systems;
-
-// File: UI.java (trong package systems.ui)
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.engine.AssetManager;
-
-import java.awt.AlphaComposite;
-import java.awt.Graphics2D;
+import java.awt.Graphics; // CHỈ DÙNG Graphics
 import java.awt.image.BufferedImage;
 
 public class HeartUI {
     private GameManager gameManager;
     private String imageName;
     private int lastKnownLives;
+    private static final int HEART_SIZE = 24;
 
-    // Biến quản lý animation, thay thế cho class HeartUI
+    // Biến cho hiệu ứng nhấp nháy thông thường
     private int blinkTimer = 0;
-    private int fadingHeartIndex = -1; // Vị trí của trái tim đang mờ dần
-    private float fadingAlpha = 1.0f;  // Độ trong suốt của trái tim đang mờ
+
+    // Biến cho hiệu ứng biến mất
+    private int disappearingHeartIndex = -1; // Vị trí của tim đang biến mất
+    private int disappearEffectTimer = 0; // Bộ đếm thời gian cho hiệu ứng
 
     public HeartUI(GameManager gm) {
         this.gameManager = gm;
         this.lastKnownLives = gm.getLives();
         this.imageName = "heart";
-        // Tải ảnh trái tim tại đây
-        // heartImage = ImageIO.read(...);
     }
 
     public void update() {
-        // --- Cập nhật logic nhấp nháy ---
-        blinkTimer = (blinkTimer + 1) % 60; // Bộ đếm lặp lại từ 0-59 (1 giây ở 60FPS)
+        blinkTimer = (blinkTimer + 1) % 60; // Lặp lại mỗi giây
 
-        // --- Cập nhật logic mất mạng và mờ dần ---
+        // Kiểm tra nếu mất mạng
         int currentLives = gameManager.getLives();
         if (currentLives < lastKnownLives) {
-            fadingHeartIndex = lastKnownLives - 1; // Đánh dấu trái tim vừa mất
-            fadingAlpha = 1.0f; // Bắt đầu mờ
+            disappearingHeartIndex = lastKnownLives - 1; // Đánh dấu trái tim vừa mất
+            disappearEffectTimer = 60; // Bắt đầu đếm ngược hiệu ứng (60 frame = 1 giây)
             lastKnownLives = currentLives;
         }
 
-        // Nếu có trái tim đang mờ, giảm độ trong suốt của nó
-        if (fadingHeartIndex != -1) {
-            fadingAlpha -= 0.05f;
-            if (fadingAlpha <= 0) {
-                fadingHeartIndex = -1; // Kết thúc hiệu ứng mờ
+        // Cập nhật bộ đếm của hiệu ứng biến mất
+        if (disappearEffectTimer > 0) {
+            disappearEffectTimer--;
+            if (disappearEffectTimer <= 0) {
+                disappearingHeartIndex = -1; // Kết thúc hiệu ứng
             }
         }
     }
 
-    public void draw(Graphics2D g2d) {
+    public void draw(Graphics g) {
         int lives = gameManager.getLives();
-        final int HEART_SIZE = 24;
-        // Vẽ tất cả các trái tim
+        BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
+
+        // Lặp qua số mạng tối đa để vẽ đúng hiệu ứng
         for (int i = 0; i < gameManager.getLives(); i++) {
-            // Vị trí vẽ trái tim
             int x = 10 + (i * 30);
             int y = 10;
 
-            // --- Logic vẽ hiệu ứng ---
-            BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
-
-            // 1. Nếu đây là trái tim đang mờ dần
-            if (i == fadingHeartIndex) {
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, fadingAlpha));
-                g2d.drawImage(img, x, y, HEART_SIZE, HEART_SIZE, null);
-                // Reset lại để không ảnh hưởng các hình khác
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+            if (i == disappearingHeartIndex) {
+                if (disappearEffectTimer > 0 && (disappearEffectTimer / 5) % 2 == 0) {
+                    g.drawImage(img, x, y, HEART_SIZE, HEART_SIZE, null);
+                }
             }
-            // 2. Nếu đây là trái tim còn lại (chưa bị mất)
             else if (i < lives) {
-                // Chỉ nhấp nháy trái tim ngoài cùng
+                // Nhấp nháy chậm cho trái tim cuối cùng
                 if (i == lives - 1 && blinkTimer < 30) {
-                    // Trong nửa chu kỳ nháy, không vẽ gì cả
+                    // Trong nửa chu kỳ nháy, không vẽ
                 } else {
-                    g2d.drawImage(img, x, y, HEART_SIZE, HEART_SIZE, null);
+                    g.drawImage(img, x, y, HEART_SIZE, HEART_SIZE, null);
                 }
             }
         }

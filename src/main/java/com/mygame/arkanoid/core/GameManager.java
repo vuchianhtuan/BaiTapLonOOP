@@ -11,7 +11,6 @@ import com.mygame.arkanoid.objects.powerups.PowerUp;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
 import com.mygame.arkanoid.engine.SoundManager;
-import com.mygame.arkanoid.util.ErrorHandler;
 import com.mygame.arkanoid.systems.MenuManager;
 
 import com.mygame.arkanoid.objects.bricks.*;
@@ -32,6 +31,7 @@ public class GameManager {
     private int score = 0;
     private int lives;
     private String gameState;
+    private int gameOverTimer;
 
     private ScoreManager scoreManager;
     private LevelManager levelManager;
@@ -239,11 +239,19 @@ public class GameManager {
                 if (lives > 0) {
                     ball.resetBallPosition(paddle);
                 } else {
-                    setGameState("MENU");
+                    setGameState("GAME_OVER");
+                    gameOverTimer = 360;
                 }
             }
         } else if ("MENU".equals(gameState)) {
             menuManager.update();
+        } else if ("GAME_OVER".equals(gameState)) {
+            gameOverTimer--; // Đếm ngược
+            if (gameOverTimer <= 0) {
+                // Sau khi hết giờ, reset game và quay về menu
+                startGame(); // Gọi lại để reset các thông số game
+                setGameState("MENU");
+            }
         } else if ("HIGH_SCORES".equals(gameState)) {
 
         }
@@ -267,6 +275,9 @@ public class GameManager {
         AssetManager.getInstance().loadImage("extraLifePowerUp", "/images/heart.png");
         AssetManager.getInstance().loadImage("multiBallPowerUp", "/images/hole_start.png");
         AssetManager.getInstance().loadImage("heart", "/images/heart.png");
+        AssetManager.getInstance().loadImage("gameover1", "/images/gameover1.png");
+        AssetManager.getInstance().loadImage("gameover2", "/images/gameover2.png");
+        AssetManager.getInstance().loadImage("gameover3", "/images/gameover3.png");
         AssetManager.getInstance().loadImage("scoreBackground", "/images/arkanoid_Background.png");
 
     }

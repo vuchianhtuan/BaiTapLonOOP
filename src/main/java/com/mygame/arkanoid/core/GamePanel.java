@@ -37,11 +37,10 @@ public class GamePanel extends JPanel {
         super.paintComponent(g);
         String currentState = gameManager.getGameState();
 
-        if ("PLAYING".equals(currentState)) {
+        if ("PLAYING".equals(currentState) || "GAME_OVER".equals(currentState)) {
             renderer.renderGame(g, gameManager.getPaddle(), gameManager.getBall(),
                     gameManager.getBricks(), gameManager.getPowerUps(), gameManager.getBalls());
-            Graphics2D g2d = (Graphics2D) g;
-            uiManager.draw(g2d);
+            uiManager.draw(g);
         } else if ("MENU".equals(currentState)) {
             gameManager.getMenuManager().render(g);
         } else if ("HIGH_SCORES".equals(currentState)) {
