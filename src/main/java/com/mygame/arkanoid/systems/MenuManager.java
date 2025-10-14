@@ -51,6 +51,7 @@ public class MenuManager {
                 gameManager.startGame();
                 break;
             case 1: // High Scores
+                gameManager.setGameState("HIGH_SCORES");
                 System.out.println("High Scores selected - (chưa cài đặt)");
                 break;
             case 2: // Exit

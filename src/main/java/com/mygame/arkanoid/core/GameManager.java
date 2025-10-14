@@ -29,7 +29,7 @@ public class GameManager {
     private List<PowerUp> powerUps;
     private List<PowerUp> activePowerUps;
     private List<HeartUI> hearts;
-    private int score;
+    private int score = 0;
     private int lives;
     private String gameState;
 
@@ -45,6 +45,8 @@ public class GameManager {
         paddle = new Paddle(350, 550, 100, 20);
         ball = new Ball(390, 530, 15, 15);
         ball.resetBallPosition(paddle);
+        balls.add(ball);
+
         bricks.clear();
         powerUps.clear();
 
@@ -114,7 +116,7 @@ public class GameManager {
     public void updateGame() {
         if ("PLAYING".equals(gameState)) {
             paddle.update(inputHandler);
-            ball.update(inputHandler, paddle);
+            //ball.update(inputHandler, paddle);
             for (Ball b : balls) {
                 b.update(inputHandler, paddle);
             }
@@ -133,6 +135,21 @@ public class GameManager {
                 **/
                 lives--;
                 ball.resetBallPosition(paddle);
+            }
+
+            // Kiểm tra tương tác với paddle cho tất cả các quả bóng
+            for (Ball b : balls) {
+                if(b.getY() > 600 && balls.indexOf(b) != 0) { // Giữ lại quả bóng đầu tiên để tránh mất hết bóng
+                    balls.remove(b);
+                    break; // Thoát vòng lặp để tránh ConcurrentModificationException
+                }
+                if(b.checkCollision(paddle) && !b.isStuckToPaddle()) {
+                    if (paddle.isSticky()) {
+                        b.stickToPaddle(paddle);
+                    } else {
+                        b.bounceOff(paddle);
+                    }
+                }
             }
 
             for (Brick brick : bricks) {
@@ -166,7 +183,7 @@ public class GameManager {
                     activePowerUpIterator.remove(); // Xóa khỏi danh sách đang hoạt động
                 }
             }
-
+            /*
             if(ball.checkCollision(paddle) && !ball.isStuckToPaddle()) {
                 if (paddle.isSticky()) {
                     ball.stickToPaddle(paddle);
@@ -174,55 +191,44 @@ public class GameManager {
                     ball.bounceOff(paddle);
                 }
             }
+            */
 
-            //Phục vụ multiball
+            //Duyệt từng quả bóng tương tác với bricks
             for (Ball b : balls) {
-                if(b.getY() > 600) {
-                    balls.remove(b);
-                    break; // Thoát vòng lặp để tránh ConcurrentModificationException
-                }
-                if(b.checkCollision(paddle) && !b.isStuckToPaddle()) {
-                    if (paddle.isSticky()) {
-                        b.stickToPaddle(paddle);
-                    } else {
-                        b.bounceOff(paddle);
-                    }
-                }
-            }
+                Iterator<Brick> brickIterator = bricks.iterator();
+                while (brickIterator.hasNext()) {
+                    Brick brick = brickIterator.next();
 
-            Iterator<Brick> brickIterator = bricks.iterator();
-            while (brickIterator.hasNext()) {
-                Brick brick = brickIterator.next();
+                    // Chỉ kiểm tra va chạm với những viên gạch chưa bị phá hủy
+                    if (!brick.isDestroyed() && b.checkCollision(brick)) {
+                        brick.takeHit(); // Gạch nhận sát thương
+                        score += 10;
+                        b.bounceOff(brick);
 
-                // Chỉ kiểm tra va chạm với những viên gạch chưa bị phá hủy
-                if (!brick.isDestroyed() && ball.checkCollision(brick)) {
-                    brick.takeHit(); // Gạch nhận sát thương
-                    score += 10;
-                    ball.bounceOff(brick);
+                        // Kiểm tra ngay sau khi nhận sát thương, nếu gạch bị phá hủy thì xóa nó
+                        if (brick.isDestroyed()) {
+                            double rand = Math.random();
+                            if (rand < 0.1) { // 10% ra Expand
+                                powerUps.add(new ExpandPaddlePowerUp(brick.getX(), brick.getY(), 30, 30));
+                            } else if (rand < 0.2) { // 10% ra Sticky
+                                powerUps.add(new StickyPaddlePowerUp(brick.getX(), brick.getY(), 30, 30));
+                            } else if (rand < 0.3) { // 10% ra Slow Ball
+                                powerUps.add(new SlowBallPowerUp(brick.getX(), brick.getY(), 30, 30));
+                            } else if (rand < 0.4) { // 10% ra Fast Ball
+                                powerUps.add(new FastBallPowerUp(brick.getX(), brick.getY(), 30, 30));
+                            } else if (rand < 0.5) { // 10% ra Extra Life
+                                powerUps.add(new ExtraLifePowerUp(brick.getX(), brick.getY(), 30, 30));
+                            } else if (rand < 0.6) { // 10% ra Multi-Ball
+                                powerUps.add(new MultiBallPowerUp(brick.getX(), brick.getY(), 30, 30));
+                            }
 
-                    // Kiểm tra ngay sau khi nhận sát thương, nếu gạch bị phá hủy thì xóa nó
-                    if (brick.isDestroyed()) {
-                        double rand = Math.random();
-                        if (rand < 0.1) { // 10% ra Expand
-                            powerUps.add(new ExpandPaddlePowerUp(brick.getX(), brick.getY(), 30, 30));
-                        } else if (rand < 0.2) { // 10% ra Sticky
-                            powerUps.add(new StickyPaddlePowerUp(brick.getX(), brick.getY(), 30, 30));
-                        } else if (rand < 0.3) { // 10% ra Slow Ball
-                            powerUps.add(new SlowBallPowerUp(brick.getX(), brick.getY(), 30, 30));
-                        } else if (rand < 0.4) { // 10% ra Fast Ball
-                            powerUps.add(new FastBallPowerUp(brick.getX(), brick.getY(), 30, 30));
-                        } else if (rand < 0.5) { // 10% ra Extra Life
-                            powerUps.add(new ExtraLifePowerUp(brick.getX(), brick.getY(), 30, 30));
-                        } else if (rand < 0.6) { // 10% ra Multi-Ball
-                            powerUps.add(new MultiBallPowerUp(brick.getX(), brick.getY(), 30, 30));
+                            // (Nếu có logic cũ cho explosive brick thì giữ nguyên)
+                            if (brick instanceof ExplosiveBrick) {
+                                explode(brick, 100.0);
+                            }
                         }
-
-                        // (Nếu có logic cũ cho explosive brick thì giữ nguyên)
-                        if (brick instanceof ExplosiveBrick) {
-                            explode(brick, 100.0);
-                        }
+                        break; // Thoát khỏi vòng lặp để bóng không va chạm nhiều gạch trong 1 frame
                     }
-                    break; // Thoát khỏi vòng lặp để bóng không va chạm nhiều gạch trong 1 frame
                 }
             }
             bricks.removeIf(brick -> brick.isDestroyed());
@@ -238,6 +244,8 @@ public class GameManager {
             }
         } else if ("MENU".equals(gameState)) {
             menuManager.update();
+        } else if ("HIGH_SCORES".equals(gameState)) {
+
         }
 
     }
@@ -256,9 +264,10 @@ public class GameManager {
         AssetManager.getInstance().loadImage("strongBrick2", "/images/strongbrick2.png");
 
         AssetManager.getInstance().loadImage("fastBallPowerUp", "/images/ball_red_large.png");
-        AssetManager.getInstance().loadImage("extraLifePowerUp", "/images/number_1.png");
+        AssetManager.getInstance().loadImage("extraLifePowerUp", "/images/heart.png");
         AssetManager.getInstance().loadImage("multiBallPowerUp", "/images/hole_start.png");
         AssetManager.getInstance().loadImage("heart", "/images/heart.png");
+        AssetManager.getInstance().loadImage("scoreBackground", "/images/arkanoid_Background.png");
 
     }
 
@@ -271,12 +280,18 @@ public class GameManager {
         this.hearts = new ArrayList<>();
         loadAssets();
         menuManager = new MenuManager(this, inputHandler);
+        scoreManager = new ScoreManager();
         // Đặt trạng thái ban đầu của game là MENU
         this.gameState = "MENU";
         soundManager.playBackgroundMusic("RegressiveTrip_Release.wav");
     }
 
     public MenuManager getMenuManager() { return menuManager; }
+
+    public ScoreManager getScoreManager() {
+        return scoreManager;
+    }
+
     public String getGameState() { return gameState; }
     public void setGameState(String state) {
         if (this.gameState != null && this.gameState.equals(state)) {
@@ -318,6 +333,8 @@ public class GameManager {
     public void gameOver() {}
     public int getLives () { return lives; }
     public void setLives(int lives) { this.lives = lives; }
+    public int getScore() { return score; }
+    public void setScore(int score) { this.score = score; }
     public void addball(Ball ball) { balls.add(ball); }
     public List<Ball> getBalls() { return balls; }
     public Paddle getPaddle() { return paddle; }

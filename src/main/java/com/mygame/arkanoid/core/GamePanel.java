@@ -3,6 +3,7 @@ package com.mygame.arkanoid.core;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
 import com.mygame.arkanoid.systems.MenuManager;
+import com.mygame.arkanoid.systems.ScoreManager;
 import com.mygame.arkanoid.systems.UIManager;
 
 import javax.swing.JPanel;
@@ -43,6 +44,8 @@ public class GamePanel extends JPanel {
             uiManager.draw(g2d);
         } else if ("MENU".equals(currentState)) {
             gameManager.getMenuManager().render(g);
+        } else if ("HIGH_SCORES".equals(currentState)) {
+            gameManager.getScoreManager().render(g);
         }
 
         g.dispose();
