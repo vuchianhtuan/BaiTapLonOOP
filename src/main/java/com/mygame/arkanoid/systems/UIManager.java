@@ -40,16 +40,10 @@ public class UIManager {
 
     public void draw(Graphics d) {
         heartUI.draw(d);
+        Graphics2D g2d = (Graphics2D) d;
+        scoreUI.draw(g2d);
         if ("GAME_OVER".equals(gameManager.getGameState())) {
-            // Thay vì vẽ chữ, giờ ta vẽ animation
-            gameOverScreen.draw(d); // <-- THAY ĐỔI DÒNG NÀY
+            gameOverScreen.draw(d);
         }
     }
-
-    public void draw(Graphics2D g2d) {
-        // Vẽ tất cả các thành phần UI
-        heartUI.draw(g2d);
-        scoreUI.draw(g2d);
-    }
-
 }
