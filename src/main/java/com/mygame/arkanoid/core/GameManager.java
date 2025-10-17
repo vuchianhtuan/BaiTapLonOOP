@@ -227,11 +227,19 @@ public class GameManager {
                                 explode(brick, 100.0);
                             }
                         }
-                        break; // Thoát khỏi vòng lặp để bóng không va chạm nhiều gạch trong 1 frame
+                        break;
                     }
                 }
             }
-            bricks.removeIf(brick -> brick.isDestroyed());
+
+            bricks.removeIf(brick -> {
+                // Nếu là gạch nổ, chỉ xóa khi hoạt ảnh đã kết thúc
+                if (brick instanceof ExplosiveBrick) {
+                    return ((ExplosiveBrick) brick).isFinished();
+                }
+                // Đối với các loại gạch khác, xóa như bình thường
+                return brick.isDestroyed();
+            });
 
             // Xử lý khi bóng rơi xuống đất.
             if (ball.getY() > 600) {
@@ -280,6 +288,11 @@ public class GameManager {
         AssetManager.getInstance().loadImage("gameover3", "/images/gameover3.png");
         AssetManager.getInstance().loadImage("scoreBackground", "/images/arkanoid_Background.png");
 
+        for (int i = 1; i <= 8; i++) {
+            String imageName = "explosion_render" + i;
+            String imagePath = "/images/" + imageName + ".png"; // Giả sử file có đuôi .png
+            AssetManager.getInstance().loadImage(imageName, imagePath);
+        }
     }
 
     public GameManager() {
