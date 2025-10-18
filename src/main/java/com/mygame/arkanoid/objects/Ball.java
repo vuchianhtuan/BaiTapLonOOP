@@ -1,13 +1,14 @@
 package com.mygame.arkanoid.objects;
+import com.mygame.arkanoid.core.GamePanel;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.engine.InputHandler;
-
+import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent;
 
 public class Ball extends MovableObject {
-    private double speed = 5;
+    private double speed = 7;
     private final double originalSpeed;
     private boolean stuckToPaddle = true;
     private String imageName;
@@ -54,7 +55,7 @@ public class Ball extends MovableObject {
     @Override public void move() {
         this.x += this.dx * speed;
         this.y += this.dy * speed;
-        if (this.x <= 0 || this.x + this.width >= 800) {
+        if (this.x <= 0 || this.x + this.width >= GamePanel.WIDTH) {
             dx = - dx; // Đổi hướng khi chạm tường trái hoặc phải
         }
         if (this.y <= 0) {
@@ -79,15 +80,20 @@ public class Ball extends MovableObject {
 
     }
     @Override public void update () {};
-    @Override public void render(Graphics g) {
+    @Override public void render(Graphics g, ScalingManager sm) {
         BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
         if (img != null) {
             // Nếu có ảnh, vẽ ảnh
-            g.drawImage(img, this.x, this.y, this.width, this.height, null);
+            g.drawImage(img,
+                    sm.scaleX(this.x), sm.scaleY(this.y),
+                    sm.scaleWidth(this.width), sm.scaleHeight(this.height), null);
         } else {
             // Nếu không tìm thấy ảnh, quay lại vẽ hình tròn màu trắng (phương án dự phòng)
             g.setColor(Color.WHITE);
-            g.fillOval(this.x, this.y, this.width, this.height);
+            g.fillRect(sm.scaleX(this.x), sm.scaleY(this.y),
+                    sm.scaleWidth(this.width), sm.scaleHeight(this.height));
+            g.fillOval(sm.scaleX(this.x), sm.scaleY(this.y),
+                    sm.scaleWidth(this.width), sm.scaleHeight(this.height));
         }
     }
 

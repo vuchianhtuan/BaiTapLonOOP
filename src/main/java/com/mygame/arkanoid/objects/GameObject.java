@@ -1,5 +1,7 @@
 package com.mygame.arkanoid.objects;
 
+import com.mygame.arkanoid.systems.ScalingManager;
+
 import java.awt.*;
 
 public abstract class GameObject {
@@ -14,7 +16,7 @@ public abstract class GameObject {
     }
 
     public abstract void update();
-    public abstract void render(Graphics g);
+    public abstract void render(Graphics g, ScalingManager sm);
 
     public int getX() { return x; }
     public int getY() { return y; }

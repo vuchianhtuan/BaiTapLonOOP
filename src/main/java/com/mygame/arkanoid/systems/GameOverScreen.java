@@ -5,28 +5,29 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
 public class GameOverScreen {
-    private BufferedImage[] frames; // Mảng chứa các frame ảnh của animation
+    private BufferedImage[] frames;
     private int currentFrameIndex;
-    private int x, y;
 
-    private int displayWidth;
-    private int displayHeight;
+    // Bây giờ các biến này sẽ lưu trữ tọa độ và kích thước LOGIC
+    private int logicX, logicY;
+    private int logicWidth, logicHeight;
 
     private final int totalFrames = 3;
+    private int frameCounter;
+    private int framesPerAnimation;
 
-    private int frameCounter;           // Bộ đếm số lần hàm update() được gọi
-    private int framesPerAnimation;     // Số khung hình cần chờ trước khi chuyển ảnh
-
-    public GameOverScreen(int x, int y, int displayWidth, int displayHeight) {
-        this.x = x;
-        this.y = y;
-        this.displayWidth = displayWidth;
-        this.displayHeight = displayHeight;
+    public GameOverScreen(int logicX, int logicY, int logicWidth, int logicHeight) {
+        // Constructor bây giờ nhận và lưu các giá trị LOGIC
+        this.logicX = logicX;
+        this.logicY = logicY;
+        this.logicWidth = logicWidth;
+        this.logicHeight = logicHeight;
         this.framesPerAnimation = 30;
         loadFrames();
         reset();
     }
 
+    // ... loadFrames(), update(), reset() giữ nguyên ...
     private void loadFrames() {
         this.frames = new BufferedImage[totalFrames];
         for (int i = 0; i < totalFrames; i++) {
@@ -38,27 +39,29 @@ public class GameOverScreen {
 
     public void update() {
         frameCounter++;
-
         if (frameCounter >= framesPerAnimation) {
-            // Chuyển sang ảnh tiếp theo
-            currentFrameIndex++;
-
-            if (currentFrameIndex >= totalFrames) {
-                currentFrameIndex = 0;
-            }
+            currentFrameIndex = (currentFrameIndex + 1) % totalFrames;
             frameCounter = 0;
         }
     }
 
-    public void draw(Graphics g) {
-        if (frames != null && frames[currentFrameIndex] != null) {
-            g.drawImage(frames[currentFrameIndex], x, y, displayWidth, displayHeight, null);
-        }
-    }
-
-    // --- HÀM RESET CŨNG ĐƯỢC CẬP NHẬT ---
     public void reset() {
         this.currentFrameIndex = 0;
-        this.frameCounter = 0; // Đặt lại bộ đếm khi reset
+        this.frameCounter = 0;
+    }
+
+
+    public void draw(Graphics g) {
+        if (frames != null && frames[currentFrameIndex] != null) {
+            ScalingManager sm = ScalingManager.getInstance();
+
+            // Vẽ ảnh ra màn hình với tọa độ và kích thước đã được scale
+            g.drawImage(frames[currentFrameIndex],
+                    sm.scaleX(this.logicX),
+                    sm.scaleY(this.logicY),
+                    sm.scaleWidth(this.logicWidth),
+                    sm.scaleHeight(this.logicHeight),
+                    null);
+        }
     }
 }

@@ -1,0 +1,3 @@
+powerups:FAST_BALL=0.2,EXTRA_LIFE=0.15
+---
+1

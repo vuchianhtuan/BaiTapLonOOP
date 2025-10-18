@@ -2,6 +2,8 @@ package com.mygame.arkanoid.objects.powerups;
 
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.engine.AssetManager;
+import com.mygame.arkanoid.systems.ScalingManager;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -31,13 +33,16 @@ public class SlowBallPowerUp extends PowerUp {
     }
 
     @Override
-    public void render(Graphics g) {
+    public void render(Graphics g, ScalingManager sm) {
         BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
         if (img != null) {
-            g.drawImage(img, this.x, this.y, this.width, this.height, null);
+            g.drawImage(img,
+                    sm.scaleX(this.x), sm.scaleY(this.y),
+                    sm.scaleWidth(this.width), sm.scaleHeight(this.height), null);
         } else {
             g.setColor(Color.CYAN);
-            g.fillRect(this.x, this.y, this.width, this.height);
+            g.fillRect(sm.scaleX(this.x), sm.scaleY(this.y),
+                    sm.scaleWidth(this.width), sm.scaleHeight(this.height));
         }
     }
 }

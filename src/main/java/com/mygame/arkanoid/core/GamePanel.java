@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.core;
 
+import com.mygame.arkanoid.Main;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
 import com.mygame.arkanoid.systems.MenuManager;
@@ -8,11 +9,12 @@ import com.mygame.arkanoid.systems.UIManager;
 
 import javax.swing.JPanel;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class GamePanel extends JPanel {
-
-    public static final int WIDTH = 800;
-    public static final int HEIGHT = 600;
+    public static final int WIDTH = 1280;
+    public static final int HEIGHT = 720;
 
     private final GameManager gameManager;
     private final UIManager uiManager;
@@ -27,26 +29,37 @@ public class GamePanel extends JPanel {
         this.uiManager = uiManager;
         InputHandler inputHandler = gameManager.getInputHandler();
 
+        // Thêm các trình nghe sự kiện input
         this.addKeyListener(inputHandler);
         this.addMouseMotionListener(inputHandler);
         this.addMouseListener(inputHandler);
+
     }
 
+    /**
+     * Phương thức này được khôi phục lại để xử lý tất cả việc vẽ.
+     * Đây là cách làm tiêu chuẩn và ổn định của Swing.
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         String currentState = gameManager.getGameState();
 
         if ("PLAYING".equals(currentState) || "GAME_OVER".equals(currentState)) {
-            renderer.renderGame(g, gameManager.getPaddle(), gameManager.getBall(),
-                    gameManager.getBricks(), gameManager.getPowerUps(), gameManager.getBalls());
+            renderer.renderGame(g, gameManager.getPaddle(),
+                    gameManager.getBall(),
+                    gameManager.getBricks(),
+                    gameManager.getPowerUps(),
+                    gameManager.getBalls(),
+                    gameManager.getBoss(),
+                    gameManager.getLasers(),
+                    gameManager.getLaserShooters(),
+                    gameManager.getCurrentBackground());
             uiManager.draw(g);
         } else if ("MENU".equals(currentState)) {
             gameManager.getMenuManager().render(g);
         } else if ("HIGH_SCORES".equals(currentState)) {
             gameManager.getScoreManager().render(g);
         }
-
-        g.dispose();
     }
 }

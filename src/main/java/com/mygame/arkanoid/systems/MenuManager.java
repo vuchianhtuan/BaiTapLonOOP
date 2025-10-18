@@ -28,12 +28,13 @@ public class MenuManager {
     }
 
     public void update() {
-        int mouseX = inputHandler.getMouseX();
-        int mouseY = inputHandler.getMouseY();
+        int virtualMouseX = inputHandler.getVirtualMouseX();
+        int virtualMouseY = inputHandler.getVirtualMouseY();
         selectedOption = -1;
 
+        // So sánh chuột ảo với khu vực bấm ảo
         for (int i = 0; i < optionBounds.length; i++) {
-            if (optionBounds[i] != null && optionBounds[i].contains(mouseX, mouseY)) {
+            if (optionBounds[i] != null && optionBounds[i].contains(virtualMouseX, virtualMouseY)) {
                 selectedOption = i;
                 break;
             }
@@ -47,7 +48,6 @@ public class MenuManager {
     private void selectOption() {
         switch (selectedOption) {
             case 0: // Start Game
-                gameManager.setGameState("PLAYING"); // Chuyển trạng thái
                 gameManager.startGame();
                 break;
             case 1: // High Scores
@@ -61,48 +61,45 @@ public class MenuManager {
     }
 
     public void render(Graphics g) {
+        ScalingManager sm = ScalingManager.getInstance();
         if (backgroundImage != null) {
-            g.drawImage(backgroundImage, 0, 0, GamePanel.WIDTH, GamePanel.HEIGHT, null);
+            g.drawImage(backgroundImage, 0, 0, sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT), null);
         } else {
             // Nếu không có ảnh, vẽ nền đen dự phòng
             g.setColor(Color.BLACK);
-            g.fillRect(0, 0, GamePanel.WIDTH, GamePanel.HEIGHT);
+            g.fillRect(0, 0, sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT));
         }
 
-        // 2. Vẽ tiêu đề game
-        /*g.setColor(Color.GREEN);
-        g.setFont(new Font("Arial", Font.BOLD, 72));
-        String title = "ARKANOID";
-        int titleWidth = g.getFontMetrics().stringWidth(title);
-        g.drawString(title, (GamePanel.WIDTH - titleWidth) / 2, 150);
-         */
-
-        // 3. Vẽ các lựa chọn menu với khung bao quanh
         g.setFont(new Font("Arial", Font.PLAIN, 36));
         for (int i = 0; i < options.length; i++) {
             String optionText = options[i];
             int optionWidth = g.getFontMetrics().stringWidth(optionText);
             int height = g.getFontMetrics().getHeight();
 
-            int x = (GamePanel.WIDTH - optionWidth) / 2;
-            int y = 300 + i * 60;
+            // Tính toán tọa độ và kích thước trong thế giới LOGIC (ảo) 1280x720
+            int logicX = (sm.NATIVE_WIDTH - optionWidth) / 2;
+            int logicY = 300 + i * 60;
+            int logicRectX = logicX - 20;
+            int logicRectY = logicY - height + 10;
+            int logicRectWidth = optionWidth + 40;
+            int logicRectHeight = height + 10;
 
-            optionBounds[i] = new Rectangle(x - 20, y - height + 10, optionWidth + 40, height + 10);
+            // Lưu lại khu vực bấm LOGIC
+            optionBounds[i] = new Rectangle(logicRectX, logicRectY, logicRectWidth, logicRectHeight);
 
-            // Vẽ khung và chữ dựa trên việc chuột có đang trỏ vào hay không
+            // Chỉ khi VẼ, chúng ta mới "dịch" các giá trị logic ra màn hình thật
             if (i == selectedOption) {
-                // Khi được chọn (hover), vẽ nền vàng nhạt và khung vàng đậm
-                g.setColor(new Color(255, 255, 0, 100));
-                g.fillRoundRect(optionBounds[i].x, optionBounds[i].y, optionBounds[i].width, optionBounds[i].height, 15, 15);
+                g.setColor(new Color(255, 255, 0, 100)); // Màu nền khi hover
+                g.fillRoundRect(sm.scaleX(logicRectX), sm.scaleY(logicRectY), sm.scaleWidth(logicRectWidth), sm.scaleHeight(logicRectHeight), 15, 15);
 
-                g.setColor(Color.RED); // Đặt màu cho cả khung và chữ
-                g.drawRoundRect(optionBounds[i].x, optionBounds[i].y, optionBounds[i].width, optionBounds[i].height, 15, 15);
-                g.drawString(optionText, x, y);
+                g.setColor(Color.RED); // Màu chữ và viền khi hover
             } else {
-                g.setColor(Color.YELLOW);
-                g.drawRoundRect(optionBounds[i].x, optionBounds[i].y, optionBounds[i].width, optionBounds[i].height, 15, 15);
-                g.drawString(optionText, x, y);
+                g.setColor(Color.YELLOW); // Màu chữ và viền mặc định
             }
+
+            // Vẽ viền và chữ đã được scale
+            g.drawRoundRect(sm.scaleX(logicRectX), sm.scaleY(logicRectY), sm.scaleWidth(logicRectWidth), sm.scaleHeight(logicRectHeight), 15, 15);
+            g.drawString(optionText, sm.scaleX(logicX), sm.scaleY(logicY));
         }
     }
 }

@@ -28,11 +28,16 @@ public class ScoreManager {
     }
 
     public void render(Graphics g) {
+        ScalingManager sm = ScalingManager.getInstance();
+
+        // Vẽ nền co giãn để lấp đầy toàn bộ cửa sổ
         if (BackgroundImage != null) {
-            g.drawImage(BackgroundImage, 0, 0, GamePanel.WIDTH, GamePanel.HEIGHT, null);
+            g.drawImage(BackgroundImage, 0, 0, sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT), null);
         } else {
             g.setColor(Color.BLACK);
-            g.fillRect(0, 0, GamePanel.WIDTH, GamePanel.HEIGHT);
+            g.fillRect(0, 0, sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT));
         }
+
+        // (Sau này bạn sẽ thêm logic vẽ điểm số ở đây, nhớ dùng sm.scale...())
     }
 }

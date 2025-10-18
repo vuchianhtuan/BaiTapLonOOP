@@ -1,6 +1,8 @@
 package com.mygame.arkanoid.objects.powerups;
 import com.mygame.arkanoid.objects.GameObject;
 import com.mygame.arkanoid.core.GameManager;
+import com.mygame.arkanoid.systems.ScalingManager;
+
 import java.awt.Graphics;
 
 public abstract class PowerUp extends GameObject {
@@ -35,7 +37,7 @@ public abstract class PowerUp extends GameObject {
     }
 
     @Override
-    public abstract void render(Graphics g);
+    public abstract void render(Graphics g, ScalingManager sm);
 
     /**
      * Áp dụng hiệu ứng lên Paddle. Sẽ được implement bởi lớp con.
