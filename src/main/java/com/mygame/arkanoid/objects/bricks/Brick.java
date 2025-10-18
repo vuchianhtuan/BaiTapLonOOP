@@ -1,6 +1,8 @@
 package com.mygame.arkanoid.objects.bricks;
 
 import com.mygame.arkanoid.objects.GameObject;
+import com.mygame.arkanoid.systems.ScalingManager;
+
 import java.awt.Graphics;
 /*
 public abstract class Brick extends GameObject {
@@ -46,5 +48,5 @@ public abstract class Brick extends GameObject {
     public abstract void update();
 
     @Override
-    public abstract void render(Graphics g);
+    public abstract void render(Graphics g, ScalingManager sm);
 }

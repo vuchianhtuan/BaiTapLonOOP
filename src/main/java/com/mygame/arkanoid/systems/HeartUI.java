@@ -44,26 +44,39 @@ public class HeartUI {
     }
 
     public void draw(Graphics g) {
+        // Lấy instance của ScalingManager
+        ScalingManager sm = ScalingManager.getInstance();
+
         int lives = gameManager.getLives();
         BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
+        if (img == null) return;
 
-        // Lặp qua số mạng tối đa để vẽ đúng hiệu ứng
+        // Lặp qua số mạng để vẽ
         for (int i = 0; i < gameManager.getLives(); i++) {
-            int x = 10 + (i * 30);
-            int y = 10;
+            // Tính toán vị trí LOGIC trong thế giới 1280x720
+            int logicX = 10 + (i * 30);
+            int logicY = 10;
 
+            // Chỉ vẽ nếu hiệu ứng cho phép
+            boolean shouldDraw = true;
             if (i == disappearingHeartIndex) {
-                if (disappearEffectTimer > 0 && (disappearEffectTimer / 5) % 2 == 0) {
-                    g.drawImage(img, x, y, HEART_SIZE, HEART_SIZE, null);
+                if (disappearEffectTimer <= 0 || (disappearEffectTimer / 5) % 2 != 0) {
+                    shouldDraw = false;
+                }
+            } else if (i < lives) {
+                if (i == lives - 1 && blinkTimer < 30) {
+                    shouldDraw = false;
                 }
             }
-            else if (i < lives) {
-                // Nhấp nháy chậm cho trái tim cuối cùng
-                if (i == lives - 1 && blinkTimer < 30) {
-                    // Trong nửa chu kỳ nháy, không vẽ
-                } else {
-                    g.drawImage(img, x, y, HEART_SIZE, HEART_SIZE, null);
-                }
+
+            if (shouldDraw) {
+                // Sử dụng ScalingManager để "dịch" tọa độ và kích thước logic ra màn hình thật
+                g.drawImage(img,
+                        sm.scaleX(logicX),
+                        sm.scaleY(logicY),
+                        sm.scaleWidth(HEART_SIZE),
+                        sm.scaleHeight(HEART_SIZE),
+                        null);
             }
         }
     }

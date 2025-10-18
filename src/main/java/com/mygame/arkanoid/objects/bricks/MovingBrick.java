@@ -1,7 +1,7 @@
 package com.mygame.arkanoid.objects.bricks;
 
 import com.mygame.arkanoid.engine.AssetManager;
-
+import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -29,10 +29,12 @@ public class MovingBrick extends Brick {
         }
     }
 
-    @Override public void render(Graphics g) {
+    @Override public void render(Graphics g, ScalingManager sm) {
         BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
         if (img != null) {
-            g.drawImage(img, this.x, this.y, this.width, this.height, null);
+            g.drawImage(img,
+                    sm.scaleX(this.x), sm.scaleY(this.y),
+                    sm.scaleWidth(this.width), sm.scaleHeight(this.height), null);
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.mygame.arkanoid.systems;
 
 import com.mygame.arkanoid.core.GameManager;
+import com.mygame.arkanoid.core.GamePanel;
 
 import java.awt.*;
 
@@ -15,14 +16,12 @@ public class UIManager {
     public UIManager(GameManager gm) {
         this.gameManager = gm;
         this.heartUI = new HeartUI(gm);
-        final int SCREEN_WIDTH = 800;
-        final int SCREEN_HEIGHT = 600;
 
         int imageWidth = 490;
         int imageHeight = 280;
 
-        int x = (SCREEN_WIDTH - imageWidth) / 2;
-        int y = (SCREEN_HEIGHT - imageHeight) / 2;
+        int x = (GamePanel.WIDTH - imageWidth) / 2;
+        int y = (GamePanel.HEIGHT - imageHeight) / 2;
 
         this.gameOverScreen = new GameOverScreen(x, y, imageWidth, imageHeight);
 

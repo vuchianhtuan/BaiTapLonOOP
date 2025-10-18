@@ -1,14 +1,16 @@
 package com.mygame.arkanoid.objects;
+import com.mygame.arkanoid.core.GamePanel;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.powerups.PowerUp;
 import com.mygame.arkanoid.engine.InputHandler;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.awt.event.KeyEvent; // Thêm import cho KeyEvent
+import java.awt.event.KeyEvent;
+import com.mygame.arkanoid.systems.ScalingManager;
 
 public class Paddle extends MovableObject {
-    private int speed = 10;
+    private int speed = 15;
     private PowerUp currentPowerUp;
     private String imageName;
     private final int originalWidth;
@@ -28,7 +30,7 @@ public class Paddle extends MovableObject {
     }
     public void moveRight() {
         x += speed;
-        if (x + width >800) x = 800 - width;
+        if (x + width > GamePanel.WIDTH) x = GamePanel.WIDTH - width;
         //Thiếu khai báo biến screenSize, để mặc định 800x600
     }
     public void applyPowerUp(PowerUp powerUp) {}
@@ -53,9 +55,6 @@ public class Paddle extends MovableObject {
 
     // Cập nhật vị trí paddle dựa trên InputHandler
     public void update(InputHandler inputHandler) {
-        //this.x = inputHandler.getMouseX() - this.width / 2;
-
-        // thay đổi vị trí paddle dựa trên phím bấm
         boolean left = inputHandler.isKeyDown(KeyEvent.VK_LEFT) ||
                        inputHandler.isKeyDown(KeyEvent.VK_A);
         boolean right = inputHandler.isKeyDown(KeyEvent.VK_RIGHT) ||
@@ -69,14 +68,17 @@ public class Paddle extends MovableObject {
 
     @Override public void move() {}
     @Override public void update() {}
-    @Override public void render(Graphics g) {
+    @Override public void render(Graphics g, ScalingManager sm) {
 
         BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
         if (img != null) {
-            g.drawImage(img, this.x, this.y, this.width, this.height, null);
+            g.drawImage(img,
+                    sm.scaleX(this.x), sm.scaleY(this.y),
+                    sm.scaleWidth(this.width), sm.scaleHeight(this.height), null);
         } else {
             g.setColor(Color.BLUE);
-            g.fillRect(this.x, this.y, this.width, this.height);
+            g.fillRect(sm.scaleX(this.x), sm.scaleY(this.y),
+                    sm.scaleWidth(this.width), sm.scaleHeight(this.height));
         }
     }
 

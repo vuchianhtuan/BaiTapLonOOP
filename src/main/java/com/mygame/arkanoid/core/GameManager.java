@@ -2,6 +2,8 @@ package com.mygame.arkanoid.core;
 
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.Ball;
+import com.mygame.arkanoid.objects.Boss;
+import com.mygame.arkanoid.objects.Laser;
 import com.mygame.arkanoid.objects.bricks.Brick;
 import com.mygame.arkanoid.systems.HeartUI;
 import com.mygame.arkanoid.systems.LevelManager;
@@ -12,10 +14,12 @@ import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
 import com.mygame.arkanoid.engine.SoundManager;
 import com.mygame.arkanoid.systems.MenuManager;
+import com.mygame.arkanoid.systems.Level;
 
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.*;
 
+import java.awt.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
@@ -32,6 +36,9 @@ public class GameManager {
     private int lives;
     private String gameState;
     private int gameOverTimer;
+    private List<Laser> lasers;
+    private Boss boss;
+    private List<LaserShooterBrick> laserShooters;
 
     private ScoreManager scoreManager;
     private LevelManager levelManager;
@@ -39,76 +46,211 @@ public class GameManager {
     private SoundManager soundManager;
     private InputHandler inputHandler;
     private MenuManager menuManager;
+    private String currentTheme = "";
+    private Image currentBackground = null;
+    int screenHeight = com.mygame.arkanoid.systems.ScalingManager.getInstance().NATIVE_HEIGHT;
+
+    public GameManager() {
+        inputHandler = new InputHandler();
+        bricks = new ArrayList<>();
+        laserShooters = new ArrayList<>();
+        powerUps = new ArrayList<>();
+        activePowerUps = new ArrayList<>();
+        this.soundManager = new SoundManager();
+        this.hearts = new ArrayList<>();
+        loadAssets();
+        menuManager = new MenuManager(this, inputHandler);
+        scoreManager = new ScoreManager();
+        levelManager = new LevelManager();
+        this.lasers = new ArrayList<>();
+        levelManager.loadLevels();
+
+        // Đặt trạng thái ban đầu của game là MENU
+        this.gameState = "MENU";
+        soundManager.playBackgroundMusic("RegressiveTrip_Release.wav");
+    }
+
+    public void loadAssets() {
+        /*
+        AssetManager.getInstance().loadImage("normalBrick", "/images/button_blue.png");
+        AssetManager.getInstance().loadImage("ball", "/images/ball.png");
+        AssetManager.getInstance().loadImage("paddle", "/images/button_yellow.png");
+        AssetManager.getInstance().loadImage("expandPowerUp", "/images/hole_small_end.png");
+        AssetManager.getInstance().loadImage("menuBackground", "/images/backGroundMenu.png");
+        AssetManager.getInstance().loadImage("explosiveBrick", "/images/button_grey.png");
+        AssetManager.getInstance().loadImage("stickyPowerUp", "/images/star.png");
+        AssetManager.getInstance().loadImage("slowBallPowerUp", "/images/ball_blue_large.png");
+        AssetManager.getInstance().loadImage("strongBrick", "/images/strongbrick.png");
+        AssetManager.getInstance().loadImage("strongBrick1", "/images/strongbrick1.png");
+        AssetManager.getInstance().loadImage("strongBrick2", "/images/strongbrick2.png");
+        AssetManager.getInstance().loadImage("laserShooter", "/images/laser_shooter.png");
+
+        AssetManager.getInstance().loadImage("fastBallPowerUp", "/images/ball.png");
+        AssetManager.getInstance().loadImage("extraLifePowerUp", "/images/heart.png");
+        AssetManager.getInstance().loadImage("multiBallPowerUp", "/images/hole_start.png");
+        AssetManager.getInstance().loadImage("heart", "/images/heart.png");
+        AssetManager.getInstance().loadImage("gameover1", "/images/gameover1.png");
+        AssetManager.getInstance().loadImage("gameover2", "/images/gameover2.png");
+        AssetManager.getInstance().loadImage("gameover3", "/images/gameover3.png");
+        AssetManager.getInstance().loadImage("scoreBackground", "/images/arkanoid_Background.png");
+        AssetManager.getInstance().loadImage("laser", "/images/laser.png");
+         */
+
+        AssetManager am = AssetManager.getInstance();
+
+        // Menu, UI, Game Over
+        am.loadImage("menuBackground", "/images/backGroundMenu.png");
+        am.loadImage("defaultBackground", "/images/default_game_background.png");
+        am.loadImage("heart", "/images/heart.png");
+        am.loadImage("gameover1", "/images/gameover1.png");
+        am.loadImage("gameover2", "/images/gameover2.png");
+        am.loadImage("gameover3", "/images/gameover3.png");
+        am.loadImage("scoreBackground", "/images/arkanoid_Background.png");
+
+        // Power-ups (thường là chung)
+        am.loadImage("expandPowerUp", "/images/expandPowerUp.png");
+        am.loadImage("stickyPowerUp", "/images/stickyPowerUp.png");
+        am.loadImage("slowBallPowerUp", "/images/slowBallPowerUp.png");
+        am.loadImage("fastBallPowerUp", "/images/fastBallPowerUp.png");
+        am.loadImage("extraLifePowerUp", "/images/heart.png");
+        am.loadImage("multiBallPowerUp", "/images/multiBallPowerUp.png");
+
+        // Laser
+        am.loadImage("laser", "/images/laser.png");
+        am.loadImage("laserShooter", "/images/laser_shooter.png");
+    }
+
+    private void loadThemeAssets(String prefix) {
+        if (prefix.equals(currentTheme)) {
+            return;
+        }
+        currentTheme = prefix;
+        AssetManager am = AssetManager.getInstance();
+
+        // Tải các ảnh với tiền tố (ví dụ "ice_ball.png" hoặc "ball.png")
+        am.loadImage("ball", "/images/" + prefix + "ball.png");
+        am.loadImage("paddle", "/images/" + prefix + "paddle.png");
+        am.loadImage("normalBrick", "/images/" + prefix + "normalBrick.png");
+        am.loadImage("explosiveBrick", "/images/" + prefix + "explosiveBrick.png");
+        am.loadImage("strongBrick", "/images/" + prefix + "strongBrick.png");
+        am.loadImage("strongBrick1", "/images/" + prefix + "strongBrick1.png");
+        am.loadImage("strongBrick2", "/images/" + prefix + "strongBrick2.png");
+    }
 
     public void startGame() {
         this.lives = 3;
-        paddle = new Paddle(350, 550, 100, 20);
-        ball = new Ball(390, 530, 15, 15);
+        this.score = 0;
+        levelManager.reset(); // Đưa level manager về màn 1
+        loadNextLevel();
+    }
+
+    private void loadNextLevel() {
+        if (levelManager.loadNextLevel()) {
+            // Tải level thành công, thiết lập màn chơi
+            loadLevelSetup();
+        } else {
+            // Xử lý khi người chơi đã thắng tất cả các màn
+            // Ví dụ: hiển thị màn hình chiến thắng hoặc quay về menu
+            setGameState("GAME_WIN"); // Cần tạo thêm trạng thái này hoặc quay về MENU
+        }
+    }
+
+    private void loadLevelSetup() {
+        paddle = new Paddle(580, 670, 120, 18);
+        ball = new Ball(634, 652, 12, 12);
         ball.resetBallPosition(paddle);
+        balls.clear();
         balls.add(ball);
-
-        bricks.clear();
         powerUps.clear();
+        lasers.clear();
+        this.boss = null;
+        bricks.clear();
+        laserShooters.clear();
 
-        // Hủy bỏ hiệu ứng power-up cũ khi bắt đầu game mới
         for (PowerUp p : activePowerUps) {
             p.removeEffect(this);
         }
         activePowerUps.clear();
 
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 10; j++) {
-                if (i == 2 && j == 5) {
-                    bricks.add(new ExplosiveBrick(j * 70 + 50, i * 30 + 50, 60, 20));
-                } else if (i == 4 && j ==5) {
-                    bricks.add(new StrongBrick(j * 70 + 50, i * 30 + 50, 60, 20));
+        Level currentLevel = levelManager.getCurrentLevel();
+        if (currentLevel != null) {
+            String prefix = currentLevel.getThemeAssetPrefix();
+            loadThemeAssets(prefix);
+            String music = currentLevel.getThemeMusic();
+            if (music != null && !music.isEmpty()) {
+                soundManager.playBackgroundMusic(music);
+            } else {
+                soundManager.playBackgroundMusic("ExoticBaryon_PhaseXX.wav");
+            }
+
+            String bgName = currentLevel.getThemeBackground();
+            if (bgName != null && !bgName.isEmpty()) {
+                // Tải ảnh nền riêng của màn
+                String assetKey = "bg_" + bgName; // Tạo key duy nhất, ví dụ "bg_background_ice.png"
+                AssetManager.getInstance().loadImage(assetKey, "/images/" + bgName);
+                this.currentBackground = AssetManager.getInstance().getImage(assetKey);
+            } else {
+                // Tải ảnh nền mặc định
+                this.currentBackground = AssetManager.getInstance().getImage("defaultBackground");
+            }
+
+            for (Brick brick : currentLevel.getBricks()) {
+                if (brick instanceof LaserShooterBrick) {
+                    laserShooters.add((LaserShooterBrick) brick);
+                } else {
+                    bricks.add(brick);
                 }
-                else {
-                    bricks.add(new NormalBrick(j * 70 + 50, i * 30 + 50, 60, 20));
+            }
+
+            if (currentLevel.isBossLevel() && !currentLevel.getBossBricks().isEmpty()) {
+                java.awt.Rectangle bossBounds = currentLevel.getBossInitialBounds();
+
+                float startX = (GamePanel.WIDTH / 2.0f) - (bossBounds.width / 2.0f);
+                float startY = bossBounds.y;
+
+                this.boss = new Boss(currentLevel.getBossBricks(), startX, startY, bossBounds.x, GamePanel.WIDTH);
+                // Thêm các shooter của boss vào danh sách quản lý
+                for(Brick bossBrick : boss.getBricks()) {
+                    if (bossBrick instanceof LaserShooterBrick) {
+                        laserShooters.add((LaserShooterBrick) bossBrick);
+                    }
                 }
             }
         }
-        bricks.add(new MovingBrick(400, 200 ,60, 20, 2, 200));
-
+        setGameState("PLAYING");
     }
 
-    // Thêm phương thức này vào cuối lớp GameManager
     private void explode(Brick sourceBrick, double radius) {
-        // Lấy tọa độ trung tâm của viên gạch nổ
         int sourceCenterX = sourceBrick.getX() + sourceBrick.getWidth() / 2;
         int sourceCenterY = sourceBrick.getY() + sourceBrick.getHeight() / 2;
+        List<Brick> allActiveBricks = new ArrayList<>();
 
-        // Tạo một danh sách để chứa những viên gạch sẽ bị phá hủy bởi vụ nổ
-        List<Brick> bricksToDestroy = new ArrayList<>();
+        allActiveBricks.addAll(this.laserShooters);
 
-        // Duyệt qua tất cả các viên gạch còn lại
-        for (Brick otherBrick : bricks) {
-            // Bỏ qua chính viên gạch vừa nổ
-            if (otherBrick == sourceBrick) {
+        allActiveBricks.addAll(this.bricks);
+
+        if (boss != null) {
+            for (Brick bossBrick : boss.getBricks()) {
+                if (!(bossBrick instanceof LaserShooterBrick)) {
+                    allActiveBricks.add(bossBrick);
+                }
+            }
+        }
+
+        for (Brick otherBrick : allActiveBricks) {
+            if (otherBrick == sourceBrick || otherBrick.isDestroyed()) {
                 continue;
             }
 
             int otherCenterX = otherBrick.getX() + otherBrick.getWidth() / 2;
             int otherCenterY = otherBrick.getY() + otherBrick.getHeight() / 2;
-
-            // Tính khoảng cách giữa hai tâm gạch
             double distance = Math.sqrt(Math.pow(sourceCenterX - otherCenterX, 2) + Math.pow(sourceCenterY - otherCenterY, 2));
 
-            // Nếu gạch khác nằm trong bán kính vụ nổ, thêm nó vào danh sách cần phá hủy
             if (distance <= radius) {
-                bricksToDestroy.add(otherBrick);
-            }
-        }
-
-        // Phá hủy và cộng điểm cho những viên gạch trong danh sách
-        for (Brick brick : bricksToDestroy) {
-            // Đảm bảo không xử lý lặp lại nếu một viên gạch đã bị phá hủy
-            if (!brick.isDestroyed()) {
-                // Giảm máu của gạch về 0 để chắc chắn nó bị phá hủy
-                while(!brick.isDestroyed()) {
-                    brick.takeHit();
+                while (!otherBrick.isDestroyed()) {
+                    otherBrick.takeHit();
                 }
-                score += 10; // Cộng điểm
+                score += 10;
             }
         }
     }
@@ -116,30 +258,49 @@ public class GameManager {
     public void updateGame() {
         if ("PLAYING".equals(gameState)) {
             paddle.update(inputHandler);
-            //ball.update(inputHandler, paddle);
             for (Ball b : balls) {
                 b.update(inputHandler, paddle);
             }
 
-            if(ball.getY() > 600 && lives > 1) {
-                /** Sử dụng khi có score
-                lives--;
-                if(lives <= 0) {
-                    setGameState("GAME_OVER");
-                    ErrorHandler.showInfoMessage("Game Over! Your score: " + score);
-                    // Lưu điểm số nếu cần
-                    scoreManager.saveScore(score);
-                } else {
-                    ball.resetBallPosition(paddle);
+            for (Brick brick : this.bricks) {
+                brick.update();
+            }
+
+            for (LaserShooterBrick shooter : laserShooters) {
+                shooter.update();
+                Laser newLaser = shooter.tryToShoot();
+                if (newLaser != null) {
+                    lasers.add(newLaser);
                 }
-                **/
-                lives--;
-                ball.resetBallPosition(paddle);
+            }
+
+            if (boss != null) {
+                boss.update();
+            }
+
+            Iterator<Laser> laserIterator = lasers.iterator();
+            while (laserIterator.hasNext()) {
+                Laser laser = laserIterator.next();
+                laser.update();
+
+                if (paddle != null && laser.getBounds().intersects(paddle.getBounds())) {
+                    lives--;
+                    laserIterator.remove();
+                    if (lives <= 0) {
+                        setGameState("GAME_OVER");
+                        gameOverTimer = 360;
+                    }
+                    continue;
+                }
+
+                if (laser.getY() > screenHeight) {
+                    laserIterator.remove();
+                }
             }
 
             // Kiểm tra tương tác với paddle cho tất cả các quả bóng
             for (Ball b : balls) {
-                if(b.getY() > 600 && balls.indexOf(b) != 0) { // Giữ lại quả bóng đầu tiên để tránh mất hết bóng
+                if(b.getY() > screenHeight && balls.indexOf(b) != 0) { // Giữ lại quả bóng đầu tiên để tránh mất hết bóng
                     balls.remove(b);
                     break; // Thoát vòng lặp để tránh ConcurrentModificationException
                 }
@@ -150,10 +311,6 @@ public class GameManager {
                         b.bounceOff(paddle);
                     }
                 }
-            }
-
-            for (Brick brick : bricks) {
-                brick.update();
             }
 
             Iterator<PowerUp> fallingPowerUpIterator = powerUps.iterator();
@@ -167,7 +324,7 @@ public class GameManager {
                     fallingPowerUpIterator.remove(); // Xóa khỏi danh sách đang rơi
                 }
                 // Nếu power-up rơi ra ngoài màn hình
-                else if (p.getY() > 600) {
+                else if (p.getY() > screenHeight) {
                     fallingPowerUpIterator.remove();
                 }
             }
@@ -183,58 +340,72 @@ public class GameManager {
                     activePowerUpIterator.remove(); // Xóa khỏi danh sách đang hoạt động
                 }
             }
-            /*
-            if(ball.checkCollision(paddle) && !ball.isStuckToPaddle()) {
-                if (paddle.isSticky()) {
-                    ball.stickToPaddle(paddle);
-                } else {
-                    ball.bounceOff(paddle);
-                }
-            }
-            */
 
-            //Duyệt từng quả bóng tương tác với bricks
-            for (Ball b : balls) {
-                Iterator<Brick> brickIterator = bricks.iterator();
-                while (brickIterator.hasNext()) {
-                    Brick brick = brickIterator.next();
-
-                    // Chỉ kiểm tra va chạm với những viên gạch chưa bị phá hủy
-                    if (!brick.isDestroyed() && b.checkCollision(brick)) {
-                        brick.takeHit(); // Gạch nhận sát thương
-                        score += 10;
-                        b.bounceOff(brick);
-
-                        // Kiểm tra ngay sau khi nhận sát thương, nếu gạch bị phá hủy thì xóa nó
-                        if (brick.isDestroyed()) {
-                            double rand = Math.random();
-                            if (rand < 0.1) { // 10% ra Expand
-                                powerUps.add(new ExpandPaddlePowerUp(brick.getX(), brick.getY(), 30, 30));
-                            } else if (rand < 0.2) { // 10% ra Sticky
-                                powerUps.add(new StickyPaddlePowerUp(brick.getX(), brick.getY(), 30, 30));
-                            } else if (rand < 0.3) { // 10% ra Slow Ball
-                                powerUps.add(new SlowBallPowerUp(brick.getX(), brick.getY(), 30, 30));
-                            } else if (rand < 0.4) { // 10% ra Fast Ball
-                                powerUps.add(new FastBallPowerUp(brick.getX(), brick.getY(), 30, 30));
-                            } else if (rand < 0.5) { // 10% ra Extra Life
-                                powerUps.add(new ExtraLifePowerUp(brick.getX(), brick.getY(), 30, 30));
-                            } else if (rand < 0.6) { // 10% ra Multi-Ball
-                                powerUps.add(new MultiBallPowerUp(brick.getX(), brick.getY(), 30, 30));
-                            }
-
-                            // (Nếu có logic cũ cho explosive brick thì giữ nguyên)
-                            if (brick instanceof ExplosiveBrick) {
-                                explode(brick, 100.0);
-                            }
-                        }
-                        break; // Thoát khỏi vòng lặp để bóng không va chạm nhiều gạch trong 1 frame
+            List<Brick> allTargets = new ArrayList<>();
+            allTargets.addAll(this.laserShooters);
+            allTargets.addAll(this.bricks);
+            if (boss != null) {
+                for (Brick bossBrick : boss.getBricks()) {
+                    if (!(bossBrick instanceof LaserShooterBrick)) {
+                        allTargets.add(bossBrick);
                     }
                 }
             }
-            bricks.removeIf(brick -> brick.isDestroyed());
+
+            //Duyệt từng quả bóng tương tác với bricks
+            for (Ball b : balls) {
+                Iterator<Brick> targetIterator = allTargets.iterator();
+                while (targetIterator.hasNext()) {
+                    Brick target = targetIterator.next();
+
+                    // Chỉ kiểm tra va chạm với những viên gạch chưa bị phá hủy
+                    if (!target.isDestroyed() && b.checkCollision(target)) {
+                        target.takeHit(); // Gạch nhận sát thương
+                        score += 10;
+                        b.bounceOff(target);
+
+                        // Kiểm tra ngay sau khi nhận sát thương, nếu gạch bị phá hủy thì xóa nó
+                        if (target.isDestroyed()) {
+                            PowerUpType typeToDrop = levelManager.getCurrentLevel().getRandomPowerUpType();
+                            if (typeToDrop != null) {
+                                PowerUp newPowerUp = createPowerUp(typeToDrop, target.getX(), target.getY());
+                                if (newPowerUp != null) {
+                                    powerUps.add(newPowerUp);
+                                }
+                            }
+                            if (!(target instanceof LaserShooterBrick) && !(target instanceof ExplosiveBrick)) {
+                                double spawnRate = levelManager.getCurrentLevel().getLaserShooterSpawnRate();
+                                if (Math.random() < spawnRate) {
+                                    LaserShooterBrick newShooter = new LaserShooterBrick(target.getX(), target.getY(), target.getWidth(), target.getHeight(), 2);
+                                    laserShooters.add(newShooter);
+                                }
+                            }
+                            if (target instanceof ExplosiveBrick) {
+                                explode(target, 100.0);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (boss != null) {
+                boss.removeDestroyedBricks();
+                bricks.removeIf(Brick::isDestroyed);
+                laserShooters.removeIf(Brick::isDestroyed);
+                if (boss.isDefeated() && bricks.isEmpty()) {
+                    loadNextLevel(); // Thắng boss -> chuyển màn
+                }
+            } else {
+                bricks.removeIf(Brick::isDestroyed);
+                laserShooters.removeIf(Brick::isDestroyed);
+                if (bricks.isEmpty()) {
+                    loadNextLevel(); // Hết gạch màn thường -> chuyển màn
+                }
+            }
 
             // Xử lý khi bóng rơi xuống đất.
-            if (ball.getY() > 600) {
+            if (ball.getY() > screenHeight) {
                 lives--;
                 if (lives > 0) {
                     ball.resetBallPosition(paddle);
@@ -248,8 +419,6 @@ public class GameManager {
         } else if ("GAME_OVER".equals(gameState)) {
             gameOverTimer--; // Đếm ngược
             if (gameOverTimer <= 0) {
-                // Sau khi hết giờ, reset game và quay về menu
-                startGame(); // Gọi lại để reset các thông số game
                 setGameState("MENU");
             }
         } else if ("HIGH_SCORES".equals(gameState)) {
@@ -258,67 +427,33 @@ public class GameManager {
 
     }
 
-    public void loadAssets() {
-        AssetManager.getInstance().loadImage("normalBrick", "/images/button_blue.png");
-        AssetManager.getInstance().loadImage("ball", "/images/ball_red_large.png");
-        AssetManager.getInstance().loadImage("paddle", "/images/button_yellow.png");
-        AssetManager.getInstance().loadImage("expandPowerUp", "/images/hole_small_end.png");
-        AssetManager.getInstance().loadImage("menuBackground", "/images/backGroundMenu.png");
-        AssetManager.getInstance().loadImage("explosiveBrick", "/images/button_grey.png");
-        AssetManager.getInstance().loadImage("stickyPowerUp", "/images/star.png");
-        AssetManager.getInstance().loadImage("slowBallPowerUp", "/images/ball_blue_large.png");
-        AssetManager.getInstance().loadImage("strongBrick", "/images/strongbrick.png");
-        AssetManager.getInstance().loadImage("strongBrick1", "/images/strongbrick1.png");
-        AssetManager.getInstance().loadImage("strongBrick2", "/images/strongbrick2.png");
-
-        AssetManager.getInstance().loadImage("fastBallPowerUp", "/images/ball_red_large.png");
-        AssetManager.getInstance().loadImage("extraLifePowerUp", "/images/heart.png");
-        AssetManager.getInstance().loadImage("multiBallPowerUp", "/images/hole_start.png");
-        AssetManager.getInstance().loadImage("heart", "/images/heart.png");
-        AssetManager.getInstance().loadImage("gameover1", "/images/gameover1.png");
-        AssetManager.getInstance().loadImage("gameover2", "/images/gameover2.png");
-        AssetManager.getInstance().loadImage("gameover3", "/images/gameover3.png");
-        AssetManager.getInstance().loadImage("scoreBackground", "/images/arkanoid_Background.png");
-
-    }
-
-    public GameManager() {
-        inputHandler = new InputHandler();
-        bricks = new ArrayList<>();
-        powerUps = new ArrayList<>();
-        activePowerUps = new ArrayList<>();
-        this.soundManager = new SoundManager();
-        this.hearts = new ArrayList<>();
-        loadAssets();
-        menuManager = new MenuManager(this, inputHandler);
-        scoreManager = new ScoreManager();
-        // Đặt trạng thái ban đầu của game là MENU
-        this.gameState = "MENU";
-        soundManager.playBackgroundMusic("RegressiveTrip_Release.wav");
-    }
-
     public MenuManager getMenuManager() { return menuManager; }
 
     public ScoreManager getScoreManager() {
         return scoreManager;
     }
 
-    public String getGameState() { return gameState; }
+    public String getGameState() {
+        return gameState;
+    }
+
     public void setGameState(String state) {
         if (this.gameState != null && this.gameState.equals(state)) {
             return;
         }
-        this.gameState = state; // Cập nhật trạng thái mới
-        // Dựa vào trạng thái mới để đổi nhạc
-        if ("PLAYING".equals(state)) {
-            // Nếu chuyển sang màn hình chơi, bật nhạc game
-            soundManager.playBackgroundMusic("ExoticBaryon_PhaseXX.wav");
-        } else if ("MENU".equals(state)) {
+        this.gameState = state;
+
+        if ("MENU".equals(state)) {
             soundManager.playBackgroundMusic("RegressiveTrip_Release.wav");
-        } else {
-            // Nếu là các trạng thái khác (GAME_OVER,...) thì dừng nhạc
+            currentTheme = "";
+            this.currentBackground = null;
+        } else if ("GAME_OVER".equals(state) || "GAME_WIN".equals(state)) {
             soundManager.stopBackgroundMusic();
         }
+    }
+
+    public Image getCurrentBackground() {
+        return this.currentBackground;
     }
 
     private void activatePowerUp(PowerUp newPowerUp) {
@@ -337,6 +472,30 @@ public class GameManager {
         // Thêm power-up mới vào danh sách và áp dụng hiệu ứng
         activePowerUps.add(newPowerUp);
         newPowerUp.applyEffect(this);
+    }
+
+    private PowerUp createPowerUp(PowerUpType type, int x, int y) {
+        switch (type) {
+            case EXPAND: return new ExpandPaddlePowerUp(x, y, 30, 30);
+            case STICKY: return new StickyPaddlePowerUp(x, y, 30, 30);
+            case SLOW_BALL: return new SlowBallPowerUp(x, y, 30, 30);
+            case FAST_BALL: return new FastBallPowerUp(x, y, 30, 30);
+            case EXTRA_LIFE: return new ExtraLifePowerUp(x, y, 30, 30);
+            case MULTI_BALL: return new MultiBallPowerUp(x, y, 30, 30);
+            default: return null;
+        }
+    }
+
+    // THÊM GETTER NÀY ĐỂ GAMEPANEL CÓ THỂ VẼ LASER
+    public List<Laser> getLasers() {
+        return lasers;
+    }
+    public List<LaserShooterBrick> getLaserShooters() {
+        return laserShooters;
+    }
+
+    public Boss getBoss() {
+        return boss;
     }
 
     public void handleInput() {}

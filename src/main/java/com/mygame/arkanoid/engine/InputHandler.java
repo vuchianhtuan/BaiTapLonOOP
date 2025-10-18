@@ -1,5 +1,7 @@
 package com.mygame.arkanoid.engine;
 
+import com.mygame.arkanoid.systems.ScalingManager;
+
 import java.awt.event.*;
 
 public class InputHandler implements KeyListener, MouseMotionListener, MouseListener {
@@ -60,6 +62,15 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
             this.mouseClicked = true;
         }
     }
+
+    public int getVirtualMouseX() {
+        return ScalingManager.getInstance().unscaleX(this.mouseX);
+    }
+
+    public int getVirtualMouseY() {
+        return ScalingManager.getInstance().unscaleY(this.mouseY);
+    }
+
     @Override public void keyTyped(KeyEvent e) {}
     @Override public void mouseDragged(MouseEvent e) { mouseMoved(e); }
     @Override public void mouseClicked(MouseEvent e) {}
