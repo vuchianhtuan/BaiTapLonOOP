@@ -24,7 +24,7 @@ public class LevelManager {
 
     // Tải danh sách các file level
     public void loadLevels() {
-        //levelFiles.add("/levels/Level1.txt");
+        levelFiles.add("/levels/Level1.txt");
         //levelFiles.add("/levels/Level2.txt");
         //levelFiles.add("/levels/Level3.txt");
         levelFiles.add("/levels/Level_Boss.txt");
