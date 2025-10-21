@@ -1,20 +1,13 @@
 package com.mygame.arkanoid.core;
 
 import com.mygame.arkanoid.engine.AssetManager;
-import com.mygame.arkanoid.objects.Ball;
-import com.mygame.arkanoid.objects.Boss;
-import com.mygame.arkanoid.objects.Laser;
+import com.mygame.arkanoid.objects.*;
 import com.mygame.arkanoid.objects.bricks.Brick;
-import com.mygame.arkanoid.systems.HeartUI;
-import com.mygame.arkanoid.systems.LevelManager;
-import com.mygame.arkanoid.systems.ScoreManager;
-import com.mygame.arkanoid.objects.Paddle;
+import com.mygame.arkanoid.systems.*;
 import com.mygame.arkanoid.objects.powerups.PowerUp;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
 import com.mygame.arkanoid.engine.SoundManager;
-import com.mygame.arkanoid.systems.MenuManager;
-import com.mygame.arkanoid.systems.Level;
 
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.*;
@@ -32,6 +25,11 @@ public class GameManager {
     private List<PowerUp> powerUps;
     private List<PowerUp> activePowerUps;
     private List<HeartUI> hearts;
+    private Track track;
+    private Thumb thumb;
+    private BackButton backButton;
+    private boolean canContinue = false;
+
     private int score = 0;
     private int lives;
     private String gameState;
@@ -46,6 +44,8 @@ public class GameManager {
     private SoundManager soundManager;
     private InputHandler inputHandler;
     private MenuManager menuManager;
+    private SetupVolume setupVolume;
+    private SelectLevel selectLevel;
     private String currentTheme = "";
     private Image currentBackground = null;
     int screenHeight = com.mygame.arkanoid.systems.ScalingManager.getInstance().NATIVE_HEIGHT;
@@ -56,17 +56,24 @@ public class GameManager {
         laserShooters = new ArrayList<>();
         powerUps = new ArrayList<>();
         activePowerUps = new ArrayList<>();
+        track = new Track(400, 130, 300, 20);
+        thumb = new Thumb(400, 120, 40, 40);
+        backButton = new BackButton(10, 10, 40, 40);
         this.soundManager = new SoundManager();
         this.hearts = new ArrayList<>();
         loadAssets();
-        menuManager = new MenuManager(this, inputHandler);
-        scoreManager = new ScoreManager();
+
         levelManager = new LevelManager();
         this.lasers = new ArrayList<>();
         levelManager.loadLevels();
+        menuManager = new MenuManager(this, inputHandler);
+        scoreManager = new ScoreManager(this, inputHandler);
+        setupVolume = new SetupVolume(inputHandler, this, soundManager, track, thumb);
+        selectLevel = new SelectLevel(inputHandler, this, levelManager);
 
         // Đặt trạng thái ban đầu của game là MENU
         this.gameState = "MENU";
+        canContinue = false;
         soundManager.playBackgroundMusic("RegressiveTrip_Release.wav");
     }
 
@@ -106,6 +113,8 @@ public class GameManager {
         am.loadImage("gameover2", "/images/gameover2.png");
         am.loadImage("gameover3", "/images/gameover3.png");
         am.loadImage("scoreBackground", "/images/arkanoid_Background.png");
+        am.loadImage("setupVolumeBackground", "/images/arkanoid_Background.png");
+        am.loadImage("selectLevelBackground", "/images/arkanoid_Background.png");
 
         // Power-ups (thường là chung)
         am.loadImage("expandPowerUp", "/images/expandPowerUp.png");
@@ -114,6 +123,9 @@ public class GameManager {
         am.loadImage("fastBallPowerUp", "/images/fastBallPowerUp.png");
         am.loadImage("extraLifePowerUp", "/images/heart.png");
         am.loadImage("multiBallPowerUp", "/images/multiBallPowerUp.png");
+        am.loadImage("thumb", "/images/ball_blue_large_alt.png");
+        am.loadImage("track", "/images/paddle.png");
+        am.loadImage("Back", "/images/number_cross.png");
 
         // Laser
         am.loadImage("laser", "/images/laser.png");
@@ -140,8 +152,33 @@ public class GameManager {
     public void startGame() {
         this.lives = 3;
         this.score = 0;
+        canContinue = false;
         levelManager.reset(); // Đưa level manager về màn 1
         loadNextLevel();
+    }
+
+    public void startGameAtLevel(int levelIndex) {
+        this.lives = 3;
+        this.score = 0;
+        canContinue = false;
+        levelManager.setCurrentLevel(levelIndex);
+        loadNextLevel();
+    }
+
+    public void continueGame() {
+        if (!canContinue) {
+            return;
+        }
+        setGameState("PLAYING");
+        Level currentLevel = levelManager.getCurrentLevel();
+        if (currentLevel != null) {
+            String music = currentLevel.getThemeMusic();
+            if (music != null && !music.isEmpty()) {
+                soundManager.playBackgroundMusic(music);
+            } else {
+                soundManager.playBackgroundMusic("ExoticBaryon_PhaseXX.wav");
+            }
+        }
     }
 
     private void loadNextLevel() {
@@ -257,6 +294,17 @@ public class GameManager {
 
     public void updateGame() {
         if ("PLAYING".equals(gameState)) {
+            boolean esc = inputHandler.isKeyDown(java.awt.event.KeyEvent.VK_ESCAPE);
+            int mx = inputHandler.getMouseX();
+            int my = inputHandler.getMouseY();
+
+            if (esc || backButton.contains(mx, my) && inputHandler.isMousePressed()) {
+
+                canContinue = true;
+                if (menuManager != null) menuManager.setContinueAvailable(true);
+                setGameState("MENU");
+                return;
+            }
             paddle.update(inputHandler);
             for (Ball b : balls) {
                 b.update(inputHandler, paddle);
@@ -422,7 +470,11 @@ public class GameManager {
                 setGameState("MENU");
             }
         } else if ("HIGH_SCORES".equals(gameState)) {
-
+            scoreManager.update();
+        } else if ("SETUP".equals(gameState)) {
+            setupVolume.update();
+        } else if ("LEVEL_SELECT".equals(gameState)) {
+            selectLevel.update();
         }
 
     }
@@ -433,22 +485,36 @@ public class GameManager {
         return scoreManager;
     }
 
+    public SetupVolume getSetupVolume() {
+        return setupVolume;
+    }
+
+    public SelectLevel getSelectLevel() {
+        return selectLevel;
+    }
+
     public String getGameState() {
         return gameState;
     }
 
     public void setGameState(String state) {
-        if (this.gameState != null && this.gameState.equals(state)) {
-            return;
-        }
+        if (this.gameState != null && this.gameState.equals(state)) return;
         this.gameState = state;
 
         if ("MENU".equals(state)) {
             soundManager.playBackgroundMusic("RegressiveTrip_Release.wav");
-            currentTheme = "";
-            this.currentBackground = null;
+            //currentTheme = "";
+            //this.currentBackground = null;
+            // Khi vào MENU không tự reset canContinue; ESC đã gán đúng ở trên.
+            if (menuManager != null) menuManager.setContinueAvailable(canContinue);
         } else if ("GAME_OVER".equals(state) || "GAME_WIN".equals(state)) {
             soundManager.stopBackgroundMusic();
+            canContinue = false; // không thể continue sau khi game over/win
+            if (menuManager != null) menuManager.setContinueAvailable(false);
+
+            if (scoreManager != null) {
+                scoreManager.submitScore(score);
+            }
         }
     }
 
@@ -509,6 +575,8 @@ public class GameManager {
     public List<Ball> getBalls() { return balls; }
     public Paddle getPaddle() { return paddle; }
     public Ball getBall() { return ball; }
+    public boolean canContinue() { return canContinue; }
+    public BackButton getBackButton() { return backButton; }
     public List<Brick> getBricks() { return bricks; }
     public List<PowerUp> getPowerUps() { return powerUps; }
     public InputHandler getInputHandler() { return inputHandler; }

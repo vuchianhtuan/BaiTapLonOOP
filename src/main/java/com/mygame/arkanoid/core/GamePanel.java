@@ -1,16 +1,11 @@
 package com.mygame.arkanoid.core;
 
-import com.mygame.arkanoid.Main;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
-import com.mygame.arkanoid.systems.MenuManager;
-import com.mygame.arkanoid.systems.ScoreManager;
 import com.mygame.arkanoid.systems.UIManager;
 
 import javax.swing.JPanel;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
 public class GamePanel extends JPanel {
     public static final int WIDTH = 1280;
@@ -54,12 +49,18 @@ public class GamePanel extends JPanel {
                     gameManager.getBoss(),
                     gameManager.getLasers(),
                     gameManager.getLaserShooters(),
-                    gameManager.getCurrentBackground());
+                    gameManager.getBackButton(),
+                    gameManager.getCurrentBackground()
+            );
             uiManager.draw(g);
         } else if ("MENU".equals(currentState)) {
             gameManager.getMenuManager().render(g);
         } else if ("HIGH_SCORES".equals(currentState)) {
             gameManager.getScoreManager().render(g);
+        } else if ("SETUP".equals(currentState)) {
+            gameManager.getSetupVolume().render(g);
+        } else if ("LEVEL_SELECT".equals(currentState)) {
+            gameManager.getSelectLevel().render(g);
         }
     }
 }
