@@ -1,6 +1,7 @@
 package com.mygame.arkanoid.objects.powerups;
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.engine.AssetManager;
+import com.mygame.arkanoid.objects.Ball;
 import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -15,11 +16,15 @@ public class FastBallPowerUp extends PowerUp {
     }
 
     @Override public void applyEffect(GameManager gameManager) {
+        Ball targetBall = gameManager.getBall();
         double currentSpeed = gameManager.getBall().getSpeed();
         gameManager.getBall().setSpeed(currentSpeed * FAST_SPEED_FACTOR);
+        targetBall.setBurning(true);
     }
     @Override public void removeEffect(GameManager gameManager) {
+        Ball targetBall = gameManager.getBall();
         gameManager.getBall().resetSpeed();
+        targetBall.setBurning(false);
     }
     @Override public void update() {
         this.y += fallSpeed;

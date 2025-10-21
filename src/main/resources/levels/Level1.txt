@@ -5,7 +5,10 @@ theme_background: background_ice.png
 powerups: EXPAND=0.1,SLOW_BALL=0.05
 lasershooter_spawn_rate: 0.02  # 2% tỷ lệ một shooter xuất hiện khi gạch vỡ
 ---
-2222222222EM
-1111111111
-_1_1_1_1_1_
-__L_L__L___L__1_L___E__L_E
+
+EEEEEEEEEEEEEEEEEE
+EEEEEEEEEEEEEEEEEE
+EEEEEEEEEEEEEEEEEE
+EEEEEEEEEEEEEEEEEE
+EEEEEEEEEEEEEEEEEE
+EEEEEEEEEEEEEEEEEE

@@ -49,6 +49,10 @@ public class GameManager {
     private MenuManager menuManager;
     private String currentTheme = "";
     private Image currentBackground = null;
+
+    public static final String GAMESTATE_TRANSITION_OUT = "TRANSITION_OUT";
+    public static final String GAMESTATE_TRANSITION_IN = "TRANSITION_IN";
+
     int screenHeight = com.mygame.arkanoid.systems.ScalingManager.getInstance().NATIVE_HEIGHT;
 
     public GameManager() {
@@ -120,6 +124,8 @@ public class GameManager {
         // Laser
         am.loadImage("laser", "/images/laser.png");
         am.loadImage("laserShooter", "/images/laser_shooter.png");
+        am.loadImage("fire_ball_animation", "/images/fire_ball_animation.png");
+        am.loadImage("test_ball", "/images/test_ball.png");
 
         //Explosive efect
         for (int i = 1; i <= 8; i++) {
@@ -166,7 +172,7 @@ public class GameManager {
 
     private void loadLevelSetup() {
         paddle = new Paddle(580, 670, 120, 18);
-        ball = new Ball(634, 652, 12, 12);
+        ball = new Ball(634, 652, 20, 20);
         ball.resetBallPosition(paddle);
         balls.clear();
         balls.add(ball);

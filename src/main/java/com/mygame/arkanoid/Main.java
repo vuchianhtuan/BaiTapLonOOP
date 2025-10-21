@@ -25,8 +25,6 @@ public class Main {
         GamePanel gamePanel = new GamePanel(gameManager, uiManager);
         GameLoop gameLoop = new GameLoop(gameManager, gamePanel, uiManager);
 
-
-
         window.add(gamePanel);
 
         window.addComponentListener(new ComponentAdapter() {
