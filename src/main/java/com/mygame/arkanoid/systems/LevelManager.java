@@ -25,8 +25,8 @@ public class LevelManager {
     // Tải danh sách các file level
     public void loadLevels() {
         levelFiles.add("/levels/Level1.txt");
-        //levelFiles.add("/levels/Level2.txt");
-        //levelFiles.add("/levels/Level3.txt");
+        levelFiles.add("/levels/Level2.txt");
+        levelFiles.add("/levels/Level3.txt");
         levelFiles.add("/levels/Level_Boss.txt");
     }
 
@@ -39,6 +39,10 @@ public class LevelManager {
             return true;
         }
         return false; // Không còn level nào
+    }
+
+    public void setCurrentLevel(int index) {
+        this.currentLevelIndex = index - 1; // Giảm 1 vì nextLevel sẽ tăng lên
     }
 
     public Level getCurrentLevel() {
