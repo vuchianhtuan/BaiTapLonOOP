@@ -22,8 +22,8 @@ public class Level {
     private String themeBackground = "";
 
     // Các hằng số để căn chỉnh layout
-    private static final int BRICK_WIDTH = 32;      // Cũ: 40
-    private static final int BRICK_HEIGHT = 16;     // Cũ: 20
+    private static final int BRICK_WIDTH = 42;      // Cũ: 40
+    private static final int BRICK_HEIGHT = 26;     // Cũ: 20
     private static final int PADDING_X = 4;         // Cũ: 10
     private static final int PADDING_Y = 4;         // Cũ: 10
     private static final int START_OFFSET_X = 80;   // Cũ: 50

@@ -14,7 +14,7 @@ public class Renderer {
 
     public void renderGame(Graphics g, Paddle paddle, Ball ball, List<Brick> bricks,
                            List<PowerUp> powerUps, List<Ball> balls, Boss boss,
-                           List<Laser> lasers, List<LaserShooterBrick> laserShooters, Image background) {
+                           List<Laser> lasers, List<LaserShooterBrick> laserShooters, Image background, List<Shard> shard) {
         ScalingManager sm = ScalingManager.getInstance();
         if (background != null) {
             // Vẽ ảnh nền co giãn lấp đầy màn hình
@@ -64,6 +64,11 @@ public class Renderer {
         if (lasers != null) {
             for (Laser laser : lasers) {
                 laser.render(g, sm);
+            }
+        }
+        if (shard != null) {
+            for (Shard s : shard) {
+                s.render(g, sm);
             }
         }
     }

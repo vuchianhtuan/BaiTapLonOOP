@@ -3,6 +3,7 @@ package com.mygame.arkanoid.core;
 import com.mygame.arkanoid.Main;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
+import com.mygame.arkanoid.objects.bricks.Shard;
 import com.mygame.arkanoid.systems.MenuManager;
 import com.mygame.arkanoid.systems.ScoreManager;
 import com.mygame.arkanoid.systems.UIManager;
@@ -13,7 +14,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 public class GamePanel extends JPanel {
-    public static final int WIDTH = 1280;
+    public static final int WIDTH = 960;
     public static final int HEIGHT = 720;
 
     private final GameManager gameManager;
@@ -54,7 +55,7 @@ public class GamePanel extends JPanel {
                     gameManager.getBoss(),
                     gameManager.getLasers(),
                     gameManager.getLaserShooters(),
-                    gameManager.getCurrentBackground());
+                    gameManager.getCurrentBackground(), gameManager.getActiveShards());
             uiManager.draw(g);
         } else if ("MENU".equals(currentState)) {
             gameManager.getMenuManager().render(g);

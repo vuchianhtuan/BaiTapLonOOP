@@ -31,6 +31,7 @@ public class GameManager {
     private List<Brick> bricks;
     private List<PowerUp> powerUps;
     private List<PowerUp> activePowerUps;
+    private List<Shard> activeShards; // <--- THÊM DÒNG NÀY
     private List<HeartUI> hearts;
     private int score = 0;
     private int lives;
@@ -56,6 +57,7 @@ public class GameManager {
         laserShooters = new ArrayList<>();
         powerUps = new ArrayList<>();
         activePowerUps = new ArrayList<>();
+        activeShards = new ArrayList<>(); // <--- KHỞI TẠO DANH SÁCH
         this.soundManager = new SoundManager();
         this.hearts = new ArrayList<>();
         loadAssets();
@@ -118,6 +120,13 @@ public class GameManager {
         // Laser
         am.loadImage("laser", "/images/laser.png");
         am.loadImage("laserShooter", "/images/laser_shooter.png");
+
+        //Explosive efect
+        for (int i = 1; i <= 8; i++) {
+            String imageName = "explosion_render" + i;
+            String imagePath = "/images/" + imageName + ".png"; // Giả sử file có đuôi .png
+            am.loadImage(imageName, imagePath);
+        }
     }
 
     private void loadThemeAssets(String prefix) {
@@ -138,7 +147,7 @@ public class GameManager {
     }
 
     public void startGame() {
-        this.lives = 3;
+        this.lives = 500;
         this.score = 0;
         levelManager.reset(); // Đưa level manager về màn 1
         loadNextLevel();
@@ -223,12 +232,14 @@ public class GameManager {
     private void explode(Brick sourceBrick, double radius) {
         int sourceCenterX = sourceBrick.getX() + sourceBrick.getWidth() / 2;
         int sourceCenterY = sourceBrick.getY() + sourceBrick.getHeight() / 2;
+
+        // Tốc độ lan truyền của vụ nổ (số frame tối đa để lan truyền hết bán kính)
+        // Bạn có thể điều chỉnh số này, 30 frame là nửa giây (ở 60FPS)
+        final float MAX_PROPAGATION_FRAMES = 30.0f;
+
         List<Brick> allActiveBricks = new ArrayList<>();
-
         allActiveBricks.addAll(this.laserShooters);
-
         allActiveBricks.addAll(this.bricks);
-
         if (boss != null) {
             for (Brick bossBrick : boss.getBricks()) {
                 if (!(bossBrick instanceof LaserShooterBrick)) {
@@ -238,7 +249,7 @@ public class GameManager {
         }
 
         for (Brick otherBrick : allActiveBricks) {
-            if (otherBrick == sourceBrick || otherBrick.isDestroyed()) {
+            if (otherBrick == sourceBrick) { // Bỏ qua chính nó
                 continue;
             }
 
@@ -246,17 +257,54 @@ public class GameManager {
             int otherCenterY = otherBrick.getY() + otherBrick.getHeight() / 2;
             double distance = Math.sqrt(Math.pow(sourceCenterX - otherCenterX, 2) + Math.pow(sourceCenterY - otherCenterY, 2));
 
+            // Nếu gạch nằm trong bán kính nổ
             if (distance <= radius) {
-                while (!otherBrick.isDestroyed()) {
+
+                // Tính toán độ trễ dựa trên khoảng cách
+                // (distance / radius) là tỉ lệ từ 0.0 đến 1.0
+                // Gạch ở gần (distance = 0) -> delay = 0
+                // Gạch ở xa (distance = radius) -> delay = MAX_PROPAGATION_FRAMES
+                int delay = (int) ((distance / radius) * MAX_PROPAGATION_FRAMES);
+
+                // Kiểm tra xem gạch lân cận có phải là gạch nổ không
+                if (otherBrick instanceof ExplosiveBrick) {
+                    ExplosiveBrick eb = (ExplosiveBrick) otherBrick;
+
+                    // Chỉ kích hoạt nếu nó còn sống
+                    if (eb.isAlive()) {
+                        eb.ignite(delay); // Kích hoạt với độ trễ
+                    }
+
+                } else if (!otherBrick.isDestroyed()) {
+
+                    boolean wasAboutToDie = otherBrick.getHitPoints() == 1;
+
                     otherBrick.takeHit();
+                    score += 10;
+
+                    if (otherBrick.isDestroyed()) {
+                        activeShards.addAll(otherBrick.shatter()); // Vỡ vụn hoàn toàn
+                    } else if (!wasAboutToDie) {
+                        // Chỉ tạo vỡ vụn nhẹ nếu nó chưa vỡ (HP > 0) và không phải là cú đánh chí mạng
+                        otherBrick.shatterHit(activeShards);
+                    }
                 }
-                score += 10;
             }
         }
     }
 
     public void updateGame() {
         if ("PLAYING".equals(gameState)) {
+
+            Iterator<Shard> shardIterator = activeShards.iterator();
+            while (shardIterator.hasNext()) {
+                Shard s = shardIterator.next();
+                s.update();
+                if (!s.isAlive()) {
+                    shardIterator.remove();
+                }
+            }
+
             paddle.update(inputHandler);
             for (Ball b : balls) {
                 b.update(inputHandler, paddle);
@@ -360,44 +408,107 @@ public class GameManager {
 
                     // Chỉ kiểm tra va chạm với những viên gạch chưa bị phá hủy
                     if (!target.isDestroyed() && b.checkCollision(target)) {
-                        target.takeHit(); // Gạch nhận sát thương
-                        score += 10;
-                        b.bounceOff(target);
+                        boolean detonatedImmediately = false;
 
-                        // Kiểm tra ngay sau khi nhận sát thương, nếu gạch bị phá hủy thì xóa nó
-                        if (target.isDestroyed()) {
-                            PowerUpType typeToDrop = levelManager.getCurrentLevel().getRandomPowerUpType();
-                            if (typeToDrop != null) {
-                                PowerUp newPowerUp = createPowerUp(typeToDrop, target.getX(), target.getY());
-                                if (newPowerUp != null) {
-                                    powerUps.add(newPowerUp);
-                                }
-                            }
-                            if (!(target instanceof LaserShooterBrick) && !(target instanceof ExplosiveBrick)) {
-                                double spawnRate = levelManager.getCurrentLevel().getLaserShooterSpawnRate();
-                                if (Math.random() < spawnRate) {
-                                    LaserShooterBrick newShooter = new LaserShooterBrick(target.getX(), target.getY(), target.getWidth(), target.getHeight(), 2);
-                                    laserShooters.add(newShooter);
-                                }
-                            }
-                            if (target instanceof ExplosiveBrick) {
-                                explode(target, 100.0);
+                        // 1. KIỂM TRA: GẠCH NỔ ĐANG CHỜ BỊ VA CHẠM (KÍCH NỔ TỨC THÌ)
+                        if (target instanceof ExplosiveBrick) {
+                            ExplosiveBrick eb = (ExplosiveBrick) target;
+                            if (eb.isAwaitingDetonation()) {
+                                eb.detonateOnHit(activeShards); // Nổ tức thì, tạo mảnh vụn, chuyển EXPLODING
+                                score += 10;
+                                b.bounceOff(target);
+                                detonatedImmediately = true;
                             }
                         }
+
+                        // 2. XỬ LÝ VA CHẠM THƯỜNG (CHỈ XẢY RA NẾU KHÔNG NỔ TỨC THÌ)
+                        if (!detonatedImmediately) {
+
+                            // A. Vỡ vụn nhẹ (SHATTER HIT)
+                            // Nếu gạch còn nhiều hơn 1 hit (chắc chắn chưa vỡ)
+                            if (target.getHitPoints() > 1) {
+                                target.shatterHit(activeShards);
+                            }
+
+                            target.takeHit(); // Gạch nhận sát thương (Giảm HitPoints)
+                            score += 10;
+                            b.bounceOff(target);
+
+                            // B. KIỂM TRA PHÁ HỦY HOÀN TOÀN (SAU KHI takeHit())
+                            if (target.isDestroyed()) {
+
+                                if (target instanceof ExplosiveBrick) {
+                                    // ExplosiveBrick ALIVE đã gọi startExplosion() trong takeHit()
+                                } else {
+                                    // Gạch thường/mạnh bị phá hủy hoàn toàn -> Vỡ vụn nặng
+                                    activeShards.addAll(target.shatter());
+                                }
+
+                                // ... (Logic PowerUp và LaserShooter)
+                                PowerUpType typeToDrop = levelManager.getCurrentLevel().getRandomPowerUpType();
+                                if (typeToDrop != null) {
+                                    PowerUp newPowerUp = createPowerUp(typeToDrop, target.getX(), target.getY());
+                                    if (newPowerUp != null) {
+                                        powerUps.add(newPowerUp);
+                                    }
+                                }
+                                if (!(target instanceof LaserShooterBrick) && !(target instanceof ExplosiveBrick)) {
+                                    double spawnRate = levelManager.getCurrentLevel().getLaserShooterSpawnRate();
+                                    if (Math.random() < spawnRate) {
+                                        LaserShooterBrick newShooter = new LaserShooterBrick(target.getX(), target.getY(), target.getWidth(), target.getHeight(), 2);
+                                        laserShooters.add(newShooter);
+                                    }
+                                }
+                            }
+                        }
+                        // Bắt buộc ngắt vòng lặp khi va chạm xảy ra
                         break;
                     }
                 }
             }
+            List<Brick> newlyFinishedExplosions = new ArrayList<>();
+            // Tìm tất cả gạch nổ vừa hoàn thành hoạt ảnh
+            for (Brick brick : bricks) {
+                if (brick instanceof ExplosiveBrick && ((ExplosiveBrick) brick).isFinished()) {
+                    newlyFinishedExplosions.add(brick);
+                }
+            }
+            // (Bạn cũng có thể lặp qua laserShooters và boss.getBricks() nếu chúng có thể nổ)
+
+            // Kích hoạt vụ nổ tiếp theo cho mỗi gạch vừa nổ xong
+            for (Brick sourceBrick : newlyFinishedExplosions) {
+                if (sourceBrick instanceof ExplosiveBrick) {
+                    activeShards.addAll(sourceBrick.shatter()); // <--- THÊM DÒNG NÀY
+                }
+                explode(sourceBrick, 100.0);
+            }
 
             if (boss != null) {
                 boss.removeDestroyedBricks();
-                bricks.removeIf(Brick::isDestroyed);
+                bricks.removeIf(brick -> {
+                    if (brick instanceof ExplosiveBrick) {
+                        // Nếu là gạch nổ, chỉ xóa khi hoạt ảnh đã kết thúc
+                        return ((ExplosiveBrick) brick).isFinished();
+                    }
+                    // Nếu là gạch thường, xóa ngay khi bị phá hủy
+                    return brick.isDestroyed();
+                });
+
                 laserShooters.removeIf(Brick::isDestroyed);
                 if (boss.isDefeated() && bricks.isEmpty()) {
                     loadNextLevel(); // Thắng boss -> chuyển màn
                 }
             } else {
-                bricks.removeIf(Brick::isDestroyed);
+
+                bricks.removeIf(brick -> {
+                    if (brick instanceof ExplosiveBrick) {
+                        // Nếu là gạch nổ, chỉ xóa khi hoạt ảnh đã kết thúc
+                        return ((ExplosiveBrick) brick).isFinished();
+                    }
+                    // Nếu là gạch thường, xóa ngay khi bị phá hủy
+                    return brick.isDestroyed();
+                });
+
                 laserShooters.removeIf(Brick::isDestroyed);
                 if (bricks.isEmpty()) {
                     loadNextLevel(); // Hết gạch màn thường -> chuyển màn
@@ -512,5 +623,8 @@ public class GameManager {
     public List<Brick> getBricks() { return bricks; }
     public List<PowerUp> getPowerUps() { return powerUps; }
     public InputHandler getInputHandler() { return inputHandler; }
+    public List<Shard> getActiveShards() { // <--- THÊM GETTER NÀY
+        return activeShards;
+    }
 }
 

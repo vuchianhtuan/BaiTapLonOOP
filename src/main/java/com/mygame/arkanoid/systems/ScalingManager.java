@@ -4,7 +4,7 @@ public class ScalingManager {
     private static ScalingManager instance;
 
     // Đây là độ phân giải "ảo" mà toàn bộ logic game của bạn dựa trên
-    public final int NATIVE_WIDTH = 1280;
+    public final int NATIVE_WIDTH = 960;
     public final int NATIVE_HEIGHT = 720;
 
     private double scaleX = 1.0;
