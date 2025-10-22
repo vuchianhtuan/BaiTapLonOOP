@@ -5,16 +5,12 @@ import com.mygame.arkanoid.objects.Ball;
 import com.mygame.arkanoid.objects.Boss;
 import com.mygame.arkanoid.objects.Laser;
 import com.mygame.arkanoid.objects.bricks.Brick;
-import com.mygame.arkanoid.systems.HeartUI;
-import com.mygame.arkanoid.systems.LevelManager;
-import com.mygame.arkanoid.systems.ScoreManager;
+import com.mygame.arkanoid.systems.*;
 import com.mygame.arkanoid.objects.Paddle;
 import com.mygame.arkanoid.objects.powerups.PowerUp;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
 import com.mygame.arkanoid.engine.SoundManager;
-import com.mygame.arkanoid.systems.MenuManager;
-import com.mygame.arkanoid.systems.Level;
 
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.*;
@@ -44,6 +40,7 @@ public class GameManager {
     private ScoreManager scoreManager;
     private LevelManager levelManager;
     private Renderer renderer;
+    private LevelTransition levelTransition;
     private SoundManager soundManager;
     private InputHandler inputHandler;
     private MenuManager menuManager;
@@ -70,6 +67,7 @@ public class GameManager {
         levelManager = new LevelManager();
         this.lasers = new ArrayList<>();
         levelManager.loadLevels();
+        this.levelTransition = new LevelTransition();
 
         // Đặt trạng thái ban đầu của game là MENU
         this.gameState = "MENU";
@@ -155,22 +153,30 @@ public class GameManager {
     public void startGame() {
         this.lives = 500;
         this.score = 0;
+        setupLevelObjects();
         levelManager.reset(); // Đưa level manager về màn 1
         loadNextLevel();
     }
 
     private void loadNextLevel() {
         if (levelManager.loadNextLevel()) {
-            // Tải level thành công, thiết lập màn chơi
-            loadLevelSetup();
+
+            // Kiểm tra: Đây có phải là Level 1 (Index = 0) không?
+            if (levelManager.getCurrentLevelIndex() == 0) {
+                loadLevelSetup();
+                levelTransition.startInstantFade(paddle);
+                setGameState("TRANSITION");
+
+            } else {
+                levelTransition.startTransition(paddle);
+                setGameState("TRANSITION");
+            }
         } else {
-            // Xử lý khi người chơi đã thắng tất cả các màn
-            // Ví dụ: hiển thị màn hình chiến thắng hoặc quay về menu
-            setGameState("GAME_WIN"); // Cần tạo thêm trạng thái này hoặc quay về MENU
+            setGameState("GAME_WIN");
         }
     }
 
-    private void loadLevelSetup() {
+    private void setupLevelObjects() {
         paddle = new Paddle(580, 670, 120, 18);
         ball = new Ball(634, 652, 20, 20);
         ball.resetBallPosition(paddle);
@@ -186,11 +192,15 @@ public class GameManager {
             p.removeEffect(this);
         }
         activePowerUps.clear();
+    }
 
+    private void loadLevelAssetsAndBricks() {
         Level currentLevel = levelManager.getCurrentLevel();
         if (currentLevel != null) {
             String prefix = currentLevel.getThemeAssetPrefix();
             loadThemeAssets(prefix);
+
+            // Tải nhạc nền
             String music = currentLevel.getThemeMusic();
             if (music != null && !music.isEmpty()) {
                 soundManager.playBackgroundMusic(music);
@@ -198,41 +208,36 @@ public class GameManager {
                 soundManager.playBackgroundMusic("ExoticBaryon_PhaseXX.wav");
             }
 
+            // Tải ảnh nền
             String bgName = currentLevel.getThemeBackground();
             if (bgName != null && !bgName.isEmpty()) {
-                // Tải ảnh nền riêng của màn
-                String assetKey = "bg_" + bgName; // Tạo key duy nhất, ví dụ "bg_background_ice.png"
+                String assetKey = "bg_" + bgName;
                 AssetManager.getInstance().loadImage(assetKey, "/images/" + bgName);
                 this.currentBackground = AssetManager.getInstance().getImage(assetKey);
             } else {
-                // Tải ảnh nền mặc định
                 this.currentBackground = AssetManager.getInstance().getImage("defaultBackground");
             }
 
-            for (Brick brick : currentLevel.getBricks()) {
-                if (brick instanceof LaserShooterBrick) {
-                    laserShooters.add((LaserShooterBrick) brick);
-                } else {
-                    bricks.add(brick);
-                }
-            }
-
+            // Xử lý Boss: TẠO đối tượng Boss, nhưng KHÔNG thêm gạch Boss vào danh sách laserShooters/bricks của GameManager.
             if (currentLevel.isBossLevel() && !currentLevel.getBossBricks().isEmpty()) {
                 java.awt.Rectangle bossBounds = currentLevel.getBossInitialBounds();
-
                 float startX = (GamePanel.WIDTH / 2.0f) - (bossBounds.width / 2.0f);
                 float startY = bossBounds.y;
 
+                // TẠO BOSS VỚI GẠCH CỦA NÓ.
                 this.boss = new Boss(currentLevel.getBossBricks(), startX, startY, bossBounds.x, GamePanel.WIDTH);
-                // Thêm các shooter của boss vào danh sách quản lý
-                for(Brick bossBrick : boss.getBricks()) {
-                    if (bossBrick instanceof LaserShooterBrick) {
-                        laserShooters.add((LaserShooterBrick) bossBrick);
-                    }
-                }
+                // this.bricks và this.laserShooters hiện tại vẫn rỗng.
+            } else {
+                this.boss = null;
             }
+
+            // this.bricks và this.laserShooters vẫn rỗng.
         }
-        setGameState("PLAYING");
+    }
+
+    private void loadLevelSetup() {
+        setupLevelObjects();
+        loadLevelAssetsAndBricks();
     }
 
     private void explode(Brick sourceBrick, double radius) {
@@ -531,6 +536,75 @@ public class GameManager {
                     gameOverTimer = 360;
                 }
             }
+        } else if ("TRANSITION".equals(gameState)) {
+            levelTransition.update();
+
+            if (levelTransition.getCurrentState() == LevelTransition.State.FADE_FROM_BLACK) {
+                // Bước 1: Khi màn hình đã tối và bắt đầu sáng lên,
+                // Đảm bảo level đã được thiết lập.
+                if (levelTransition.getBrickSpawnCount() == 0) {
+                    // Chỉ chạy 1 lần khi bắt đầu sáng lên
+                    loadLevelSetup(); // OK để chạy ở đây: Reset Paddle/Ball, Tải Assets, Tải Level, TẠO Boss (nhưng danh sách gạch vẫn rỗng).
+                    levelTransition.setBrickSpawnCount(1); // Bắt đầu từ gạch đầu tiên (không liên quan đến số gạch thật)
+
+                    // Tính toán tổng số gạch *tối đa* sẽ được spawn (bao gồm gạch thường và gạch Boss nếu có)
+                    // CẦN LƯU VÀO levelTransition để BRICK_SPAWN biết khi nào kết thúc.
+
+                    // Để đơn giản, ta sẽ chuyển thẳng sang BRICK_SPAWN khi FADE_FROM_BLACK kết thúc.
+                }
+
+            } else if (levelTransition.getCurrentState() == LevelTransition.State.BRICK_SPAWN) {
+                // Bước 2: Hiệu ứng gạch xuất hiện
+
+                // --- CHỈ THÊM GẠCH VÀO DANH SÁCH LẦN ĐẦU TIÊN CỦA BRICK_SPAWN ---
+                int totalBricks = bricks.size() + laserShooters.size();
+
+                if (levelTransition.getBrickSpawnCount() <= 1 && totalBricks == 0) {
+                    // Lần đầu tiên của BRICK_SPAWN và các danh sách gạch đang rỗng
+
+                    Level currentLevel = levelManager.getCurrentLevel();
+                    if (currentLevel != null) {
+                        // Thêm gạch thường và gạch LaserShooter vào danh sách hoạt động
+                        this.bricks.addAll(currentLevel.getBricks().stream()
+                                .filter(b -> !(b instanceof LaserShooterBrick))
+                                .collect(java.util.stream.Collectors.toList()));
+
+                        this.laserShooters.addAll(currentLevel.getBricks().stream()
+                                .filter(b -> b instanceof LaserShooterBrick)
+                                .map(b -> (LaserShooterBrick) b)
+                                .collect(java.util.stream.Collectors.toList()));
+
+                        // Thêm gạch Boss (nếu có)
+                        if (boss != null) {
+                            for(Brick bossBrick : boss.getBricks()) {
+                                if (bossBrick instanceof LaserShooterBrick) {
+                                    laserShooters.add((LaserShooterBrick) bossBrick);
+                                } else {
+                                    bricks.add(bossBrick);
+                                }
+                            }
+                        }
+                    }
+                    totalBricks = this.bricks.size() + this.laserShooters.size();
+
+                    // Nếu không có gạch nào được thêm, bỏ qua BRICK_SPAWN
+                    if (totalBricks == 0) {
+                        levelTransition.finishTransition();
+                        setGameState("PLAYING");
+                        return;
+                    }
+                }
+                // -----------------------------------------------------------------
+
+                if (levelTransition.getBrickSpawnCount() <= totalBricks) {
+                    // Tăng số gạch được vẽ/xuất hiện mỗi frame (ví dụ: 1-2 viên/frame)
+                    levelTransition.setBrickSpawnCount(levelTransition.getBrickSpawnCount() + 2);
+                } else {
+                    // Tất cả gạch đã xuất hiện
+                    levelTransition.finishTransition();
+                    setGameState("PLAYING"); // Hoàn thành chuyển tiếp -> bắt đầu chơi
+                }
+            }
         } else if ("MENU".equals(gameState)) {
             menuManager.update();
         } else if ("GAME_OVER".equals(gameState)) {
@@ -631,6 +705,10 @@ public class GameManager {
     public InputHandler getInputHandler() { return inputHandler; }
     public List<Shard> getActiveShards() { // <--- THÊM GETTER NÀY
         return activeShards;
+    }
+
+    public LevelTransition getLevelTransition() {
+        return levelTransition;
     }
 }
 

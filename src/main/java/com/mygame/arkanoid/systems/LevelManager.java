@@ -24,8 +24,8 @@ public class LevelManager {
 
     // Tải danh sách các file level
     public void loadLevels() {
-       // levelFiles.add("/levels/Level1.txt");
-        levelFiles.add("/levels/Level2.txt");
+        levelFiles.add("/levels/Level1.txt");
+        //levelFiles.add("/levels/Level2.txt");
         //levelFiles.add("/levels/Level3.txt");
         levelFiles.add("/levels/Level_Boss.txt");
     }
@@ -53,5 +53,9 @@ public class LevelManager {
     // Reset về màn đầu tiên khi chơi lại
     public void reset() {
         currentLevelIndex = -1;
+    }
+
+    public int getCurrentLevelIndex() {
+        return currentLevelIndex;
     }
 }

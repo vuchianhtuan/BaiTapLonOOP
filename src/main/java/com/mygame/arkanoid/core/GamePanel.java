@@ -46,7 +46,7 @@ public class GamePanel extends JPanel {
         super.paintComponent(g);
         String currentState = gameManager.getGameState();
 
-        if ("PLAYING".equals(currentState) || "GAME_OVER".equals(currentState)) {
+        if ("PLAYING".equals(currentState) || "GAME_OVER".equals(currentState) || "TRANSITION".equals(currentState)) {
             renderer.renderGame(g, gameManager.getPaddle(),
                     gameManager.getBall(),
                     gameManager.getBricks(),
@@ -55,7 +55,8 @@ public class GamePanel extends JPanel {
                     gameManager.getBoss(),
                     gameManager.getLasers(),
                     gameManager.getLaserShooters(),
-                    gameManager.getCurrentBackground(), gameManager.getActiveShards());
+                    gameManager.getCurrentBackground(), gameManager.getActiveShards(), gameManager.getLevelTransition());
+            gameManager.getLevelTransition().render(g);
             uiManager.draw(g);
         } else if ("MENU".equals(currentState)) {
             gameManager.getMenuManager().render(g);
