@@ -15,8 +15,9 @@ import java.awt.Image;
 public class MenuManager {
     private final GameManager gameManager;
     private final InputHandler inputHandler;
-    private final String[] options = {"Start Game", "High Scores", "Exit"};
+    private final String[] options = {"New Game", "High Scores", "Exit", "Setup", "Select Level"};
     private int selectedOption = -1;
+    private boolean continueAvailable = false;
     private Rectangle[] optionBounds;
     private Image backgroundImage;
 
@@ -25,6 +26,23 @@ public class MenuManager {
         this.inputHandler = inputHandler;
         this.optionBounds = new Rectangle[options.length];
         this.backgroundImage = AssetManager.getInstance().getImage("menuBackground");
+    }
+
+    public void setContinueAvailable(boolean continueAvailable) {
+        this.continueAvailable = continueAvailable;
+    }
+
+    public String getStartButtonLabel() {
+        return continueAvailable ? "Continue Game" : "New Game";
+    }
+
+    // Gọi khi người dùng click vào nút Start
+    public void onStartButtonClicked() {
+        if (continueAvailable) {
+            gameManager.continueGame();
+        } else {
+            gameManager.startGame();
+        }
     }
 
     public void update() {
@@ -48,7 +66,8 @@ public class MenuManager {
     private void selectOption() {
         switch (selectedOption) {
             case 0: // Start Game
-                gameManager.startGame();
+                //gameManager.startGame();
+                onStartButtonClicked();
                 break;
             case 1: // High Scores
                 gameManager.setGameState("HIGH_SCORES");
@@ -56,6 +75,12 @@ public class MenuManager {
                 break;
             case 2: // Exit
                 System.exit(0);
+                break;
+            case 3: // Setup
+                gameManager.setGameState("SETUP");
+                break;
+            case 4: // Level Select
+                gameManager.setGameState("LEVEL_SELECT");
                 break;
         }
     }
@@ -70,8 +95,13 @@ public class MenuManager {
             g.fillRect(0, 0, sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT));
         }
 
-        g.setFont(new Font("Arial", Font.PLAIN, 36));
+        g.setFont(new Font("Arial", Font.BOLD, 36));
         for (int i = 0; i < options.length; i++) {
+            if (i == 0 && continueAvailable) {
+                options[0] = "Continue Game";
+            } else if (i == 0) {
+                options[0] = "New Game";
+            }
             String optionText = options[i];
             int optionWidth = g.getFontMetrics().stringWidth(optionText);
             int height = g.getFontMetrics().getHeight();

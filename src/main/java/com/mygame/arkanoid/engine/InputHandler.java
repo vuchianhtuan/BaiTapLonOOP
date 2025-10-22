@@ -8,6 +8,7 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
     private final boolean[] keys = new boolean[256];
     private int mouseX, mouseY;
     private boolean mouseClicked = false;
+    private boolean isCurrentlyPressed = false;
 
     public InputHandler() {
         this.mouseX = 0;
@@ -31,6 +32,10 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
             return true;
         }
         return false;
+    }
+
+    public boolean isMousePressed() {
+        return isCurrentlyPressed;
     }
 
     @Override
@@ -60,6 +65,7 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
         // Đánh dấu là chuột vừa được click khi nhấn xuống
         if (e.getButton() == MouseEvent.BUTTON1) { // Chỉ xử lý chuột trái
             this.mouseClicked = true;
+            this.isCurrentlyPressed = true;
         }
     }
 
@@ -74,7 +80,11 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
     @Override public void keyTyped(KeyEvent e) {}
     @Override public void mouseDragged(MouseEvent e) { mouseMoved(e); }
     @Override public void mouseClicked(MouseEvent e) {}
-    @Override public void mouseReleased(MouseEvent e) {}
+    @Override public void mouseReleased(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            this.isCurrentlyPressed = false; // Đánh dấu đã thả chuột
+        }
+    }
     @Override public void mouseEntered(MouseEvent e) {}
     @Override public void mouseExited(MouseEvent e) {}
 }

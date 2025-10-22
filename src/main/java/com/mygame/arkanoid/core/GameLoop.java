@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.core;
 import com.mygame.arkanoid.engine.Renderer;
+import com.mygame.arkanoid.systems.ScoreManager;
 import com.mygame.arkanoid.systems.UIManager;
 
 // Đa luồng: GameLoop chạy update + render song song với GUI

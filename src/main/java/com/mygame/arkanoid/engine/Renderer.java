@@ -16,6 +16,7 @@ public class Renderer {
     // THAY ĐỔI: Thêm LevelTransition transition vào danh sách tham số
     public void renderGame(Graphics g, Paddle paddle, Ball ball, List<Brick> bricks,
                            List<PowerUp> powerUps, List<Ball> balls, Boss boss,
+                           List<Laser> lasers, List<LaserShooterBrick> laserShooters, BackButton backButton, Image background) {
                            List<Laser> lasers, List<LaserShooterBrick> laserShooters,
                            Image background, List<Shard> shard, LevelTransition transition) { // <-- THAM SỐ MỚI
 
@@ -105,6 +106,10 @@ public class Renderer {
                     laser.render(g, sm);
                 }
             }
+        }
+
+        if (backButton != null) {
+            backButton.draw(g, sm);
         }
     }
 }
