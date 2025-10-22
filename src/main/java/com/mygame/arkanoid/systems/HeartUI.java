@@ -53,9 +53,12 @@ public class HeartUI {
 
         // Lặp qua số mạng để vẽ
         for (int i = 0; i < gameManager.getLives(); i++) {
-            // Tính toán vị trí LOGIC trong thế giới 1280x720
-            int logicX = 10 + (i * 30);
-            int logicY = 10;
+            int logicBaseX = 980; // 960 (game) + 20 (padding)
+            int logicBaseY = 230; // Vị trí Y (bạn có thể điều chỉnh)
+            int heartPadding = 5;
+
+            int logicX = logicBaseX + (i * (HEART_SIZE + heartPadding));
+            int logicY = logicBaseY;
 
             // Chỉ vẽ nếu hiệu ứng cho phép
             boolean shouldDraw = true;

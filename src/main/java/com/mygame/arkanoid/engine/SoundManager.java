@@ -8,14 +8,9 @@ import javax.sound.sampled.*;
 import java.net.URL;
 
 public class SoundManager {
- /*   public void playSound(String soundName) {}
-    public void playBackgroundMusic(String musicName) {}
-    public void stopBackgroundMusic() {}
-
-  */
-
     private Clip backgroundMusicClip;
-    public static float volume = 0.8f;
+    // THAY ĐỔI: Chuyển 'volume' thành non-static
+    private float volume = 0.8f;
 
     public void playBackgroundMusic(String musicName) {
         stopBackgroundMusic();
@@ -23,7 +18,7 @@ public class SoundManager {
             URL url = this.getClass().getResource("/sounds/" + musicName);
 
             if (url == null) {
-                System.err.println("Không tìm thấy file âm thanh: /sound/" + musicName);
+                System.err.println("Không tìm thấy file âm thanh: /sounds/" + musicName);
                 return;
             }
 
@@ -31,50 +26,31 @@ public class SoundManager {
             backgroundMusicClip = AudioSystem.getClip();
             backgroundMusicClip.open(audioInput);
 
-            FloatControl gainControl = (FloatControl) backgroundMusicClip.getControl(FloatControl.Type.MASTER_GAIN);
-            gainControl.setValue(-10.0f);
+            // THAY ĐỔI: Gọi hàm setVolume (non-static)
+            setVolume(backgroundMusicClip, this.volume);
 
             backgroundMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
             backgroundMusicClip.start();
-            setVolume(backgroundMusicClip, volume);
+
         } catch (Exception e) {
             System.err.println("Lỗi khi phát nhạc nền: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public static void setVolume(Clip clip, float volume) {
-        // Volume phải nằm trong khoảng [0.0f, 1.0f]
+    // THAY ĐỔI: Chuyển hàm này thành 'private' và 'non-static'
+    // Đây là hàm nội bộ để áp dụng âm lượng cho 1 clip cụ thể
+    private void setVolume(Clip clip, float volume) {
         if (volume < 0f || volume > 1f)
             throw new IllegalArgumentException("Volume outside valid range: " + volume);
 
         try {
-            // 1. Kiểm tra xem Clip có hỗ trợ FloatControl.Type.MASTER_GAIN không
-            if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-
-                // 2. Lấy đối tượng FloatControl
+            if (clip != null && clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                 FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-
-                // 3. Lấy giá trị Min và Max của Control này (thường là tính theo Decibel - dB)
-                float minGain = gainControl.getMinimum();
-                float maxGain = gainControl.getMaximum();
-
-                // 4. Ánh xạ giá trị volume [0.0, 1.0] sang dải [minGain, maxGain] (logarithmic scale)
-
-                // Công thức chuyển đổi tuyến tính từ volume [0.0, 1.0] sang dB (độ lợi)
-                // Lưu ý: Mặc dù dB là logarit, nhưng thường người ta sử dụng công thức
-                // này để mô phỏng cảm nhận âm lượng tuyến tính hơn.
-                float range = maxGain - minGain;
-                float gain = (range * volume) + minGain;
-
-                // Hoặc, công thức dựa trên decibel thường thấy (để 1.0f tương ứng với 0dB)
-                // float dB = (float)(Math.log(volume) / Math.log(10.0) * 20.0);
-
-                // 5. Thiết lập giá trị mới cho Master Gain
+                float range = gainControl.getMaximum() - gainControl.getMinimum();
+                float gain = (range * volume) + gainControl.getMinimum();
                 gainControl.setValue(gain);
-
-                System.out.println("Volume set to: " + (int)(volume * 100) + "%");
-            } else {
+            } else if(clip != null) {
                 System.err.println("MASTER_GAIN control is not supported for this Clip.");
             }
         } catch (Exception e) {
@@ -82,28 +58,60 @@ public class SoundManager {
         }
     }
 
-    public static void setVolume(float vol) {
-        volume = vol;
+    // THAY ĐỔI: Đây là hàm 'public' (non-static) mà SetupVolume sẽ gọi
+    // Nó cập nhật âm lượng chung VÀ âm lượng của nhạc nền đang phát
+    public void setVolume(float vol) {
+        if (vol < 0f) vol = 0f;
+        if (vol > 1f) vol = 1f;
+
+        this.volume = vol; // Cập nhật âm lượng chung
+
+        // Áp dụng ngay cho nhạc nền đang phát (nếu có)
+        if (backgroundMusicClip != null) {
+            setVolume(backgroundMusicClip, this.volume);
+        }
+    }
+
+    // HÀM MỚI: Dành cho GameManager khi PAUSED
+    public void pauseBackgroundMusic() {
+        if (backgroundMusicClip != null && backgroundMusicClip.isRunning()) {
+            backgroundMusicClip.stop();
+        }
+    }
+
+    // HÀM MỚI: Dành cho GameManager khi RESUME
+    public void resumeBackgroundMusic() {
+        if (backgroundMusicClip != null && !backgroundMusicClip.isRunning()) {
+            backgroundMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
+        }
     }
 
     public void stopBackgroundMusic() {
-        if (backgroundMusicClip != null && backgroundMusicClip.isRunning()) {
-            backgroundMusicClip.stop();
+        if (backgroundMusicClip != null) {
+            if (backgroundMusicClip.isRunning()) {
+                backgroundMusicClip.stop();
+            }
             backgroundMusicClip.close();
         }
     }
 
     public void playSound(String soundName) {
         try {
-            URL url = this.getClass().getResource("/sound/" + soundName);
+            // THAY ĐỔI: Sửa lỗi đường dẫn "/sound/" -> "/sounds/"
+            URL url = this.getClass().getResource("/sounds/" + soundName);
 
             if (url == null) {
-                System.err.println("Không tìm thấy file âm thanh: /sound/" + soundName);
+                // THAY ĐỔI: Cập nhật thông báo lỗi
+                System.err.println("Không tìm thấy file âm thanh: /sounds/" + soundName);
                 return;
             }
             AudioInputStream audioInput = AudioSystem.getAudioInputStream(url);
             Clip clip = AudioSystem.getClip();
             clip.open(audioInput);
+
+            // THÊM MỚI: Áp dụng âm lượng cho hiệu ứng âm thanh
+            setVolume(clip, this.volume);
+
             clip.start();
         } catch (Exception e) {
             System.err.println("Lỗi khi phát âm thanh: " + e.getMessage());

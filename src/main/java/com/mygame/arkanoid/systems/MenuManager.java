@@ -6,11 +6,7 @@ import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.core.GamePanel;
 import com.mygame.arkanoid.engine.AssetManager;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.Image;
+import java.awt.*;
 
 public class MenuManager {
     private final GameManager gameManager;
@@ -71,7 +67,6 @@ public class MenuManager {
                 break;
             case 1: // High Scores
                 gameManager.setGameState("HIGH_SCORES");
-                System.out.println("High Scores selected - (chưa cài đặt)");
                 break;
             case 2: // Exit
                 System.exit(0);
@@ -87,15 +82,25 @@ public class MenuManager {
 
     public void render(Graphics g) {
         ScalingManager sm = ScalingManager.getInstance();
+
         if (backgroundImage != null) {
-            g.drawImage(backgroundImage, 0, 0, sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT), null);
+            g.drawImage(backgroundImage,
+                    sm.scaleX(0), sm.scaleY(0),
+                    sm.scaleWidth(sm.NATIVE_WIDTH),
+                    sm.scaleHeight(sm.NATIVE_HEIGHT),
+                    null);
         } else {
-            // Nếu không có ảnh, vẽ nền đen dự phòng
             g.setColor(Color.BLACK);
-            g.fillRect(0, 0, sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT));
+            g.fillRect(
+                    sm.scaleX(0), sm.scaleY(0),
+                    sm.scaleWidth(sm.NATIVE_WIDTH),
+                    sm.scaleHeight(sm.NATIVE_HEIGHT));
         }
 
-        g.setFont(new Font("Arial", Font.BOLD, 36));
+        Font baseFont = new Font("Arial", Font.BOLD, 36);
+        Font scaledFont = baseFont.deriveFont((float)(baseFont.getSize() * sm.getScale()));
+        g.setFont(scaledFont);
+
         for (int i = 0; i < options.length; i++) {
             if (i == 0 && continueAvailable) {
                 options[0] = "Continue Game";
@@ -103,31 +108,33 @@ public class MenuManager {
                 options[0] = "New Game";
             }
             String optionText = options[i];
-            int optionWidth = g.getFontMetrics().stringWidth(optionText);
-            int height = g.getFontMetrics().getHeight();
 
-            // Tính toán tọa độ và kích thước trong thế giới LOGIC (ảo) 1280x720
+            FontMetrics fm = g.getFontMetrics(); // <-- LẤY METRICS TỪ FONT ĐÃ SET
+            int optionWidth = fm.stringWidth(optionText);
+            int height = fm.getHeight();
+
+            // Tính toán tọa độ logic (đã chính xác)
             int logicX = (sm.NATIVE_WIDTH - optionWidth) / 2;
             int logicY = 300 + i * 60;
+
+            // --- SỬA LOGIC TÍNH HÌNH CHỮ NHẬT ---
+            // Căn lề hình chữ nhật dựa trên font metrics
             int logicRectX = logicX - 20;
-            int logicRectY = logicY - height + 10;
+            int logicRectY = logicY - height + fm.getDescent(); // Căn chuẩn hơn
             int logicRectWidth = optionWidth + 40;
             int logicRectHeight = height + 10;
+            // --- KẾT THÚC SỬA ---
 
-            // Lưu lại khu vực bấm LOGIC
             optionBounds[i] = new Rectangle(logicRectX, logicRectY, logicRectWidth, logicRectHeight);
 
-            // Chỉ khi VẼ, chúng ta mới "dịch" các giá trị logic ra màn hình thật
             if (i == selectedOption) {
-                g.setColor(new Color(255, 255, 0, 100)); // Màu nền khi hover
+                g.setColor(new Color(255, 255, 0, 100));
                 g.fillRoundRect(sm.scaleX(logicRectX), sm.scaleY(logicRectY), sm.scaleWidth(logicRectWidth), sm.scaleHeight(logicRectHeight), 15, 15);
-
-                g.setColor(Color.RED); // Màu chữ và viền khi hover
+                g.setColor(Color.RED);
             } else {
-                g.setColor(Color.YELLOW); // Màu chữ và viền mặc định
+                g.setColor(Color.YELLOW);
             }
 
-            // Vẽ viền và chữ đã được scale
             g.drawRoundRect(sm.scaleX(logicRectX), sm.scaleY(logicRectY), sm.scaleWidth(logicRectWidth), sm.scaleHeight(logicRectHeight), 15, 15);
             g.drawString(optionText, sm.scaleX(logicX), sm.scaleY(logicY));
         }

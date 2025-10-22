@@ -47,15 +47,27 @@ public class SetupVolume {
     public void render(Graphics g) {
         ScalingManager sm = ScalingManager.getInstance();
 
+        // --- SỬA ĐỔI KHỐI NÀY ---
         if (BackgroundImage != null) {
-            g.drawImage(BackgroundImage, 0, 0, sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT), null);
+            g.drawImage(BackgroundImage,
+                    sm.scaleX(0), sm.scaleY(0), // <-- Bắt đầu từ offset
+                    sm.scaleWidth(sm.NATIVE_WIDTH),
+                    sm.scaleHeight(sm.NATIVE_HEIGHT),
+                    null);
         }
+        // --- KẾT THÚC SỬA ĐỔI --- (Không cần else, vì GamePanel đã vẽ nền đen)
 
         backButton.draw(g, sm);
 
         String text = "MUSIC VOLUME";
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 30));
+
+        // --- SỬA ĐỔI KHỐI FONT ---
+        Font baseFont = new Font("Arial", Font.BOLD, 30);
+        Font scaledFont = baseFont.deriveFont((float)(baseFont.getSize() * sm.getScale()));
+        g.setFont(scaledFont); // <-- Dùng font đã scale
+        // --- KẾT THÚC SỬA ĐỔI FONT ---
+
         g.drawString(text, sm.scaleX(150), sm.scaleY(150));
 
         track.render(g, sm);

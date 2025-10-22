@@ -30,8 +30,8 @@ public class Paddle extends MovableObject {
     }
     public void moveRight() {
         x += speed;
-        if (x + width > GamePanel.WIDTH) x = GamePanel.WIDTH - width;
-        //Thiếu khai báo biến screenSize, để mặc định 800x600
+        int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
+        if (x + width > gameAreaWidth) x = gameAreaWidth - width;
     }
     public void applyPowerUp(PowerUp powerUp) {}
 

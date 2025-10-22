@@ -17,9 +17,6 @@ public class MovingBrick extends Brick {
         this.moveRange = moveRange;
     }
 
-    //@Override public void takeHit() {}
-    //@Override public boolean isDestroyed() { return false;
-
     // cập nhật vị trí sau mỗi loop
     @Override public void update() {
         this.x += speedX;

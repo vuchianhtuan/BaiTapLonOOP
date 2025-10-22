@@ -80,7 +80,8 @@ public class Ball extends MovableObject {
     @Override public void move() {
         this.x += this.dx * speed;
         this.y += this.dy * speed;
-        if (this.x <= 0 || this.x + this.width >= GamePanel.WIDTH) {
+        int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
+        if (this.x <= 0 || this.x + this.width >= gameAreaWidth) {
             dx = - dx; // Đổi hướng khi chạm tường trái hoặc phải
         }
         if (this.y <= 0) {

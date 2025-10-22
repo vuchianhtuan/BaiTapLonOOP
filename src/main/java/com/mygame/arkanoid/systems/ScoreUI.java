@@ -18,15 +18,24 @@ public class ScoreUI {
     public void draw(Graphics g) { // Nên dùng Graphics thay vì Graphics2D cho nhất quán
         ScalingManager sm = ScalingManager.getInstance();
 
-        String scoreText = "Score: " + gameManager.getScore();
-        g.setFont(new Font("Arial", Font.BOLD, 20));
+        String scoreText = "SCORE";
+        String scoreValue = String.valueOf(gameManager.getScore());
+        int logicX = 980; // 960 (game) + 20 (padding)
+        int logicY_title = 100;
+        int logicY_value = 130;
+
+        Font baseFont = new Font("Arial", Font.BOLD, 24);
+        Font scaledFont = baseFont.deriveFont((float)(baseFont.getSize() * sm.getScale()));
+
+        g.setFont(scaledFont); // <-- Dùng font đã scale
         g.setColor(Color.WHITE);
+        g.drawString(scoreText, sm.scaleX(logicX), sm.scaleY(logicY_title));
 
-        // Tọa độ logic
-        int logicX = 580; // Căn giữa trong thế giới 1280
-        int logicY = 30;
+        // 2. Vẽ điểm số (đã scale)
+        baseFont = new Font("Arial", Font.PLAIN, 22);
+        scaledFont = baseFont.deriveFont((float)(baseFont.getSize() * sm.getScale()));
 
-        // Vẽ ra màn hình với tọa độ đã được scale
-        g.drawString(scoreText, sm.scaleX(logicX), sm.scaleY(logicY));
+        g.setFont(scaledFont); // <-- Dùng font đã scale
+        g.drawString(scoreValue, sm.scaleX(logicX), sm.scaleY(logicY_value));
     }
 }

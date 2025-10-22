@@ -19,14 +19,6 @@ public class Renderer {
                            List<Laser> lasers, List<LaserShooterBrick> laserShooters, BackButton backButton, Image background, List<Shard> shards) {
         ScalingManager sm = ScalingManager.getInstance();
 
-        // --- LOGIC HIỂN THỊ HÌNH NỀN ---
-        if (background != null) {
-            g.drawImage(background, 0, 0, sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT), null);
-        } else {
-            g.setColor(Color.BLACK);
-            g.fillRect(0, 0, sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT));
-        }
-
         // 1. Vẽ tất cả gạch thường (bao gồm cả gạch của Boss)
         if (bricks != null) {
             for (Brick brick : bricks) {
@@ -40,15 +32,6 @@ public class Renderer {
                 shooter.render(g, sm);
             }
         }
-
-        // KHỐI NÀY ĐÃ BỊ XÓA (theo yêu cầu của bạn)
-        /*
-        if (boss != null) {
-            for (Brick brick : boss.getBricks()) {
-                brick.render(g, sm);
-            }
-        }
-        */
 
         // 3. Vẽ Paddle
         if (paddle != null) {

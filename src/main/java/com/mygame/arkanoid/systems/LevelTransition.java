@@ -1,4 +1,4 @@
-// Đặt trong com.mygame.arkanoid.systems
+
 package com.mygame.arkanoid.systems;
 
 import com.mygame.arkanoid.core.GameManager;
@@ -42,8 +42,6 @@ public class LevelTransition {
     public LevelTransition(GameManager gameManager) {
         this.gameManager = gameManager;
         this.currentState = State.IDLE;
-
-        // SỬA: Đổi font sang "SansSerif" (tối giản) và dùng kiểu PLAIN (không đậm)
         this.countdownFont = new java.awt.Font("SansSerif", Font.BOLD, 72);
     }
 
@@ -61,16 +59,19 @@ public class LevelTransition {
         }
 
         timer++;
-
+        int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
         switch (currentState) {
             case PADDLE_FLY_UP: {
                 if (flyingPaddle == null) {
+                    currentState = State.FADE_TO_BLACK; // Skip fly up if no paddle
+                    timer = 0;
+                    maxDuration = 120;
                     break;
                 }
 
                 int startX = flyingPaddle.getX();
                 int startY = 670;
-                int midX = GamePanel.WIDTH / 2 - flyingPaddle.getWidth() / 2;
+                int midX = gameAreaWidth / 2 - flyingPaddle.getWidth() / 2;
                 int midY = 400;
                 int endY = -flyingPaddle.getHeight();
 
@@ -115,7 +116,6 @@ public class LevelTransition {
                     currentState = State.FADE_FROM_BLACK;
                     timer = 0;
                     maxDuration = 100;
-
                 }
                 break;
 
@@ -142,7 +142,7 @@ public class LevelTransition {
                     this.startPaddleX = newPaddle.getX();
                     this.startPaddleY = newPaddle.getY();
 
-                    this.finalPaddleX = (GamePanel.WIDTH / 2) - newPaddle.getWidth() / 2;
+                    this.finalPaddleX = (gameAreaWidth / 2) - newPaddle.getWidth() / 2;
                     this.finalPaddleY = 670; // Vị trí chơi game
                 }
 
@@ -166,7 +166,7 @@ public class LevelTransition {
             }
 
             case BRICK_SPAWN:
-                timer++;
+                //timer++;
                 break;
 
             case COUNTDOWN:
@@ -177,6 +177,8 @@ public class LevelTransition {
 
             case FINISH:
                 currentState = State.IDLE;
+                timer = 0; // Reset timer
+                alpha = 0.0f;
                 break;
 
         }
@@ -189,13 +191,22 @@ public class LevelTransition {
         if (currentState == State.IDLE) return;
 
         Graphics2D g2d = (Graphics2D) g;
+        ScalingManager sm = ScalingManager.getInstance(); // <-- THÊM DÒNG NÀY
 
         // Logic FADE
         if (currentState == State.FADE_TO_BLACK || currentState == State.FADE_FROM_BLACK) {
             if (alpha > 0.0f) {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
                 g2d.setColor(Color.BLACK);
-                g2d.fillRect(0, 0, GamePanel.WIDTH, GamePanel.HEIGHT);
+
+                // --- SỬA DÒNG NÀY ---
+                // Vẽ overlay bên trong vùng đã scale
+                g2d.fillRect(
+                        sm.scaleX(0), sm.scaleY(0),
+                        sm.scaleWidth(sm.NATIVE_WIDTH),
+                        sm.scaleHeight(sm.NATIVE_HEIGHT));
+                // --- KẾT THÚC SỬA ĐỔI ---
+
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
             }
         }
@@ -204,15 +215,19 @@ public class LevelTransition {
 
             g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-            g2d.setFont(this.countdownFont);
-            java.awt.FontMetrics metrics = g2d.getFontMetrics(this.countdownFont);
+            // --- BẮT ĐẦU SỬA ĐỔI KHỐI COUNTDOWN ---
+
+            // Scale font
+            Font scaledFont = this.countdownFont.deriveFont((float)(this.countdownFont.getSize() * sm.getScale()));
+            g2d.setFont(scaledFont);
+            java.awt.FontMetrics metrics = g2d.getFontMetrics(scaledFont); // <-- Lấy metrics từ font đã scale
 
             String textToShow = "";
-            int phaseDuration = 65; // 1 giây mỗi pha
-            int phase = timer / phaseDuration; // 0, 1, 2, 3, 4
-
+            // ... (code switch case giữ nguyên)
+            int phaseDuration = 65;
+            int phase = timer / phaseDuration;
             switch (phase) {
-                case 0: // "Level X"
+                case 0:
                     int level = gameManager.getLevelManager().getCurrentLevelIndex() + 1;
                     textToShow = "LEVEL " + level;
                     break;
@@ -225,10 +240,10 @@ public class LevelTransition {
                     break;
             }
 
+            // ... (code tính textAlpha giữ nguyên)
             int timerInPhase = timer % phaseDuration;
             float halfPhase = phaseDuration / 2.0f;
             float textAlpha = 0.0f;
-
             if (timerInPhase < halfPhase) {
                 textAlpha = (float)timerInPhase / halfPhase;
             } else {
@@ -236,13 +251,18 @@ public class LevelTransition {
             }
             textAlpha = Math.max(0.0f, Math.min(1.0f, textAlpha));
 
-            int x = (GamePanel.WIDTH - metrics.stringWidth(textToShow)) / 2;
-            int y = (GamePanel.HEIGHT / 2) - (metrics.getHeight() / 2) + metrics.getAscent();
+
+            // Tính tọa độ LOGIC
+            int logicX = (sm.NATIVE_WIDTH - metrics.stringWidth(textToShow)) / 2;
+            int logicY = (sm.NATIVE_HEIGHT / 2) - (metrics.getHeight() / 2) + metrics.getAscent();
 
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, textAlpha));
-
             g2d.setColor(Color.WHITE);
-            g2d.drawString(textToShow, x, y);
+
+            // Vẽ tại tọa độ ĐÃ SCALE
+            g2d.drawString(textToShow, sm.scaleX(logicX), sm.scaleY(logicY));
+
+            // --- KẾT THÚC SỬA ĐỔI KHỐI COUNTDOWN ---
 
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
         }

@@ -103,22 +103,28 @@ public class LevelTextAnimation {
         }
 
         Graphics2D g2d = (Graphics2D) g;
+        ScalingManager sm = ScalingManager.getInstance(); // <-- THÊM DÒNG NÀY
 
-        // Bật chế độ trong suốt (alpha)
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, this.alpha));
 
-        g2d.setFont(levelFont);
+        // --- SỬA ĐỔI KHỐI NÀY ---
+        // Scale font chữ
+        Font scaledFont = levelFont.deriveFont((float)(levelFont.getSize() * sm.getScale()));
+        g2d.setFont(scaledFont);
         g2d.setColor(Color.WHITE);
 
         // Canh giữa chữ
-        FontMetrics fm = g2d.getFontMetrics(levelFont);
+        FontMetrics fm = g2d.getFontMetrics(scaledFont); // <-- Lấy metrics từ font đã scale
         int stringWidth = fm.stringWidth(levelString);
-        int x = (GamePanel.WIDTH - stringWidth) / 2;
 
-        // Vẽ chữ tại vị trí yPos đã được update
-        g2d.drawString(levelString, x, yPos);
+        // Tính tọa độ LOGIC
+        int logicX = (sm.NATIVE_WIDTH - stringWidth) / 2;
+        int logicY = yPos; // yPos đã là logic
 
-        // Trả lại Composite mặc định
+        // Vẽ chữ tại tọa độ ĐÃ SCALE
+        g2d.drawString(levelString, sm.scaleX(logicX), sm.scaleY(logicY));
+        // --- KẾT THÚC SỬA ĐỔI ---
+
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
     }
 }

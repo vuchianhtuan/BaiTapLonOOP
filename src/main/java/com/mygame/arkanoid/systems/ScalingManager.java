@@ -3,15 +3,19 @@ package com.mygame.arkanoid.systems;
 public class ScalingManager {
     private static ScalingManager instance;
 
-    // Đây là độ phân giải "ảo" mà toàn bộ logic game của bạn dựa trên
-    public final int NATIVE_WIDTH = 960;
+    // Kích thước logic gốc CỦA TOÀN BỘ CỬA SỔ
+    public final int NATIVE_WIDTH = 1120;
     public final int NATIVE_HEIGHT = 720;
+    // Kích thước logic CỦA KHU VỰC CHƠI GAME
+    public final int GAME_AREA_WIDTH = 960;
 
-    private double scaleX = 1.0;
-    private double scaleY = 1.0;
+    // Biến cho logic co giãn (scaling) mới
+    private double scale = 1.0;
+    private int offsetX = 0;
+    private int offsetY = 0;
 
     private ScalingManager() {
-        // Private constructor for Singleton pattern
+        // Private constructor
     }
 
     public static synchronized ScalingManager getInstance() {
@@ -23,19 +27,79 @@ public class ScalingManager {
 
     /**
      * Cập nhật hệ số scale dựa trên kích thước cửa sổ hiện tại.
+     * Logic này giữ đúng tỷ lệ khung hình (aspect ratio).
      */
-    public void update(int currentWidth, int currentHeight) {
-        this.scaleX = (double) currentWidth / NATIVE_WIDTH;
-        this.scaleY = (double) currentHeight / NATIVE_HEIGHT;
+    public void update(int currentWindowWidth, int currentWindowHeight) {
+        double scaleX = (double) currentWindowWidth / NATIVE_WIDTH;
+        double scaleY = (double) currentWindowHeight / NATIVE_HEIGHT;
+        this.scale = Math.min(scaleX, scaleY);
+
+        int renderWidth = (int) (NATIVE_WIDTH * this.scale);
+        int renderHeight = (int) (NATIVE_HEIGHT * this.scale);
+
+        this.offsetX = (currentWindowWidth - renderWidth) / 2;
+        this.offsetY = (currentWindowHeight - renderHeight) / 2;
     }
 
-    // Các phương thức để scale tọa độ và kích thước khi vẽ
-    public int scaleX(int x) { return (int) (x * scaleX); }
-    public int scaleY(int y) { return (int) (y * scaleY); }
-    public int scaleWidth(int width) { return (int) (width * scaleX); }
-    public int scaleHeight(int height) { return (int) (height * scaleY); }
+    // --- CÁC HÀM CŨ VỚI LOGIC MỚI ---
 
-    // Các phương thức để "un-scale" tọa độ chuột từ màn hình thật về màn hình ảo
-    public int unscaleX(int screenX) { return (int) (screenX / scaleX); }
-    public int unscaleY(int screenY) { return (int) (screenY / scaleY); }
+    /**
+     * Chuyển tọa độ X logic sang tọa độ X màn hình
+     * (GIỮ NGUYÊN TÊN HÀM CŨ)
+     */
+    public int scaleX(int logicX) {
+        return (int) (logicX * scale) + offsetX;
+    }
+
+    /**
+     * Chuyển tọa độ Y logic sang tọa độ Y màn hình
+     * (GIỮ NGUYÊN TÊN HÀM CŨ)
+     */
+    public int scaleY(int logicY) {
+        return (int) (logicY * scale) + offsetY;
+    }
+
+    /**
+     * Chuyển chiều rộng logic sang chiều rộng màn hình
+     * (GIỮ NGUYÊN TÊN HÀM CŨ)
+     */
+    public int scaleWidth(int logicWidth) {
+        return (int) (logicWidth * scale);
+    }
+
+    /**
+     * Chuyển chiều cao logic sang chiều cao màn hình
+     * (GIỮ NGUYÊN TÊN HÀM CŨ)
+     */
+    public int scaleHeight(int logicHeight) {
+        return (int) (logicHeight * scale);
+    }
+
+    // --- CÁC HÀM "UN-SCALE" (Vẫn cần thiết cho InputHandler) ---
+
+    /** Chuyển tọa độ X màn hình (ví dụ: chuột) sang X logic */
+    public int unscaleX(int screenX) {
+        if (scale == 0) return 0;
+        return (int) ((screenX - offsetX) / scale);
+    }
+
+    /** Chuyển tọa độ Y màn hình (ví dụ: chuột) sang Y logic */
+    public int unscaleY(int screenY) {
+        if (scale == 0) return 0;
+        return (int) ((screenY - offsetY) / scale);
+    }
+
+    // --- CÁC HÀM GETTER (Hữu ích cho các file khác) ---
+
+    public double getScale() {
+        return scale;
+    }
+
+    public int getOffsetX() {
+        return offsetX;
+    }
+
+    public int getOffsetY() {
+        return offsetY;
+    }
 }

@@ -4,59 +4,79 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LevelManager {
-    /*private List<Level> levels;
-    private int currentLevelIndex;
-
-    public void loadLevels() {}
-    public Level getCurrentLevel() { return null; }
-    public void nextLevel() {}
-    public boolean hasMoreLevels() { return false; }
-    */
-
     private List<String> levelFiles;
     private int currentLevelIndex;
     private Level currentLevel;
 
     public LevelManager() {
         levelFiles = new ArrayList<>();
-        currentLevelIndex = -1; // Bắt đầu từ -1 để khi gọi nextLevel() lần đầu sẽ là 0
+        currentLevelIndex = -1; // Bắt đầu từ -1
     }
 
-    // Tải danh sách các file level
     public void loadLevels() {
         levelFiles.add("/levels/Level1.txt");
-        //levelFiles.add("/levels/Level2.txt");
-        //levelFiles.add("/levels/Level3.txt");
+        levelFiles.add("/levels/Level2.txt");
         levelFiles.add("/levels/Level_Boss.txt");
+        // Thêm các file level khác nếu có
     }
 
-    // Tải level tiếp theo
-    public boolean loadNextLevel() {
-        currentLevelIndex++;
-        if (hasMoreLevels()) {
-            String nextLevelFile = levelFiles.get(currentLevelIndex);
-            currentLevel = new Level(nextLevelFile);
+    // --- THÊM PHƯƠNG THỨC MỚI ---
+    /**
+     * Tải trực tiếp một màn chơi theo chỉ số (index).
+     * @param index Chỉ số của màn (0, 1, 2...)
+     * @return true nếu tải thành công, false nếu chỉ số không hợp lệ.
+     */
+    public boolean loadSpecificLevel(int index) {
+        if (index >= 0 && index < levelFiles.size()) {
+            currentLevelIndex = index; // Cập nhật chỉ số hiện tại
+            String levelFile = levelFiles.get(currentLevelIndex);
+            currentLevel = new Level(levelFile); // Tải level
             return true;
         }
-        return false; // Không còn level nào
+        System.err.println("Lỗi: Chỉ số level không hợp lệ: " + index);
+        currentLevel = null; // Đặt level hiện tại là null nếu lỗi
+        return false; // Chỉ số không hợp lệ
     }
+    // --- KẾT THÚC THÊM MỚI ---
 
+    // --- SỬA PHƯƠNG THỨC NÀY ---
+    /**
+     * Đặt màn chơi hiện tại và tải nó.
+     * @param index Chỉ số của màn muốn đặt (0, 1, 2...)
+     */
     public void setCurrentLevel(int index) {
-        this.currentLevelIndex = index - 1; // Giảm 1 vì nextLevel sẽ tăng lên
+        // Không cần trừ 1 nữa, gọi trực tiếp loadSpecificLevel
+        loadSpecificLevel(index);
+    }
+    // --- KẾT THÚC SỬA ---
+
+
+    /**
+     * Tải level tiếp theo trong danh sách.
+     * @return true nếu còn level và tải thành công, false nếu hết level.
+     */
+    public boolean loadNextLevel() {
+        currentLevelIndex++; // Tăng chỉ số để lấy level tiếp theo
+        if (hasMoreLevels()) {
+            String nextLevelFile = levelFiles.get(currentLevelIndex);
+            currentLevel = new Level(nextLevelFile); // Tải level mới
+            return true;
+        }
+        currentLevel = null; // Đặt là null khi hết level
+        return false; // Không còn level nào
     }
 
     public Level getCurrentLevel() {
         return currentLevel;
     }
 
-    // Kiểm tra xem còn màn chơi tiếp theo không
     public boolean hasMoreLevels() {
         return currentLevelIndex < levelFiles.size();
     }
 
-    // Reset về màn đầu tiên khi chơi lại
     public void reset() {
-        currentLevelIndex = -1;
+        currentLevelIndex = -1; // Reset để loadNextLevel bắt đầu từ 0
+        currentLevel = null;
     }
 
     public int getCurrentLevelIndex() {
