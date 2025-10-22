@@ -1,7 +1,7 @@
 type: normal
 theme_music: IceCavern.wav  # Nhạc nền chủ đề băng giá
 theme_assets: ice_         # Sẽ tải ảnh "ice_brick", "ice_ball"...
-theme_background: background_ice.png
+theme_background: background_forest.png
 powerups: EXPAND=0.1,SLOW_BALL=0.05
 lasershooter_spawn_rate: 0.02  # 2% tỷ lệ một shooter xuất hiện khi gạch vỡ
 ---

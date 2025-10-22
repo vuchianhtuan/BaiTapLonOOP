@@ -55,12 +55,9 @@ public class GamePanel extends JPanel {
                     gameManager.getBoss(),
                     gameManager.getLasers(),
                     gameManager.getLaserShooters(),
-                    gameManager.getCurrentBackground(), gameManager.getActiveShards(), gameManager.getLevelTransition());
-            gameManager.getLevelTransition().render(g);
-                    gameManager.getBackButton(),
-                    gameManager.getCurrentBackground()
-            );
+                    gameManager.getBackButton(),gameManager.getCurrentBackground(), gameManager.getActiveShards());
             uiManager.draw(g);
+            gameManager.getLevelTransition().render(g);
         } else if ("MENU".equals(currentState)) {
             gameManager.getMenuManager().render(g);
         } else if ("HIGH_SCORES".equals(currentState)) {

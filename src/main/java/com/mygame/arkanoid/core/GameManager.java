@@ -23,6 +23,7 @@ public class GameManager {
     private Paddle paddle;
     private Ball ball;
     private List<Ball> balls = new ArrayList<>(); // Danh sách các quả bóng (nếu có Multi-Ball)
+    private List<Brick> stagingBricks;
     private List<Brick> bricks;
     private List<PowerUp> powerUps;
     private List<PowerUp> activePowerUps;
@@ -61,6 +62,7 @@ public class GameManager {
     public GameManager() {
         inputHandler = new InputHandler();
         bricks = new ArrayList<>();
+        stagingBricks = new ArrayList<>();
         laserShooters = new ArrayList<>();
         powerUps = new ArrayList<>();
         activePowerUps = new ArrayList<>();
@@ -75,7 +77,7 @@ public class GameManager {
         levelManager = new LevelManager();
         this.lasers = new ArrayList<>();
         levelManager.loadLevels();
-        this.levelTransition = new LevelTransition();
+        this.levelTransition = new LevelTransition(this);
         menuManager = new MenuManager(this, inputHandler);
         scoreManager = new ScoreManager(this, inputHandler);
         setupVolume = new SetupVolume(inputHandler, this, soundManager, track, thumb);
@@ -169,7 +171,7 @@ public class GameManager {
     }
 
     public void startGame() {
-        this.lives = 500;
+        this.lives = 3;
         this.score = 0;
         setupLevelObjects();
         canContinue = false;
@@ -206,8 +208,7 @@ public class GameManager {
 
             // Kiểm tra: Đây có phải là Level 1 (Index = 0) không?
             if (levelManager.getCurrentLevelIndex() == 0) {
-                loadLevelSetup();
-                levelTransition.startInstantFade(paddle);
+                levelTransition.startInstantFade();
                 setGameState("TRANSITION");
 
             } else {
@@ -220,8 +221,17 @@ public class GameManager {
     }
 
     private void setupLevelObjects() {
-        paddle = new Paddle(580, 670, 120, 18);
-        ball = new Ball(634, 652, 20, 20);
+        int nativeWidth = ScalingManager.getInstance().NATIVE_WIDTH;
+        int nativeHeight = ScalingManager.getInstance().NATIVE_HEIGHT;
+
+        int paddleWidth = 120;
+        int ballSize = 20;
+
+        int finalPaddleX = (nativeWidth / 2) - (paddleWidth / 2);
+        int spawnPaddleY = nativeHeight + 20;
+        paddle = new Paddle(finalPaddleX, spawnPaddleY, paddleWidth, 18);
+        ball = new Ball(finalPaddleX + (paddleWidth / 2) - (ballSize / 2), spawnPaddleY - ballSize - 1, ballSize, ballSize);
+
         ball.resetBallPosition(paddle);
         balls.clear();
         balls.add(ball);
@@ -230,7 +240,7 @@ public class GameManager {
         this.boss = null;
         bricks.clear();
         laserShooters.clear();
-
+        activeShards.clear();
         for (PowerUp p : activePowerUps) {
             p.removeEffect(this);
         }
@@ -294,14 +304,6 @@ public class GameManager {
         List<Brick> allActiveBricks = new ArrayList<>();
         allActiveBricks.addAll(this.laserShooters);
         allActiveBricks.addAll(this.bricks);
-        if (boss != null) {
-            for (Brick bossBrick : boss.getBricks()) {
-                if (!(bossBrick instanceof LaserShooterBrick)) {
-                    allActiveBricks.add(bossBrick);
-                }
-            }
-        }
-
         for (Brick otherBrick : allActiveBricks) {
             if (otherBrick == sourceBrick) { // Bỏ qua chính nó
                 continue;
@@ -457,13 +459,6 @@ public class GameManager {
             List<Brick> allTargets = new ArrayList<>();
             allTargets.addAll(this.laserShooters);
             allTargets.addAll(this.bricks);
-            if (boss != null) {
-                for (Brick bossBrick : boss.getBricks()) {
-                    if (!(bossBrick instanceof LaserShooterBrick)) {
-                        allTargets.add(bossBrick);
-                    }
-                }
-            }
 
             //Duyệt từng quả bóng tương tác với bricks
             for (Ball b : balls) {
@@ -592,73 +587,54 @@ public class GameManager {
             }
         } else if ("TRANSITION".equals(gameState)) {
             levelTransition.update();
-
             if (levelTransition.getCurrentState() == LevelTransition.State.FADE_FROM_BLACK) {
-                // Bước 1: Khi màn hình đã tối và bắt đầu sáng lên,
-                // Đảm bảo level đã được thiết lập.
+                // Dùng getBrickSpawnCount() làm cờ "chỉ chạy 1 lần"
                 if (levelTransition.getBrickSpawnCount() == 0) {
-                    // Chỉ chạy 1 lần khi bắt đầu sáng lên
-                    loadLevelSetup(); // OK để chạy ở đây: Reset Paddle/Ball, Tải Assets, Tải Level, TẠO Boss (nhưng danh sách gạch vẫn rỗng).
-                    levelTransition.setBrickSpawnCount(1); // Bắt đầu từ gạch đầu tiên (không liên quan đến số gạch thật)
 
-                    // Tính toán tổng số gạch *tối đa* sẽ được spawn (bao gồm gạch thường và gạch Boss nếu có)
-                    // CẦN LƯU VÀO levelTransition để BRICK_SPAWN biết khi nào kết thúc.
+                    loadLevelSetup(); // <-- TẠO PADDLE MỚI (this.paddle)
+                    // Đây là nơi DUY NHẤT gọi loadLevelSetup()
 
-                    // Để đơn giản, ta sẽ chuyển thẳng sang BRICK_SPAWN khi FADE_FROM_BLACK kết thúc.
-                }
-
-            } else if (levelTransition.getCurrentState() == LevelTransition.State.BRICK_SPAWN) {
-                // Bước 2: Hiệu ứng gạch xuất hiện
-
-                // --- CHỈ THÊM GẠCH VÀO DANH SÁCH LẦN ĐẦU TIÊN CỦA BRICK_SPAWN ---
-                int totalBricks = bricks.size() + laserShooters.size();
-
-                if (levelTransition.getBrickSpawnCount() <= 1 && totalBricks == 0) {
-                    // Lần đầu tiên của BRICK_SPAWN và các danh sách gạch đang rỗng
+                    // Dọn dẹp và chuẩn bị gạch chờ
+                    this.bricks.clear();
+                    this.laserShooters.clear();
+                    this.stagingBricks.clear();
 
                     Level currentLevel = levelManager.getCurrentLevel();
                     if (currentLevel != null) {
-                        // Thêm gạch thường và gạch LaserShooter vào danh sách hoạt động
-                        this.bricks.addAll(currentLevel.getBricks().stream()
-                                .filter(b -> !(b instanceof LaserShooterBrick))
-                                .collect(java.util.stream.Collectors.toList()));
-
-                        this.laserShooters.addAll(currentLevel.getBricks().stream()
-                                .filter(b -> b instanceof LaserShooterBrick)
-                                .map(b -> (LaserShooterBrick) b)
-                                .collect(java.util.stream.Collectors.toList()));
-
-                        // Thêm gạch Boss (nếu có)
-                        if (boss != null) {
-                            for(Brick bossBrick : boss.getBricks()) {
-                                if (bossBrick instanceof LaserShooterBrick) {
-                                    laserShooters.add((LaserShooterBrick) bossBrick);
-                                } else {
-                                    bricks.add(bossBrick);
-                                }
-                            }
-                        }
+                        this.stagingBricks.addAll(currentLevel.getBricks());
                     }
-                    totalBricks = this.bricks.size() + this.laserShooters.size();
 
-                    // Nếu không có gạch nào được thêm, bỏ qua BRICK_SPAWN
-                    if (totalBricks == 0) {
-                        levelTransition.finishTransition();
-                        setGameState("PLAYING");
-                        return;
+                    if (boss != null) {
+                        this.stagingBricks.addAll(boss.getBricks());
                     }
-                }
-                // -----------------------------------------------------------------
 
-                if (levelTransition.getBrickSpawnCount() <= totalBricks) {
-                    // Tăng số gạch được vẽ/xuất hiện mỗi frame (ví dụ: 1-2 viên/frame)
-                    levelTransition.setBrickSpawnCount(levelTransition.getBrickSpawnCount() + 2);
-                } else {
-                    // Tất cả gạch đã xuất hiện
-                    levelTransition.finishTransition();
-                    setGameState("PLAYING"); // Hoàn thành chuyển tiếp -> bắt đầu chơi
+                    levelTransition.setBrickSpawnCount(1); // Đặt cờ để không chạy lại
                 }
             }
+
+            if (levelTransition.getCurrentState() == LevelTransition.State.BRICK_SPAWN) {
+                if (stagingBricks.isEmpty()) {
+                    levelTransition.finishTransition();
+                } else {
+
+                    final int BRICKS_PER_FRAME = 2;
+                    int bricksToSpawnThisFrame = Math.min(BRICKS_PER_FRAME, stagingBricks.size());
+
+                    for (int i = 0; i < bricksToSpawnThisFrame; i++) {
+                        Brick brickToSpawn = stagingBricks.remove(0);
+                        if (brickToSpawn instanceof LaserShooterBrick) {
+                            laserShooters.add((LaserShooterBrick) brickToSpawn);
+                        } else {
+                            bricks.add(brickToSpawn);
+                        }
+                    }
+                }
+            }
+
+            if (!levelTransition.isTransitioning()) {
+                setGameState("PLAYING");
+            }
+
         } else if ("MENU".equals(gameState)) {
             menuManager.update();
         } else if ("GAME_OVER".equals(gameState)) {
@@ -783,6 +759,10 @@ public class GameManager {
 
     public LevelTransition getLevelTransition() {
         return levelTransition;
+    }
+
+    public LevelManager getLevelManager() {
+        return levelManager;
     }
 }
 
