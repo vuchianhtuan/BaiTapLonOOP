@@ -79,7 +79,8 @@ public class GamePanel extends JPanel {
                     gameManager.getBoss(),
                     gameManager.getLasers(),
                     gameManager.getLaserShooters(),
-                    gameManager.getBackButton(),gameManager.getCurrentBackground(), gameManager.getActiveShards());
+                    gameManager.getCurrentBackground(),
+                    gameManager.getActiveShards());
             uiManager.draw(g);
             drawSidebarExtras(g, sm);
             gameManager.getLevelTransition().render(g);

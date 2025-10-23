@@ -141,7 +141,7 @@ public class GameManager {
         am.loadImage("multiBallPowerUp", "/images/multiBallPowerUp.png");
         am.loadImage("thumb", "/images/ball_blue_large_alt.png");
         am.loadImage("track", "/images/paddle.png");
-        am.loadImage("Back", "/images/number_cross.png");
+        am.loadImage("Back", "/images/button_back.png");
 
         // Laser
         am.loadImage("laser", "/images/laser.png");

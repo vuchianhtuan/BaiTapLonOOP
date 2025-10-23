@@ -6,17 +6,14 @@ import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.objects.BackButton;
 
 import java.awt.*;
-// Cần các import này cho xử lý file
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException; // Thêm import này
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.*; // Import đầy đủ java.util
+import java.util.*;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -25,25 +22,17 @@ public class ScoreManager {
     private final GameManager gameManager;
     private InputHandler inputHandler;
 
-    // --- Dữ liệu lưu trữ ---
     private int highScore; // Điểm cao nhất MỘT LẦN CHƠI
     private long fastestTime = Long.MAX_VALUE; // Thời gian nhanh nhất HOÀN THÀNH GAME
 
     private List<Integer> topScores = new ArrayList<>(6); // Top 5 điểm
     private List<Long> topTimes = new ArrayList<>(6); // Top 5 thời gian (WIN)
-
-    // Dữ liệu theo từng màn
     private Map<Integer, Integer> perLevelHighScores;
     private Map<Integer, Long> perLevelFastestTimes;
     private int totalLevels = 3;
 
     private Image BackgroundImage;
     private BackButton backButton;
-
-    // Biến tạm cho session hiện tại (sẽ bị xóa vì không cần)
-    // private int currentSessionScore = 0;
-    // private long currentSessionTime = 0;
-
 
     private static final Path SCORE_FILE = resolveResourceBackedScoreFile();
     private static final Path SCORE_DIR = (SCORE_FILE != null) ? SCORE_FILE.getParent() : null; // Kiểm tra null
@@ -88,7 +77,6 @@ public class ScoreManager {
             // Không cần set changed = true ở đây, sẽ check ở cuối
         }
 
-
         // 3. Chỉ cập nhật thời gian nếu người chơi THẮNG và có thời gian hợp lệ
         if (didWin && totalTime > 0) {
             // Cập nhật Fastest Time (Thời gian nhanh nhất mọi thời đại)
@@ -106,9 +94,6 @@ public class ScoreManager {
             // Không cần set changed = true ở đây
         }
 
-        // Chỉ lưu nếu có thay đổi thực sự trong kỷ lục hoặc danh sách top
-        // (Kiểm tra xem điểm/thời gian mới có thực sự vào top 5 không)
-        // Cách đơn giản là luôn lưu khi gọi hàm này
         saveScoresToFile();
     }
 
@@ -169,13 +154,11 @@ public class ScoreManager {
         return String.format("%02d:%02d.%03d", minutes, seconds, milliseconds);
     }
 
-
-    // --- HÀM RENDER ĐƯỢC THIẾT KẾ LẠI ---
-    // KHÔNG CÓ @Override ở đây
     public void render(Graphics g) {
         ScalingManager sm = ScalingManager.getInstance();
         Graphics2D g2d = (Graphics2D) g;
 
+        // Bật khử răng cưa
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -185,12 +168,18 @@ public class ScoreManager {
                     sm.scaleX(0), sm.scaleY(0),
                     sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT),
                     null);
-        } else {
+        } else { // Vẽ nền đen dự phòng nếu ảnh lỗi
             g.setColor(Color.BLACK);
             g.fillRect(
                     sm.scaleX(0), sm.scaleY(0),
                     sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT));
         }
+
+        // --- THÊM: Màu nền cho panel chữ ---
+        Color panelColor = new Color(50, 50, 50, 200); // Màu xám đậm, bán trong suốt (alpha=200)
+        int panelArc = 20; // Độ bo tròn góc panel
+        int panelPadding = 15; // Khoảng cách từ chữ đến mép panel (logic)
+        // --- KẾT THÚC THÊM ---
 
         // 2. Chuẩn bị Font
         Font titleFont = new Font("Arial", Font.BOLD, 48);
@@ -201,46 +190,101 @@ public class ScoreManager {
         Font scaledRecordFont = recordFont.deriveFont((float)(recordFont.getSize() * sm.getScale()));
         Font scaledListFont = listFont.deriveFont((float)(listFont.getSize() * sm.getScale()));
 
-        g2d.setColor(Color.WHITE);
+        // Lưu composite mặc định
+        Composite defaultComposite = g2d.getComposite();
 
-        // 3. Vẽ Tiêu đề
+        // 3. Vẽ Tiêu đề và Panel nền
         g2d.setFont(scaledTitleFont);
+        g2d.setColor(Color.WHITE);
         String title = "HIGH SCORES";
         FontMetrics fmTitle = g2d.getFontMetrics();
         int titleWidth = fmTitle.stringWidth(title);
-        g2d.drawString(title, sm.scaleX((sm.NATIVE_WIDTH - titleWidth) / 2), sm.scaleY(80));
+        int titleHeight = fmTitle.getHeight();
+        int titleAscent = fmTitle.getAscent();
+        int titleLogicX = (sm.NATIVE_WIDTH - titleWidth) / 2;
+        int titleLogicY = 80;
 
-        // 4. Vẽ Kỷ lục
+        // Vẽ panel nền cho tiêu đề
+        int titlePanelX = titleLogicX - panelPadding;
+        int titlePanelY = titleLogicY - titleAscent - panelPadding; // Căn Y dựa vào ascent
+        int titlePanelW = titleWidth + 2 * panelPadding;
+        int titlePanelH = titleHeight + 2 * panelPadding;
+        g2d.setColor(panelColor);
+        g2d.fillRoundRect(sm.scaleX(titlePanelX), sm.scaleY(titlePanelY),
+                sm.scaleWidth(titlePanelW), sm.scaleHeight(titlePanelH),
+                sm.scaleWidth(panelArc), sm.scaleHeight(panelArc));
+        // Vẽ chữ tiêu đề
+        g2d.setColor(Color.WHITE);
+        g2d.drawString(title, sm.scaleX(titleLogicX), sm.scaleY(titleLogicY));
+
+
+        // 4. Vẽ Kỷ lục và Panel nền
         g2d.setFont(scaledRecordFont);
         FontMetrics fmRecord = g2d.getFontMetrics();
+        int recordHeight = fmRecord.getHeight();
+        int recordAscent = fmRecord.getAscent();
 
         String bestScoreText = "Best Score: " + highScore;
         int bestScoreWidth = fmRecord.stringWidth(bestScoreText);
-        g2d.drawString(bestScoreText, sm.scaleX((sm.NATIVE_WIDTH - bestScoreWidth) / 2), sm.scaleY(140));
+        int bestScoreLogicX = (sm.NATIVE_WIDTH - bestScoreWidth) / 2;
+        int bestScoreLogicY = 160; // Dịch xuống
 
         String fastestTimeText = "Fastest Win: " + formatTime(fastestTime);
         int fastestTimeWidth = fmRecord.stringWidth(fastestTimeText);
-        g2d.drawString(fastestTimeText, sm.scaleX((sm.NATIVE_WIDTH - fastestTimeWidth) / 2), sm.scaleY(180));
+        int fastestTimeLogicX = (sm.NATIVE_WIDTH - fastestTimeWidth) / 2;
+        int fastestTimeLogicY = bestScoreLogicY + recordHeight + sm.scaleHeight(10); // Dưới dòng điểm
 
-        // 5. Vẽ 2 cột: Top 5 Scores và Top 5 Times
+        // Tính kích thước panel chung cho 2 dòng kỷ lục
+        int recordPanelW = Math.max(bestScoreWidth, fastestTimeWidth) + 2 * panelPadding;
+        int recordPanelH = (recordHeight + sm.scaleHeight(10)) * 2 + 2 * panelPadding; // 2 dòng + padding
+        int recordPanelX = (sm.NATIVE_WIDTH - recordPanelW) / 2;
+        int recordPanelY = bestScoreLogicY - recordAscent - panelPadding;
+
+        // Vẽ panel nền kỷ lục
+        g2d.setColor(panelColor);
+        g2d.fillRoundRect(sm.scaleX(recordPanelX), sm.scaleY(recordPanelY),
+                sm.scaleWidth(recordPanelW), sm.scaleHeight(recordPanelH),
+                sm.scaleWidth(panelArc), sm.scaleHeight(panelArc));
+        // Vẽ chữ kỷ lục
+        g2d.setColor(Color.WHITE);
+        g2d.drawString(bestScoreText, sm.scaleX(bestScoreLogicX), sm.scaleY(bestScoreLogicY));
+        g2d.drawString(fastestTimeText, sm.scaleX(fastestTimeLogicX), sm.scaleY(fastestTimeLogicY));
+
+
+        // 5. Vẽ 2 cột danh sách và Panel nền
         g2d.setFont(scaledListFont);
         FontMetrics fmList = g2d.getFontMetrics();
-        int listStartY = 260;
-        int lineHeight = fmList.getHeight() + sm.scaleHeight(10); // Khoảng cách dòng
+        int listStartY = 280; // Dịch danh sách xuống
+        int listTitleY = listStartY - fmList.getHeight() - sm.scaleHeight(5); // Vị trí tiêu đề cột
+        int lineHeight = fmList.getHeight() + sm.scaleHeight(10);
+        int listPanelH = lineHeight * 6 + 2 * panelPadding; // Panel cao đủ cho tiêu đề + 5 dòng + padding
+        int listPanelArc = 15; // Bo tròn ít hơn
 
         // --- Cột Top Scores ---
         int scoreColXLogic = sm.NATIVE_WIDTH / 4; // Tọa độ logic X cột điểm
         String scoreTitle = "Top 5 Scores";
         int scoreTitleWidth = fmList.stringWidth(scoreTitle);
-        g2d.drawString(scoreTitle, sm.scaleX(scoreColXLogic) - scoreTitleWidth / 2, sm.scaleY(listStartY - lineHeight)); // Tiêu đề cột
-        for (int i = 0; i < topScores.size(); i++) {
-            String entryText = String.format("%d. %d", i + 1, topScores.get(i));
-            int entryWidth = fmList.stringWidth(entryText);
-            g2d.drawString(entryText, sm.scaleX(scoreColXLogic) - entryWidth / 2, sm.scaleY(listStartY + i * lineHeight));
-        }
-        // Vẽ thêm dòng trống nếu ít hơn 5 điểm
-        for (int i = topScores.size(); i < 5; i++) {
-            String entryText = String.format("%d. ---", i + 1);
+        // Tính kích thước panel cột điểm
+        int scorePanelW = scoreTitleWidth + 4 * panelPadding; // Rộng hơn 1 chút
+        int scorePanelX = scoreColXLogic - scorePanelW / 2;
+        int scorePanelY = listTitleY - fmList.getAscent() - panelPadding;
+        // Vẽ panel nền cột điểm
+        g2d.setColor(panelColor);
+        g2d.fillRoundRect(sm.scaleX(scorePanelX), sm.scaleY(scorePanelY),
+                sm.scaleWidth(scorePanelW), sm.scaleHeight(listPanelH),
+                sm.scaleWidth(listPanelArc), sm.scaleHeight(listPanelArc));
+        // Vẽ tiêu đề cột điểm
+        g2d.setColor(Color.ORANGE); // Màu khác cho tiêu đề cột
+        g2d.drawString(scoreTitle, sm.scaleX(scoreColXLogic) - scoreTitleWidth / 2, sm.scaleY(listTitleY));
+        // Vẽ danh sách điểm
+        g2d.setColor(Color.WHITE);
+        for (int i = 0; i < 5; i++) { // Luôn vẽ 5 dòng
+            String entryText;
+            if (i < topScores.size()) {
+                entryText = String.format("%d. %d", i + 1, topScores.get(i));
+            } else {
+                entryText = String.format("%d. ---", i + 1);
+            }
             int entryWidth = fmList.stringWidth(entryText);
             g2d.drawString(entryText, sm.scaleX(scoreColXLogic) - entryWidth / 2, sm.scaleY(listStartY + i * lineHeight));
         }
@@ -249,26 +293,38 @@ public class ScoreManager {
         int timeColXLogic = sm.NATIVE_WIDTH * 3 / 4; // Tọa độ logic X cột thời gian
         String timeTitle = "Top 5 Times (Win)";
         int timeTitleWidth = fmList.stringWidth(timeTitle);
-        g2d.drawString(timeTitle, sm.scaleX(timeColXLogic) - timeTitleWidth / 2, sm.scaleY(listStartY - lineHeight)); // Tiêu đề cột
-        for (int i = 0; i < topTimes.size(); i++) {
-            String entryText = String.format("%d. %s", i + 1, formatTime(topTimes.get(i)));
+        // Tính kích thước panel cột thời gian
+        int timePanelW = timeTitleWidth + 4 * panelPadding; // Rộng hơn 1 chút
+        int timePanelX = timeColXLogic - timePanelW / 2;
+        int timePanelY = listTitleY - fmList.getAscent() - panelPadding; // Cùng Y với panel điểm
+        // Vẽ panel nền cột thời gian
+        g2d.setColor(panelColor);
+        g2d.fillRoundRect(sm.scaleX(timePanelX), sm.scaleY(timePanelY),
+                sm.scaleWidth(timePanelW), sm.scaleHeight(listPanelH),
+                sm.scaleWidth(listPanelArc), sm.scaleHeight(listPanelArc));
+        // Vẽ tiêu đề cột thời gian
+        g2d.setColor(Color.CYAN); // Màu khác cho tiêu đề cột
+        g2d.drawString(timeTitle, sm.scaleX(timeColXLogic) - timeTitleWidth / 2, sm.scaleY(listTitleY));
+        // Vẽ danh sách thời gian
+        g2d.setColor(Color.WHITE);
+        for (int i = 0; i < 5; i++) { // Luôn vẽ 5 dòng
+            String entryText;
+            if (i < topTimes.size()) {
+                entryText = String.format("%d. %s", i + 1, formatTime(topTimes.get(i)));
+            } else {
+                entryText = String.format("%d. --:--.---", i + 1);
+            }
             int entryWidth = fmList.stringWidth(entryText);
             g2d.drawString(entryText, sm.scaleX(timeColXLogic) - entryWidth / 2, sm.scaleY(listStartY + i * lineHeight));
         }
-        // Vẽ thêm dòng trống nếu ít hơn 5 thời gian
-        for (int i = topTimes.size(); i < 5; i++) {
-            String entryText = String.format("%d. --:--.---", i + 1);
-            int entryWidth = fmList.stringWidth(entryText);
-            g2d.drawString(entryText, sm.scaleX(timeColXLogic) - entryWidth / 2, sm.scaleY(listStartY + i * lineHeight));
-        }
-
 
         // 6. Vẽ nút Back
         backButton.draw(g, sm);
+
+        // Reset composite về mặc định (quan trọng nếu dùng alpha)
+        g2d.setComposite(defaultComposite);
     }
 
-
-    // --- resolveResourceBackedScoreFile() ĐÃ SỬA ---
     private static Path resolveResourceBackedScoreFile() {
         // Ưu tiên 1: Thư mục người dùng (ổn định nhất)
         try {
@@ -296,36 +352,11 @@ public class ScoreManager {
             Path currentDir = Paths.get(System.getProperty("user.dir"));
             // Chỉ dùng nếu có thể ghi
             if (Files.isDirectory(currentDir) && Files.isWritable(currentDir)) {
-                // Có thể tạo thư mục con 'data' nếu muốn
-                // Path dataDir = currentDir.resolve("data");
-                // if (Files.notExists(dataDir)) Files.createDirectories(dataDir);
-                // if (Files.isDirectory(dataDir) && Files.isWritable(dataDir)) {
-                //     return dataDir.resolve("scores.properties");
-                // }
-                // Hoặc lưu trực tiếp vào thư mục hiện tại:
                 return currentDir.resolve("scores.properties");
             }
         } catch (Exception e) {
             System.err.println("Lỗi khi truy cập thư mục hiện tại: " + e.getMessage());
         }
-
-
-        // Ưu tiên 3: Vị trí classpath (thường chỉ đọc được khi đóng gói)
-        // Bỏ qua việc ghi vào đây vì thường không khả thi
-        /*
-        try {
-            URL url = ScoreManager.class.getClassLoader().getResource("");
-            if (url != null && "file".equalsIgnoreCase(url.getProtocol())) {
-                Path classesDir = Paths.get(url.toURI());
-                // Rất hiếm khi thư mục classes có thể ghi được sau khi build
-                if (Files.isDirectory(classesDir) && Files.isWritable(classesDir)) {
-                    // return classesDir.resolve("scores.properties"); // Không nên dùng
-                }
-            }
-        } catch (URISyntaxException | SecurityException e) { // Bắt các exception cụ thể
-            System.err.println("Lỗi khi truy cập classpath: " + e.getMessage());
-        }
-        */
 
         // Nếu tất cả thất bại
         System.err.println("Không tìm thấy vị trí phù hợp để lưu file điểm số.");
