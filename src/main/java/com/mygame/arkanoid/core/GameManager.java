@@ -882,9 +882,9 @@ public class GameManager {
             int paddleWidth = 120;
             int px = (gameAreaWidth - paddleWidth) / 2;
             int py = nativeHeight - 80; // vị trí hiển thị phía cuối màn
-            paddle = new Paddle(px, py, paddleWidth, 18);
+            paddle = new Paddle(px, py, paddleWidth, 18,selectedBallSkinKey );
 
-            ball = new Ball(px + (paddleWidth / 2) - (ballSize / 2), py - ballSize - 1, ballSize, ballSize);
+            ball = new Ball(px + (paddleWidth / 2) - (ballSize / 2), py - ballSize - 1, ballSize, ballSize,selectedPaddleSkinKey );
             ball.resetBallPosition(paddle);   // dính lên paddle
 
             balls.clear();
