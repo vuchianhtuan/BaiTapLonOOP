@@ -35,9 +35,9 @@ public class Paddle extends MovableObject {
     }
     public void applyPowerUp(PowerUp powerUp) {}
 
-    public Paddle(int x, int y, int width, int height) {
+    public Paddle(int x, int y, int width, int height, String skinKey) {
         super(x, y, width, height);
-        this.imageName = "paddle";
+        this.imageName = skinKey;
         this.originalWidth = width;
     }
 

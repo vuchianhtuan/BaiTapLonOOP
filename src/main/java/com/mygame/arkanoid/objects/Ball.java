@@ -185,11 +185,11 @@ public class Ball extends MovableObject {
         }
     }
 
-    public Ball(int x, int y, int width, int height) {
+    public Ball(int x, int y, int width, int height, String skinKey) { // <--- THÊM THAM SỐ
         super(x, y, width, height);
         dx = 1;
         dy = -1;
-        this.imageName = "test_ball";
+        this.imageName = skinKey; // <--- SỬA LẠI DÒNG NÀY
         this.originalSpeed = this.speed;
     }
 

@@ -29,8 +29,6 @@ public class GameManager {
     private List<PowerUp> activePowerUps;
     private List<Shard> activeShards; // <--- THÊM DÒNG NÀY
     private List<HeartUI> hearts;
-    private Track track;
-    private Thumb thumb;
     private BackButton backButton;
     private boolean canContinue = false;
 
@@ -49,7 +47,7 @@ public class GameManager {
     private SoundManager soundManager;
     private InputHandler inputHandler;
     private MenuManager menuManager;
-    private SetupVolume setupVolume;
+    private SettingManager settingManager;
     private SelectLevel selectLevel;
     private String currentTheme = "";
     private Image currentBackground = null;
@@ -62,6 +60,9 @@ public class GameManager {
     private Rectangle pauseButtonRect;
     private Rectangle resumeButtonRect;
     private Rectangle menuButtonRect;
+
+    private String selectedBallSkinKey = "skin_ball_1";
+    private String selectedPaddleSkinKey = "skin_paddle_1";
 
     public static final String GAMESTATE_PAUSED = "PAUSED";
 
@@ -77,8 +78,6 @@ public class GameManager {
         laserShooters = new ArrayList<>();
         powerUps = new ArrayList<>();
         activePowerUps = new ArrayList<>();
-        track = new Track(400, 130, 300, 20);
-        thumb = new Thumb(400, 120, 40, 40);
         backButton = new BackButton(10, 10, 40, 40);
         activeShards = new ArrayList<>(); // <--- KHỞI TẠO DANH SÁCH
         this.soundManager = new SoundManager();
@@ -104,7 +103,7 @@ public class GameManager {
         this.levelTransition = new LevelTransition(this);
         menuManager = new MenuManager(this, inputHandler);
         scoreManager = new ScoreManager(this, inputHandler);
-        setupVolume = new SetupVolume(inputHandler, this, soundManager, track, thumb);
+        settingManager = new SettingManager(inputHandler, this, soundManager);
         selectLevel = new SelectLevel(inputHandler, this, levelManager);
 
         // Đặt trạng thái ban đầu của game là MENU
@@ -124,7 +123,7 @@ public class GameManager {
         am.loadImage("gameover2", "/images/gameover2.png");
         am.loadImage("gameover3", "/images/gameover3.png");
         am.loadImage("scoreBackground", "/images/backGroundMenu.png");
-        am.loadImage("setupVolumeBackground", "/images/backGroundMenu.png");
+        am.loadImage("settingBackground", "/images/backGroundMenu.png");
         am.loadImage("selectLevelBackground", "/images/backGroundMenu.png");
 
         am.loadImage("level1_preview", "/images/level1_preview.png");
@@ -146,8 +145,17 @@ public class GameManager {
         am.loadImage("laser", "/images/laser.png");
         am.loadImage("laserShooter", "/images/laser_shooter.png");
         am.loadImage("fire_ball_animation", "/images/fire_ball_animation.png");
-        am.loadImage("test_ball", "/images/test_ball.png");
+        //am.loadImage("test_ball", "/images/test_ball.png");
         am.loadImage("forest_brick", "/images/forest_normalBrick.png");
+        am.loadImage("arrow_left", "/images/icon_continue.png"); // <--- Thêm ảnh mũi tên
+        am.loadImage("arrow_right", "/images/icon_continue.png"); // <--- Thêm ảnh mũi tên
+        // Ví dụ 2 skin cho Ball (bạn tự đổi tên file)
+        am.loadImage("skin_ball_1", "/images/test_ball.png");
+        am.loadImage("skin_ball_2", "/images/ball_red_small.png");
+
+        // Ví dụ 2 skin cho Paddle (bạn tự đổi tên file)
+        am.loadImage("skin_paddle_1", "/images/paddle.png");
+        am.loadImage("skin_paddle_2", "/images/paddle.png");
 
         //Explosive efect
         for (int i = 1; i <= 8; i++) {
@@ -165,8 +173,6 @@ public class GameManager {
         AssetManager am = AssetManager.getInstance();
 
         // Tải các ảnh với tiền tố (ví dụ "ice_ball.png" hoặc "ball.png")
-        am.loadImage("ball", "/images/" + prefix + "ball.png");
-        am.loadImage("paddle", "/images/" + prefix + "paddle.png");
         am.loadImage("normalBrick", "/images/" + prefix + "normalBrick.png");
         am.loadImage("explosiveBrick", "/images/" + prefix + "explosiveBrick.png");
         am.loadImage("strongBrick", "/images/" + prefix + "strongBrick.png");
@@ -261,9 +267,8 @@ public class GameManager {
         int finalPaddleX = (gameAreaWidth / 2) - (paddleWidth / 2);
         int spawnPaddleY = nativeHeight + 20;
 
-        paddle = new Paddle(finalPaddleX, spawnPaddleY, paddleWidth, 18);
-        ball = new Ball(finalPaddleX + (paddleWidth / 2) - (ballSize / 2), spawnPaddleY - ballSize - 1, ballSize, ballSize);
-
+        paddle = new Paddle(finalPaddleX, spawnPaddleY, paddleWidth, 18, selectedPaddleSkinKey);
+        ball = new Ball(finalPaddleX + (paddleWidth / 2) - (ballSize / 2), spawnPaddleY - ballSize - 1, ballSize, ballSize, selectedBallSkinKey);
         ball.resetBallPosition(paddle);
         balls.clear();
         balls.add(ball);
@@ -478,6 +483,7 @@ public class GameManager {
                     break; // Thoát vòng lặp để tránh ConcurrentModificationException
                 }
                 if(b.checkCollision(paddle) && !b.isStuckToPaddle()) {
+                    soundManager.playSound(SoundManager.SFX_PADDLE_HIT);
                     if (paddle.isSticky()) {
                         b.stickToPaddle(paddle);
                     } else {
@@ -526,6 +532,7 @@ public class GameManager {
 
                     // Chỉ kiểm tra va chạm với những viên gạch chưa bị phá hủy
                     if (!target.isDestroyed() && b.checkCollision(target)) {
+                        soundManager.playSound(SoundManager.SFX_BRICK_HIT);
                         boolean detonatedImmediately = false;
 
                         // 1. KIỂM TRA: GẠCH NỔ ĐANG CHỜ BỊ VA CHẠM (KÍCH NỔ TỨC THÌ)
@@ -600,6 +607,7 @@ public class GameManager {
                 if (sourceBrick instanceof ExplosiveBrick) {
                     activeShards.addAll(sourceBrick.shatter()); // <--- THÊM DÒNG NÀY
                 }
+                soundManager.playSound(SoundManager.SFX_EXPLOSION);
                 explode(sourceBrick, 100.0);
             }
 
@@ -647,8 +655,8 @@ public class GameManager {
             if (balls.isEmpty()) {
                 lives--;
                 if (lives > 0) {
-                    // SỬ DỤNG BIẾN THÀNH VIÊN:
-                    ball = new Ball(paddle.getX() + (paddle.getWidth() / 2) - (this.ballSize / 2), paddle.getY() - this.ballSize - 1, this.ballSize, this.ballSize);
+                    soundManager.playSound(SoundManager.SFX_BALL_LOSS);
+                    ball = new Ball(paddle.getX() + (paddle.getWidth() / 2) - (this.ballSize / 2), paddle.getY() - this.ballSize - 1, this.ballSize, this.ballSize, selectedBallSkinKey);
                     ball.stickToPaddle(paddle);
                     balls.add(ball);
                 } else {
@@ -741,8 +749,8 @@ public class GameManager {
             }
         } else if ("HIGH_SCORES".equals(gameState)) {
             scoreManager.update();
-        } else if ("SETUP".equals(gameState)) {
-            setupVolume.update();
+        } else if ("SETTING".equals(gameState)) {
+            settingManager.update();
         } else if ("LEVEL_SELECT".equals(gameState)) {
             selectLevel.update();
         }
@@ -754,10 +762,7 @@ public class GameManager {
         return scoreManager;
     }
 
-    public SetupVolume getSetupVolume() {
-        return setupVolume;
-    }
-
+    public SettingManager getSettingManager() { return settingManager; }
     public SelectLevel getSelectLevel() {
         return selectLevel;
     }
@@ -885,6 +890,22 @@ public class GameManager {
 
     public LevelManager getLevelManager() {
         return levelManager;
+    }
+
+    public String getSelectedBallSkinKey() {
+        return selectedBallSkinKey;
+    }
+
+    public void setSelectedBallSkinKey(String selectedBallSkinKey) {
+        this.selectedBallSkinKey = selectedBallSkinKey;
+    }
+
+    public String getSelectedPaddleSkinKey() {
+        return selectedPaddleSkinKey;
+    }
+
+    public void setSelectedPaddleSkinKey(String selectedPaddleSkinKey) {
+        this.selectedPaddleSkinKey = selectedPaddleSkinKey;
     }
 }
 

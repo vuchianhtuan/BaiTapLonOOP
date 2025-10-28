@@ -11,7 +11,7 @@ import java.awt.image.BufferedImage;
 public class MenuManager {
     private final GameManager gameManager;
     private final InputHandler inputHandler;
-    private final String[] options = {"New Game", "High Scores", "Select Level", "Setup", "Exit"};
+    private final String[] options = {"New Game", "High Scores", "Select Level", "Settings", "Exit"};
     private int selectedOption = -1; // Index của nút đang được hover
     private boolean continueAvailable = false;
     private Rectangle[] optionBounds; // Khu vực logic để click
@@ -72,7 +72,7 @@ public class MenuManager {
             case 0: onStartButtonClicked(); break;
             case 1: gameManager.setGameState("HIGH_SCORES"); break;
             case 2: gameManager.setGameState("LEVEL_SELECT"); break;
-            case 3: gameManager.setGameState("SETUP"); break;
+            case 3: gameManager.setGameState("SETTING"); break;
             case 4: System.exit(0); break;
         }
     }

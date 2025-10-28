@@ -8,15 +8,26 @@ import javax.sound.sampled.*;
 import java.net.URL;
 
 public class SoundManager {
+
+    // --- BỔ SUNG: Hằng số cho tên file âm thanh SFX ---
+    // (Bạn hãy thay "ten_file.wav" bằng tên file thực tế của bạn trong thư mục /sounds/)
+    public static final String SFX_BRICK_HIT = "gach_vo.wav";     // Ví dụ
+    public static final String SFX_PADDLE_HIT = "paddle_cham.wav";  // Ví dụ
+    public static final String SFX_BALL_LOSS = "mat_bong.wav";   // Ví dụ
+    public static final String SFX_EXPLOSION = "no.wav";       // Ví dụ
+
+    // --- THAY ĐỔI: Chia 1 volume thành 3 volume ---
+    private float masterVolume = 1.0f; // Âm lượng tổng
+    private float musicVolume = 0.8f;  // Âm lượng nhạc nền
+    private float sfxVolume = 1.0f;    // Âm lượng hiệu ứng
+    private boolean muted = false;     // Trạng thái tắt tiếng
+
     private Clip backgroundMusicClip;
-    // THAY ĐỔI: Chuyển 'volume' thành non-static
-    private float volume = 0.8f;
 
     public void playBackgroundMusic(String musicName) {
         stopBackgroundMusic();
         try {
             URL url = this.getClass().getResource("/sounds/" + musicName);
-
             if (url == null) {
                 System.err.println("Không tìm thấy file âm thanh: /sounds/" + musicName);
                 return;
@@ -26,8 +37,8 @@ public class SoundManager {
             backgroundMusicClip = AudioSystem.getClip();
             backgroundMusicClip.open(audioInput);
 
-            // THAY ĐỔI: Gọi hàm setVolume (non-static)
-            setVolume(backgroundMusicClip, this.volume);
+            // THAY ĐỔI: Áp dụng âm lượng nhạc nền đã tính toán
+            updateBackgroundMusicVolume(); // Sử dụng hàm helper mới
 
             backgroundMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
             backgroundMusicClip.start();
@@ -38,48 +49,108 @@ public class SoundManager {
         }
     }
 
-    // THAY ĐỔI: Chuyển hàm này thành 'private' và 'non-static'
-    // Đây là hàm nội bộ để áp dụng âm lượng cho 1 clip cụ thể
-    private void setVolume(Clip clip, float volume) {
-        if (volume < 0f || volume > 1f)
-            throw new IllegalArgumentException("Volume outside valid range: " + volume);
+    public void playSound(String soundName) {
+        try {
+            URL url = this.getClass().getResource("/sounds/" + soundName);
+            if (url == null) {
+                System.err.println("Không tìm thấy file âm thanh: /sounds/" + soundName);
+                return;
+            }
+            AudioInputStream audioInput = AudioSystem.getAudioInputStream(url);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInput);
+
+            // THAY ĐỔI: Tính toán âm lượng hiệu ứng (SFX)
+            float effectiveSfxVolume = muted ? 0.0f : masterVolume * sfxVolume;
+            setClipVolume(clip, effectiveSfxVolume); // Áp dụng âm lượng đã tính
+
+            // BỔ SUNG: Tự động đóng clip sau khi phát xong để giải phóng tài nguyên
+            clip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    clip.close();
+                }
+            });
+
+            clip.start();
+        } catch (Exception e) {
+            System.err.println("Lỗi khi phát âm thanh: " + e.getMessage());
+        }
+    }
+
+    // --- CÁC HÀM SETTER VÀ GETTER MỚI ---
+
+    // Hàm private để áp dụng âm lượng (0.0f - 1.0f) cho một Clip CỤ THỂ
+    private void setClipVolume(Clip clip, float volume) {
+        if (volume < 0f) volume = 0f;
+        if (volume > 1f) volume = 1f;
 
         try {
             if (clip != null && clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                 FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                // Chuyển đổi âm lượng (0-1) sang thang đo Decibel (dB)
+                // -80.0f (tắt) đến 6.0206f (tối đa)
                 float range = gainControl.getMaximum() - gainControl.getMinimum();
                 float gain = (range * volume) + gainControl.getMinimum();
                 gainControl.setValue(gain);
             } else if(clip != null) {
-                System.err.println("MASTER_GAIN control is not supported for this Clip.");
+                System.err.println("MASTER_GAIN control không được hỗ trợ.");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // THAY ĐỔI: Đây là hàm 'public' (non-static) mà SetupVolume sẽ gọi
-    // Nó cập nhật âm lượng chung VÀ âm lượng của nhạc nền đang phát
-    public void setVolume(float vol) {
-        if (vol < 0f) vol = 0f;
-        if (vol > 1f) vol = 1f;
-
-        this.volume = vol; // Cập nhật âm lượng chung
-
-        // Áp dụng ngay cho nhạc nền đang phát (nếu có)
+    // Hàm private để cập nhật nhạc nền đang phát (khi master, music, hoặc mute thay đổi)
+    private void updateBackgroundMusicVolume() {
         if (backgroundMusicClip != null) {
-            setVolume(backgroundMusicClip, this.volume);
+            float effectiveMusicVolume = muted ? 0.0f : masterVolume * musicVolume;
+            setClipVolume(backgroundMusicClip, effectiveMusicVolume);
         }
     }
 
-    // HÀM MỚI: Dành cho GameManager khi PAUSED
+    // Hàm tiện ích private để giới hạn giá trị từ 0.0f đến 1.0f
+    private float clamp(float value) {
+        if (value < 0f) return 0f;
+        if (value > 1f) return 1f;
+        return value;
+    }
+
+    // --- Các hàm public này sẽ được SettingManager gọi ---
+
+    public void setMasterVolume(float volume) {
+        this.masterVolume = clamp(volume);
+        updateBackgroundMusicVolume(); // Cập nhật nhạc nền ngay lập tức
+    }
+
+    public void setMusicVolume(float volume) {
+        this.musicVolume = clamp(volume);
+        updateBackgroundMusicVolume(); // Cập nhật nhạc nền ngay lập tức
+    }
+
+    public void setSfxVolume(float volume) {
+        this.sfxVolume = clamp(volume);
+        // Không cần cập nhật gì ngay, vì SFX sẽ lấy giá trị này ở lần phát tiếp theo
+    }
+
+    public void setMuted(boolean muted) {
+        this.muted = muted;
+        updateBackgroundMusicVolume(); // Cập nhật nhạc nền ngay lập tức
+    }
+
+    // Các hàm Getter để SettingManager lấy giá trị ban đầu cho slider
+    public float getMasterVolume() { return masterVolume; }
+    public float getMusicVolume() { return musicVolume; }
+    public float getSfxVolume() { return sfxVolume; }
+    public boolean isMuted() { return muted; }
+
+    // --- CÁC HÀM QUẢN LÝ NHẠC NỀN (Giữ nguyên) ---
+
     public void pauseBackgroundMusic() {
         if (backgroundMusicClip != null && backgroundMusicClip.isRunning()) {
             backgroundMusicClip.stop();
         }
     }
 
-    // HÀM MỚI: Dành cho GameManager khi RESUME
     public void resumeBackgroundMusic() {
         if (backgroundMusicClip != null && !backgroundMusicClip.isRunning()) {
             backgroundMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
@@ -95,26 +166,5 @@ public class SoundManager {
         }
     }
 
-    public void playSound(String soundName) {
-        try {
-            // THAY ĐỔI: Sửa lỗi đường dẫn "/sound/" -> "/sounds/"
-            URL url = this.getClass().getResource("/sounds/" + soundName);
-
-            if (url == null) {
-                // THAY ĐỔI: Cập nhật thông báo lỗi
-                System.err.println("Không tìm thấy file âm thanh: /sounds/" + soundName);
-                return;
-            }
-            AudioInputStream audioInput = AudioSystem.getAudioInputStream(url);
-            Clip clip = AudioSystem.getClip();
-            clip.open(audioInput);
-
-            // THÊM MỚI: Áp dụng âm lượng cho hiệu ứng âm thanh
-            setVolume(clip, this.volume);
-
-            clip.start();
-        } catch (Exception e) {
-            System.err.println("Lỗi khi phát âm thanh: " + e.getMessage());
-        }
-    }
+    // Xóa hàm setVolume(float vol) và getVolume() cũ
 }

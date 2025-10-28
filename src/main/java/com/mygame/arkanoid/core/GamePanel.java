@@ -88,8 +88,8 @@ public class GamePanel extends JPanel {
             gameManager.getMenuManager().render(g);
         } else if ("HIGH_SCORES".equals(currentState)) {
             gameManager.getScoreManager().render(g);
-        } else if ("SETUP".equals(currentState)) {
-            gameManager.getSetupVolume().render(g);
+        } else if ("SETTING".equals(currentState)) {
+            gameManager.getSettingManager().render(g);
         } else if ("LEVEL_SELECT".equals(currentState)) {
             gameManager.getSelectLevel().render(g);
         }

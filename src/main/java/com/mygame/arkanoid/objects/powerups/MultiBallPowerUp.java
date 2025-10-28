@@ -20,7 +20,7 @@ public class MultiBallPowerUp extends PowerUp {
         int x = mainBall.getX();
         int y = mainBall.getY();
         for (int i = 0; i < BALL_COUNT; i++) {
-            Ball b = new Ball(x, y, 15, 15);
+            Ball b = new Ball(x, y, 15, 15, gameManager.getSelectedBallSkinKey());
             b.setStuckToPaddle(false);
 
             if (i == 0) {
