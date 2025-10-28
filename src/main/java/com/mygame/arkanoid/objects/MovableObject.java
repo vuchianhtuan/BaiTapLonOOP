@@ -1,7 +1,7 @@
 package com.mygame.arkanoid.objects;
 
 public abstract class MovableObject extends GameObject {
-    protected int dx, dy;
+    protected double dx, dy;
     public abstract void move();
 
     public MovableObject(int x, int y, int width, int height) {
@@ -10,7 +10,7 @@ public abstract class MovableObject extends GameObject {
         this.dy = 0;
     }
 
-    public int getDx() {
+    public double getDx() {
         return dx;
     }
 
@@ -18,7 +18,7 @@ public abstract class MovableObject extends GameObject {
         this.dx = dx;
     }
 
-    public int getDy() {
+    public double getDy() {
         return dy;
     }
 

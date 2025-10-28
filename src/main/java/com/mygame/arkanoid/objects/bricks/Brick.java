@@ -13,6 +13,7 @@ public abstract class Brick extends GameObject {
     protected int hitPoints;
     protected String type;
     protected String imageName;
+    private int id = -1; // ID duy nhất cho mỗi gạch
 
     public Brick(int x, int y, int width, int height, int hitPoints, String type, String imageName) {
         super(x, y, width, height);
@@ -85,4 +86,6 @@ public abstract class Brick extends GameObject {
 
     // KHẮC PHỤC: XÓA phương thức public abstract Color getColor();
     // vì nó không còn được sử dụng và cần được triển khai nữa.
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 }
