@@ -9,6 +9,10 @@ import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent;
 
 public class Ball extends MovableObject {
+    private static final double MIN_REFLECT_ANGLE_DEG = 30.0; // góc tối thiểu
+    private static final double MAX_REFLECT_ANGLE_DEG = 60.0; // góc tối đa
+    private static final double CENTER_EPS = 0.02; // vùng chết ở giữa paddle
+
     private double speed = 7;
     private final double originalSpeed;
     private boolean stuckToPaddle = true;
@@ -52,6 +56,36 @@ public class Ball extends MovableObject {
     }
 
     public void bounceOff(GameObject other) {
+        if (other instanceof Paddle) {
+            Paddle paddle = (Paddle) other;
+
+            // Tính toán vị trí tương đối của bóng so với tâm paddle
+            double paddleCenterX = paddle.getX() + paddle.getWidth() / 2.0;
+            double ballCenterX = this.x + this.width / 2.0;
+
+            // Tính toán góc phản xạ dựa trên vị trí chạm
+            double relativeIntersectX = ballCenterX - paddleCenterX;
+            double normalizedRelativeIntersectionX = relativeIntersectX / (paddle.getWidth() / 2.0);
+
+            // Áp dụng vùng chết ở giữa để tránh góc quá nhỏ (gần thẳng đứng)
+            if (Math.abs(normalizedRelativeIntersectionX) < CENTER_EPS) {
+                normalizedRelativeIntersectionX = 0;
+            }
+
+            // Tính góc phản xạ mới
+            double reflectAngleDeg = normalizedRelativeIntersectionX * (MAX_REFLECT_ANGLE_DEG - MIN_REFLECT_ANGLE_DEG);
+            if (reflectAngleDeg > 0) {
+                reflectAngleDeg += MIN_REFLECT_ANGLE_DEG;
+            } else if (reflectAngleDeg < 0) {
+                reflectAngleDeg -= MIN_REFLECT_ANGLE_DEG;
+            }
+
+            // Chuyển góc sang radian
+            double reflectAngleRad = Math.toRadians(reflectAngleDeg);
+
+            this.dx = Math.sin(reflectAngleRad);
+            this.dy = -Math.cos(reflectAngleRad);
+        }
         if (this.getBounds().intersects(new Rectangle(other.x, other.y, other.width, 1))) {
             // Chạm cạnh trên
             this.dy = -Math.abs(this.dy);

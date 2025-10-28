@@ -13,11 +13,12 @@ import com.mygame.arkanoid.engine.SoundManager;
 
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.*;
+import com.mygame.arkanoid.systems.Save.SaveData;
+import com.mygame.arkanoid.systems.Save.SaveSystem;
 
 import java.awt.*;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.ArrayList;
 
 public class GameManager {
     private Paddle paddle;
@@ -213,25 +214,30 @@ public class GameManager {
         if (!canContinue) {
             return;
         }
+
+        ensureLevelHydrated();
+        ensurePaddleAndBallReadyForPlay();
+
         setGameState("PLAYING");
-        Level currentLevel = levelManager.getCurrentLevel();
-        if (currentLevel != null) {
-            String music = currentLevel.getThemeMusic();
-            if (music != null && !music.isEmpty()) {
-                soundManager.playBackgroundMusic(music);
-            } else {
-                soundManager.playBackgroundMusic("ExoticBaryon_PhaseXX.wav");
-            }
+        var currentLevel = levelManager.getCurrentLevel();
+        String music = (currentLevel != null) ? currentLevel.getThemeMusic() : null;
+        if (music != null && !music.isEmpty()) {
+            soundManager.playBackgroundMusic(music);
+        } else {
+            soundManager.playBackgroundMusic("ExoticBaryon_PhaseXX.wav");
         }
     }
 
+    // SỬA THÂN HÀM: LƯU KHI VỀ MENU
     private void goToMenuAndEnableContinue() {
         canContinue = true;
         if (menuManager != null) {
             menuManager.setContinueAvailable(true);
         }
         setGameState("MENU");
-        pauseCooldown = true; // Kích hoạt cooldown để tránh click đúp
+        pauseCooldown = true;
+        // Lưu trạng thái để Continue
+        SaveSystem.save(SaveSystem.capture(this));
     }
 
     private void loadNextLevel() {
@@ -312,6 +318,8 @@ public class GameManager {
             } else {
                 this.boss = null;
             }
+
+            ensureBrickIdsAssigned();
         }
     }
 
@@ -435,6 +443,9 @@ public class GameManager {
             }
 
             for (Brick brick : this.bricks) {
+                if( brick instanceof MovingBrick) {
+                    ((MovingBrick) brick).update(this.bricks);
+                }
                 brick.update();
             }
 
@@ -787,6 +798,10 @@ public class GameManager {
                 boolean didWin = "GAME_WIN".equals(state);
                 scoreManager.submitSessionResult(score, playtimeMillis, didWin);
             }
+
+            // Xoá file save vì phiên chơi đã kết thúc
+            SaveSystem.deleteSave();
+
             score = 0;
             playtimeMillis = 0;
         }
@@ -824,6 +839,141 @@ public class GameManager {
             case MULTI_BALL: return new MultiBallPowerUp(x, y, 30, 30);
             default: return null;
         }
+    }
+
+    public void ensureBrickIdsAssigned() {
+        int idCounter = 0;
+        if (levelManager != null && levelManager.getCurrentLevel() != null) {
+            for (Brick b : levelManager.getCurrentLevel().getBricks()) {
+                if (b.getId() < 0) b.setId(idCounter++);
+            }
+        }
+        if (boss != null) {
+            for (Brick b : boss.getBricks()) {
+                if (b.getId() < 0) b.setId(idCounter++);
+            }
+        }
+    }
+
+    private void ensurePaddleAndBallReadyForPlay() {
+        int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
+        int nativeHeight = ScalingManager.getInstance().NATIVE_HEIGHT;
+
+        if (ballSize <= 0) ballSize = 20;
+
+        // Trường hợp chưa có hoặc đang ở dưới đáy (spawn ngoài màn)
+        boolean needRecreate = (paddle == null || ball == null);
+        if (!needRecreate) {
+            try {
+                // Nếu Paddle có toạ độ ngoài màn hình -> tạo lại
+                needRecreate = paddle.getY() > nativeHeight;
+            } catch (Exception ignored) {
+                needRecreate = true;
+            }
+        }
+
+        if (needRecreate) {
+            int paddleWidth = 120;
+            int px = (gameAreaWidth - paddleWidth) / 2;
+            int py = nativeHeight - 80; // vị trí hiển thị phía cuối màn
+            paddle = new Paddle(px, py, paddleWidth, 18);
+
+            ball = new Ball(px + (paddleWidth / 2) - (ballSize / 2), py - ballSize - 1, ballSize, ballSize);
+            ball.resetBallPosition(paddle);   // dính lên paddle
+
+            balls.clear();
+            balls.add(ball);
+
+            // Dọn hiệu ứng PowerUp đang tồn tại để tránh trạng thái lạ khi Continue
+            for (PowerUp p : activePowerUps) {
+                p.removeEffect(this);
+            }
+            activePowerUps.clear();
+        }
+    }
+
+    private void ensureLevelHydrated() {
+        Level currentLevel = levelManager.getCurrentLevel();
+        if (currentLevel == null) return;
+
+        // Đảm bảo theme/background/boss sẵn sàng
+        loadLevelAssetsAndBricks();
+
+        // Chỉ nạp nếu đang rỗng để tránh nhân đôi
+        if (bricks.isEmpty() && laserShooters.isEmpty()) {
+            List<Brick> source = new ArrayList<>();
+            source.addAll(currentLevel.getBricks());
+            if (boss != null) {
+                source.addAll(boss.getBricks());
+            }
+            for (Brick brickToSpawn : source) {
+                if (brickToSpawn instanceof LaserShooterBrick) {
+                    if (!laserShooters.contains(brickToSpawn)) {
+                        laserShooters.add((LaserShooterBrick) brickToSpawn);
+                    }
+                } else if (!bricks.contains(brickToSpawn)) {
+                    bricks.add(brickToSpawn);
+                }
+            }
+        }
+    }
+
+    public void restoreFromSave(SaveData data) {
+        if (data == null) return;
+
+        if (getLevelManager() != null) {
+            getLevelManager().loadSpecificLevel(data.getLevelIndex());
+        }
+
+        // Nạp theme/background/boss và gán ID
+        loadLevelAssetsAndBricks();
+        ensureBrickIdsAssigned();
+
+        // Làm sạch rồi hydrate theo danh sách alive
+        this.bricks.clear();
+        this.laserShooters.clear();
+
+        List<Integer> aliveList = (data.getAliveBrickIds() != null)
+                ? data.getAliveBrickIds()
+                : java.util.Collections.emptyList();
+        boolean useFallbackAllAlive = aliveList.isEmpty(); // save cũ -> không có dữ liệu gạch
+        java.util.Set<Integer> alive = new java.util.HashSet<>(aliveList);
+
+        Level cur = levelManager.getCurrentLevel();
+        if (cur != null) {
+            for (Brick b : cur.getBricks()) {
+                if (alive.contains(b.getId())) {
+                    if (b instanceof LaserShooterBrick) {
+                        laserShooters.add((LaserShooterBrick) b);
+                    } else {
+                        bricks.add(b);
+                    }
+                }
+            }
+        }
+        if (boss != null) {
+            for (Brick b : boss.getBricks()) {
+                if (alive.contains(b.getId())) {
+                    // Boss bricks va chạm như gạch thường
+                    bricks.add(b);
+                }
+            }
+        }
+
+        // Áp số liệu phiên chơi
+        this.playtimeMillis = data.getPlaytimeMillis();
+        this.currentLevelPlaytimeMillis = data.getCurrentLevelPlaytimeMillis();
+        this.score = data.getScore();
+        this.lives = data.getLives();
+
+        // Bật continue trong menu
+        this.canContinue = data.isCanContinue();
+        if (menuManager != null) {
+            menuManager.setContinueAvailable(this.canContinue);
+        }
+
+        // Về MENU, chờ người chơi ấn Continue
+        setGameState("MENU");
     }
 
     // THÊM GETTER NÀY ĐỂ GAMEPANEL CÓ THỂ VẼ LASER

@@ -10,7 +10,7 @@ import java.net.URL;
 public class SoundManager {
     private Clip backgroundMusicClip;
     // THAY ĐỔI: Chuyển 'volume' thành non-static
-    private float volume = 0.8f;
+    private static float volume = 1.0f; // Mặc định âm lượng tối đa
 
     public void playBackgroundMusic(String musicName) {
         stopBackgroundMusic();

@@ -4,6 +4,8 @@ import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.Objects;
 
 public class MovingBrick extends Brick {
     private int speedX;
@@ -18,11 +20,31 @@ public class MovingBrick extends Brick {
     }
 
     // cập nhật vị trí sau mỗi loop
-    @Override public void update() {
-        this.x += speedX;
-        // di chuyen trong 1 khoảng.
-        if (x > originalX + moveRange || x < originalX - moveRange) {
-            speedX = -speedX;
+    @Override public void update() {}
+
+    public void update(List<Brick> brickList) {
+        int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
+        this.x += this.speedX;
+
+        // Kiểm tra nếu chạm tường bên trái hoặc bên phải, đổi hướng
+        if (this.x <= 0 || this.x + this.width >= gameAreaWidth) {
+            this.speedX = -this.speedX;
+            this.x += this.speedX; // Điều chỉnh vị trí sau khi đổi hướng
+        }
+
+        // Kiểm tra nếu vượt quá phạm vi di chuyển, đổi hướng
+        if (Math.abs(this.x - this.originalX) >= this.moveRange) {
+            this.speedX = -this.speedX;
+            this.x += this.speedX; // Điều chỉnh vị trí sau khi đổi hướng
+        }
+
+        // Kiểm tra va chạm với các viên gạch khác và đảo chiều nếu cần
+        for (Brick other : brickList) {
+            if (other != this && this.x < other.getX() + other.getWidth() && this.x + this.width > other.getX() && this.y == other.getY()){
+                this.speedX = -this.speedX;
+                this.x += this.speedX; // Điều chỉnh vị trí sau khi đổi hướng
+                break;
+            }
         }
     }
 

@@ -42,9 +42,10 @@ public class Thumb extends GameObject {
                 this.setX(mouseX);
                 this.Tx = mouseX;
             }
+
             // Cập nhật âm lượng dựa trên vị trí của Thumb
-            float volume = (float) (this.getX() - trackStartX) / (trackEndX - trackStartX);
-            soundManager.setVolume(volume);
+            float volume = (float) (this.getX() - trackStartX) / Track.getWidth();
+            soundManager.setVolume((float) Math.sqrt(volume));
         }
     }
 
