@@ -4,7 +4,6 @@ import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.*;
 import com.mygame.arkanoid.objects.bricks.Brick;
 import com.mygame.arkanoid.systems.*;
-import com.mygame.arkanoid.systems.*;
 import com.mygame.arkanoid.objects.Paddle;
 import com.mygame.arkanoid.objects.powerups.PowerUp;
 import com.mygame.arkanoid.engine.InputHandler;
@@ -148,6 +147,7 @@ public class GameManager {
         am.loadImage("laserShooter", "/images/laser_shooter.png");
         am.loadImage("fire_ball_animation", "/images/fire_ball_animation.png");
         am.loadImage("test_ball", "/images/test_ball.png");
+        am.loadImage("forest_brick", "/images/forest_normalBrick.png");
 
         //Explosive efect
         for (int i = 1; i <= 8; i++) {
@@ -172,6 +172,7 @@ public class GameManager {
         am.loadImage("strongBrick", "/images/" + prefix + "strongBrick.png");
         am.loadImage("strongBrick1", "/images/" + prefix + "strongBrick1.png");
         am.loadImage("strongBrick2", "/images/" + prefix + "strongBrick2.png");
+
     }
 
     public void startGame() {
