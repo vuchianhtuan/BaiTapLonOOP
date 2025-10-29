@@ -1,14 +1,13 @@
 type: normal
-theme_music: Forest.wav  # Nhạc nền chủ đề băng giá
-theme_assets: forest_         # Sẽ tải ảnh "ice_brick", "ice_ball"...
+theme_music: Forest.wav  # Nhạc nền chủ đề
+theme_assets: forest_         # Sẽ tải ảnh "forest_brick", "forest_ball"...
 theme_background: background_forest.png
 powerups: EXPAND=0.1,SLOW_BALL=0.05
 lasershooter_spawn_rate: 0.02  # 2% tỷ lệ một shooter xuất hiện khi gạch vỡ
 ---
 
-EEEEEEEEEEEEEEEEEE
-EEEEEEEEEEEEEEEEEE
-M EEEEEE M EEEEMEM
-EEEEEEEEEEEEEEEEEE
-EEEEEEEEEEEEEEEEEE
-EEEEEEEEEEEEEEEEEE
+EEEEEEEEEEEEEE
+11111111222222
+M EE M EE__M_E22
+11111122222211
+222   M  M

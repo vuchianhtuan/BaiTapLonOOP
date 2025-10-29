@@ -9,12 +9,24 @@ public class StrongBrick extends Brick {
     @Override public void update() {
         if (hitPoints == 2) {
             this.imageName = "strongBrick1";
-        }
-        if (hitPoints == 1) {
+        } else if (hitPoints == 1) {
             this.imageName = "strongBrick2";
+        } else if (hitPoints >= 3) {
+            this.imageName = "strongBrick";
         }
-
     }
+
+    private static String getInitialImageName(int health) {
+        if (health == 2) {
+            return "strongBrick1"; // Gạch 2 HP bắt đầu với ảnh 1
+        }
+        if (health == 1) {
+            return "strongBrick2"; // Gạch 1 HP bắt đầu với ảnh 2
+        }
+        // Mặc định (cho 3 HP hoặc nhiều hơn) là ảnh "strongBrick"
+        return "strongBrick";
+    }
+
     @Override public void render(Graphics g, ScalingManager sm) {
         BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
         if (img != null) {
@@ -25,7 +37,7 @@ public class StrongBrick extends Brick {
     }
 
     public StrongBrick(int x, int y, int width, int height, int health) {
-        super(x, y, width, height, health, "StrongBrick", "strongBrick");
+        super(x, y, width, height, health, "StrongBrick", getInitialImageName(health));
     }
 
 }

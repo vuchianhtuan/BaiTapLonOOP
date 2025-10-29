@@ -4,17 +4,11 @@ theme_music: BossFightTheme.wav      # Nhạc nền cho màn boss
 theme_assets: boss_
 theme_background: background_boss.png
 ---
-E______________E____1______2__E_2
-__E________E___M_______E____1
-_____BBBBBBBBB_____
-___BBTTTTTTTTTBB___
-__BTBBBBBBBBBBTB__
-_BTBBTTTTTTTTTBBBTB
-BTCCTTBBBBBTTCCCTB
-BTCCCTBBT_TBBTBBBTB
-BTBBBTTTBBBTTTTCCTB    E
-BTBBBTTTBBBTTTBBBTB
-_BTBBTTTTTTTTTTBBTB
-__BTCCBBBBBBBBTTB__
-___BBTTTTTTTBTBB___
-_____BBBBBBBBB_____
+E__1__E__2__E__1
+_E___M___E___M__
+BTTTTTTTTTBB
+BTTTTTTTTTBB
+TTBBBBBTTCCC
+CTBBT_TBBTBB
+BTTTBBBTTTTC
+

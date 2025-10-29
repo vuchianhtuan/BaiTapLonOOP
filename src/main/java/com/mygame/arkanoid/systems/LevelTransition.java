@@ -210,7 +210,6 @@ public class LevelTransition {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
             }
         }
-        // Logic vẽ COUNTDOWN
         else if (currentState == State.COUNTDOWN) {
 
             g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -223,7 +222,6 @@ public class LevelTransition {
             java.awt.FontMetrics metrics = g2d.getFontMetrics(scaledFont); // <-- Lấy metrics từ font đã scale
 
             String textToShow = "";
-            // ... (code switch case giữ nguyên)
             int phaseDuration = 65;
             int phase = timer / phaseDuration;
             switch (phase) {
@@ -240,7 +238,6 @@ public class LevelTransition {
                     break;
             }
 
-            // ... (code tính textAlpha giữ nguyên)
             int timerInPhase = timer % phaseDuration;
             float halfPhase = phaseDuration / 2.0f;
             float textAlpha = 0.0f;
@@ -253,16 +250,25 @@ public class LevelTransition {
 
 
             // Tính tọa độ LOGIC
-            int logicX = (sm.NATIVE_WIDTH - metrics.stringWidth(textToShow)) / 2;
-            int logicY = (sm.NATIVE_HEIGHT / 2) - (metrics.getHeight() / 2) + metrics.getAscent();
+            int stringWidth_screen = metrics.stringWidth(textToShow);
 
+            // Tính tọa độ X trung tâm của khu vực CHƠI GAME (tọa độ màn hình)
+            int game_area_center_screen_x = sm.scaleX(sm.GAME_AREA_WIDTH / 2);
+
+            // Tính tọa độ X để BẮT ĐẦU VẼ (căn giữa)
+            int drawX_screen = game_area_center_screen_x - (stringWidth_screen / 2);
+
+            // Tính tọa độ Y (căn giữa theo chiều dọc)
+            int logicY = (sm.NATIVE_HEIGHT / 2) - (metrics.getHeight() / 2) + metrics.getAscent();
+            int drawY_screen = sm.scaleY(logicY);
+
+
+            // 5. Vẽ chữ
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, textAlpha));
             g2d.setColor(Color.WHITE);
 
-            // Vẽ tại tọa độ ĐÃ SCALE
-            g2d.drawString(textToShow, sm.scaleX(logicX), sm.scaleY(logicY));
-
-            // --- KẾT THÚC SỬA ĐỔI KHỐI COUNTDOWN ---
+            // Vẽ tại tọa độ MÀN HÌNH đã tính
+            g2d.drawString(textToShow, drawX_screen, drawY_screen);
 
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
         }

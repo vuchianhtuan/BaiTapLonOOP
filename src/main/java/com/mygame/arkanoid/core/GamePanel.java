@@ -100,70 +100,100 @@ public class GamePanel extends JPanel {
      */
     private void drawSidebarExtras(Graphics g, ScalingManager sm) {
         int logicX = 980; // 960 + 20 padding
-        int currentY = 320; // Vị trí logic Y (bạn có thể điều chỉnh)
 
-        // 1. Vẽ Thời gian
-        Font baseFont = new Font("Arial", Font.BOLD, 24);
-        Font scaledFont = baseFont.deriveFont((float)(baseFont.getSize() * sm.getScale()));
+        // Giả sử UIManager vẽ Score và Lives ở trên
+        // Chúng ta bắt đầu vẽ các thông số khác từ Y = 250
+        int currentY = 320;
 
-        g.setFont(scaledFont);
+        // --- BẮT ĐẦU THÊM MỚI ---
+
+        // 1. VẼ LEVEL
+        Font titleFont = new Font("Arial", Font.BOLD, 24);
+        Font scaledTitleFont = titleFont.deriveFont((float)(titleFont.getSize() * sm.getScale()));
+
+        Font valueFont = new Font("Arial", Font.PLAIN, 22);
+        Font scaledValueFont = valueFont.deriveFont((float)(valueFont.getSize() * sm.getScale()));
+
+        g.setFont(scaledTitleFont);
+        g.setColor(Color.WHITE);
+        g.drawString("LEVEL", sm.scaleX(logicX), sm.scaleY(currentY));
+
+        currentY += 30; // Tăng Y để vẽ giá trị
+
+        // Lấy số level (index + 1)
+        int levelIndex = gameManager.getLevelManager().getCurrentLevelIndex();
+        String levelText = "N/A"; // Mặc định
+
+        if (levelIndex == 2) { // Level 3 (với index 2) là màn Boss
+            levelText = "Boss";
+        } else if (levelIndex >= 0) { // Các level khác
+            levelText = String.valueOf(levelIndex + 1);
+        }
+
+        g.setFont(scaledValueFont);
+        g.drawString(levelText, sm.scaleX(logicX), sm.scaleY(currentY));
+
+        currentY += 50; // Thêm khoảng cách trước khi vẽ TIME
+
+        // --- KẾT THÚC THÊM MỚI ---
+
+        // 2. Vẽ Thời gian (sử dụng lại font từ trên)
+        g.setFont(scaledTitleFont);
         g.setColor(Color.WHITE);
         g.drawString("TIME", sm.scaleX(logicX), sm.scaleY(currentY));
 
         currentY += 30;
 
-        baseFont = new Font("Arial", Font.PLAIN, 22);
-        scaledFont = baseFont.deriveFont((float)(baseFont.getSize() * sm.getScale()));
-        g.setFont(scaledFont);
+        g.setFont(scaledValueFont); // Dùng font giá trị
 
         long totalSeconds = gameManager.getCurrentLevelPlaytimeMillis() / 1000;
         long minutes = totalSeconds / 60;
         long seconds = totalSeconds % 60;
         g.drawString(String.format("%02d:%02d", minutes, seconds), sm.scaleX(logicX), sm.scaleY(currentY));
 
+
+        // 3. VẼ NÚT MENU (Giữ nguyên logic cũ)
         Rectangle menuRect = gameManager.getMenuButtonRect();
         String menuText = "MENU";
 
-        // Vẽ nền nút
         g.setColor(Color.GRAY);
         g.fillRect(sm.scaleX(menuRect.x), sm.scaleY(menuRect.y),
                 sm.scaleWidth(menuRect.width), sm.scaleHeight(menuRect.height));
 
-        // Vẽ viền nút
         g.setColor(Color.WHITE);
         g.drawRect(sm.scaleX(menuRect.x), sm.scaleY(menuRect.y),
                 sm.scaleWidth(menuRect.width), sm.scaleHeight(menuRect.height));
 
-        FontMetrics fm = g.getFontMetrics(scaledFont);
+        // Phải đặt lại font trước khi đo, vì nó có thể đã bị thay đổi
+        g.setFont(scaledValueFont);
+        FontMetrics fm = g.getFontMetrics(); // Lấy metrics của scaledValueFont
         int textWidthScaled = fm.stringWidth(menuText);
         int textX_screen = sm.scaleX(menuRect.x) + (sm.scaleWidth(menuRect.width) - textWidthScaled) / 2;
         int textY_screen = sm.scaleY(menuRect.y) + (sm.scaleHeight(menuRect.height) - fm.getHeight()) / 2 + fm.getAscent();
 
         g.drawString(menuText, textX_screen, textY_screen);
 
-        // 3. VẼ NÚT PAUSE/RESUME (CẬP NHẬT LOGIC CŨ)
+
+        // 4. VẼ NÚT PAUSE/RESUME (Giữ nguyên logic cũ)
         Rectangle buttonRect;
         String buttonText;
         if (GAMESTATE_PAUSED.equals(gameManager.getGameState())) {
-            buttonRect = gameManager.getResumeButtonRect(); // <-- Đổi tên
-            buttonText = "RESUME"; // <-- Đổi chữ
+            buttonRect = gameManager.getResumeButtonRect();
+            buttonText = "RESUME";
         } else {
             buttonRect = gameManager.getPauseButtonRect();
             buttonText = "PAUSE";
         }
 
-        // Vẽ nền nút
         g.setColor(Color.GRAY);
         g.fillRect(sm.scaleX(buttonRect.x), sm.scaleY(buttonRect.y),
                 sm.scaleWidth(buttonRect.width), sm.scaleHeight(buttonRect.height));
 
-        // Vẽ viền nút
         g.setColor(Color.WHITE);
         g.drawRect(sm.scaleX(buttonRect.x), sm.scaleY(buttonRect.y),
                 sm.scaleWidth(buttonRect.width), sm.scaleHeight(buttonRect.height));
 
-        // Vẽ chữ (căn giữa)
-        // (Font đã được set ở trên)
+        // (Font và FontMetrics vẫn là scaledValueFont, không cần set lại)
         textWidthScaled = fm.stringWidth(buttonText);
         textX_screen = sm.scaleX(buttonRect.x) + (sm.scaleWidth(buttonRect.width) - textWidthScaled) / 2;
         textY_screen = sm.scaleY(buttonRect.y) + (sm.scaleHeight(buttonRect.height) - fm.getHeight()) / 2 + fm.getAscent();

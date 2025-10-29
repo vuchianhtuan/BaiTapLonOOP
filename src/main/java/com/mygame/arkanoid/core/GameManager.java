@@ -273,7 +273,7 @@ public class GameManager {
         int finalPaddleX = (gameAreaWidth / 2) - (paddleWidth / 2);
         int spawnPaddleY = nativeHeight + 20;
 
-        paddle = new Paddle(finalPaddleX, spawnPaddleY, paddleWidth, 18, selectedPaddleSkinKey);
+        paddle = new Paddle(finalPaddleX, spawnPaddleY, paddleWidth, 20, selectedPaddleSkinKey);
         ball = new Ball(finalPaddleX + (paddleWidth / 2) - (ballSize / 2), spawnPaddleY - ballSize - 1, ballSize, ballSize, selectedBallSkinKey);
         ball.resetBallPosition(paddle);
         balls.clear();

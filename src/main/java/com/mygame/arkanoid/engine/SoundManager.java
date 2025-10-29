@@ -19,7 +19,7 @@ public class SoundManager {
     // --- THAY ĐỔI: Chia 1 volume thành 3 volume ---
     private float masterVolume = 1.0f; // Âm lượng tổng
     private float musicVolume = 0.8f;  // Âm lượng nhạc nền
-    private float sfxVolume = 1.0f;    // Âm lượng hiệu ứng
+    private float sfxVolume = 0.5f;    // Âm lượng hiệu ứng
     private boolean muted = false;     // Trạng thái tắt tiếng
 
     private Clip backgroundMusicClip;
