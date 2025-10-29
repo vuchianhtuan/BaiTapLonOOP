@@ -2,7 +2,7 @@ type: normal
 theme_music: Forest.wav  # Nhạc nền chủ đề
 theme_assets: forest_         # Sẽ tải ảnh "forest_brick", "forest_ball"...
 theme_background: background_forest.png
-powerups: FAST_BALL=1,SLOW_BALL=1
+powerups: STICKY=1
 lasershooter_spawn_rate: 0.02  # 2% tỷ lệ một shooter xuất hiện khi gạch vỡ
 ---
 
