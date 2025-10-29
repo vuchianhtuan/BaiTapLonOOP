@@ -21,7 +21,7 @@ public class Main {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(true);
 
-        GameManager gameManager = new GameManager();
+        GameManager gameManager = GameManager.getInstance();
 
         // LOAD SAVE NẾU CÓ
         SaveData data = SaveSystem.load();

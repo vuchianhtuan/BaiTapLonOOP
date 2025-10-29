@@ -72,7 +72,12 @@ public class GameManager {
 
     int screenHeight = com.mygame.arkanoid.systems.ScalingManager.getInstance().NATIVE_HEIGHT;
 
-    public GameManager() {
+    // Holder idiom: thread-safe, lazy
+    private static class Holder {
+        private static final GameManager INSTANCE = new GameManager();
+    }
+
+    private GameManager() {
         inputHandler = new InputHandler();
         bricks = new ArrayList<>();
         stagingBricks = new ArrayList<>();
@@ -111,6 +116,10 @@ public class GameManager {
         this.gameState = "MENU";
         canContinue = false;
         soundManager.playBackgroundMusic("Menu.wav");
+    }
+
+    public static GameManager getInstance() {
+        return Holder.INSTANCE;
     }
 
     public void loadAssets() {
@@ -585,7 +594,7 @@ public class GameManager {
                                 // ... (Logic PowerUp và LaserShooter)
                                 PowerUpType typeToDrop = levelManager.getCurrentLevel().getRandomPowerUpType();
                                 if (typeToDrop != null) {
-                                    PowerUp newPowerUp = createPowerUp(typeToDrop, target.getX(), target.getY());
+                                    PowerUp newPowerUp = PowerUpFactory.create(typeToDrop, target.getX(), target.getY());
                                     if (newPowerUp != null) {
                                         powerUps.add(newPowerUp);
                                     }
@@ -835,6 +844,7 @@ public class GameManager {
         newPowerUp.applyEffect(this);
     }
 
+    /*
     private PowerUp createPowerUp(PowerUpType type, int x, int y) {
         switch (type) {
             case EXPAND: return new ExpandPaddlePowerUp(x, y, 63, 30);
@@ -846,6 +856,7 @@ public class GameManager {
             default: return null;
         }
     }
+     */
 
     public void ensureBrickIdsAssigned() {
         int idCounter = 0;

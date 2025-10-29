@@ -64,7 +64,7 @@ public class SaveManager {
             SaveData data = (SaveData) obj;
             if (!data.isCanContinue()) return null;
 
-            GameManager gm = new GameManager();
+            GameManager gm = GameManager.getInstance();
             // Áp trạng thái về MENU + bật continue, nạp đúng level
             gm.restoreFromSave(data);
             return gm;
