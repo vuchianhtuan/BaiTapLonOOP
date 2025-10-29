@@ -304,6 +304,6 @@ public class LevelTransition {
     public void finishTransition() {
         currentState = State.COUNTDOWN;
         timer = 0;
-        maxDuration = 300;
+        maxDuration = 1;
     }
 }
