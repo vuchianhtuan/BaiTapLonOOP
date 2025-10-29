@@ -72,6 +72,10 @@ public class GameManager {
 
     int screenHeight = com.mygame.arkanoid.systems.ScalingManager.getInstance().NATIVE_HEIGHT;
 
+    public SoundManager getSoundManager() {
+        return soundManager;
+    }
+
     // Holder idiom: thread-safe, lazy
     private static class Holder {
         private static final GameManager INSTANCE = new GameManager();
@@ -157,15 +161,22 @@ public class GameManager {
         am.loadImage("fire_ball_animation", "/images/fire_ball_animation.png");
         //am.loadImage("test_ball", "/images/test_ball.png");
         am.loadImage("forest_brick", "/images/forest_normalBrick.png");
-        am.loadImage("arrow_left", "/images/icon_continue.png"); // <--- Thêm ảnh mũi tên
-        am.loadImage("arrow_right", "/images/icon_continue.png"); // <--- Thêm ảnh mũi tên
+        am.loadImage("arrow_left", "/images/button_back.png"); // <--- Thêm ảnh mũi tên
+        am.loadImage("arrow_right", "/images/button_back.png"); // <--- Thêm ảnh mũi tên
         // Ví dụ 2 skin cho Ball (bạn tự đổi tên file)
         am.loadImage("skin_ball_1", "/images/test_ball.png");
-        am.loadImage("skin_ball_2", "/images/ball_red_small.png");
+        am.loadImage("skin_ball_2", "/images/skin_ball_2.png");
+        am.loadImage("skin_ball_3", "/images/skin_ball_3.png");
+        am.loadImage("skin_ball_4", "/images/skin_ball_4.png");
+        am.loadImage("skin_ball_5", "/images/skin_ball_5.png");
+        am.loadImage("skin_ball_6", "/images/skin_ball_6.png");
+
 
         // Ví dụ 2 skin cho Paddle (bạn tự đổi tên file)
-        am.loadImage("skin_paddle_1", "/images/paddle.png");
-        am.loadImage("skin_paddle_2", "/images/paddle.png");
+        am.loadImage("skin_paddle_1", "/images/skin_paddle_1.png");
+        am.loadImage("skin_paddle_2", "/images/skin_paddle_2.png");
+        am.loadImage("skin_paddle_3", "/images/skin_paddle_3.png");
+        am.loadImage("skin_paddle_4", "/images/skin_paddle_4.png");
 
         //Explosive efect
         for (int i = 1; i <= 8; i++) {
@@ -838,7 +849,7 @@ public class GameManager {
                 iterator.remove();
             }
         }
-
+        soundManager.playSound(SoundManager.SFX_POWERUP);
         // Thêm power-up mới vào danh sách và áp dụng hiệu ứng
         activePowerUps.add(newPowerUp);
         newPowerUp.applyEffect(this);
@@ -879,7 +890,7 @@ public class GameManager {
             int paddleWidth = 120;
             int px = (gameAreaWidth - paddleWidth) / 2;
             int py = nativeHeight - 80; // vị trí hiển thị phía cuối màn
-            paddle = new Paddle(px, py, paddleWidth, 18,selectedPaddleSkinKey );
+            paddle = new Paddle(px, py, paddleWidth, 30,selectedPaddleSkinKey );
 
             ball = new Ball(px + (paddleWidth / 2) - (ballSize / 2), py - ballSize - 1, ballSize, ballSize,selectedBallSkinKey );
             ball.resetBallPosition(paddle);   // dính lên paddle
@@ -1045,7 +1056,13 @@ public class GameManager {
 
     public void setSelectedBallSkinKey(String selectedBallSkinKey) {
         this.selectedBallSkinKey = selectedBallSkinKey;
-    }
+        if (balls != null) {
+            for (Ball b : balls) {
+                if (b != null) {
+                    b.setImageName(selectedBallSkinKey);
+                }
+            }
+        }    }
 
     public String getSelectedPaddleSkinKey() {
         return selectedPaddleSkinKey;
@@ -1053,6 +1070,8 @@ public class GameManager {
 
     public void setSelectedPaddleSkinKey(String selectedPaddleSkinKey) {
         this.selectedPaddleSkinKey = selectedPaddleSkinKey;
-    }
+        if (paddle != null) {
+            paddle.setImageName(selectedPaddleSkinKey);
+        }    }
 }
 

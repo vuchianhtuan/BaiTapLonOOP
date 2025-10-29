@@ -1,7 +1,9 @@
 package com.mygame.arkanoid.objects;
+import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.core.GamePanel;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.engine.InputHandler;
+import com.mygame.arkanoid.engine.SoundManager;
 import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -111,17 +113,36 @@ public class Ball extends MovableObject {
         return this.getBounds().intersects(other.getBounds()) && !this.isStuckToPaddle();
     }
 
+    // ... (Trong class Ball) ...
+
     @Override public void move() {
         this.x += this.dx * speed;
         this.y += this.dy * speed;
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
+
+        // Lấy SoundManager
+        SoundManager sm = GameManager.getInstance().getSoundManager();
+
         if (this.x <= 0 || this.x + this.width >= gameAreaWidth) {
-            dx = - dx; // Đổi hướng khi chạm tường trái hoặc phải
+            if (this.x <= 0) {
+                this.x = 0;
+            } else {
+                this.x = gameAreaWidth - this.width;
+            }
+            dx = - dx; // Đổi hướng
+            if (sm != null) {
+                sm.playSound(sm.SFX_PADDLE_HIT);
+            }
         }
         if (this.y <= 0) {
-            dy = - dy; // Đổi hướng khi chạm tường trên
+            this.y = 0;
+            dy = - dy; // Đổi hướng
+            if (sm != null) {
+                sm.playSound(sm.SFX_PADDLE_HIT);
+            }
         }
     }
+
     // thêm phương thức update cho Ball với InputHandler, Paddle
     public void update(InputHandler inputHandler, Paddle paddle) {
         if(!stuckToPaddle) {

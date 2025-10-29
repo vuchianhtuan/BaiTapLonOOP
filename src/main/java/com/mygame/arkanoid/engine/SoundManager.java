@@ -1,28 +1,43 @@
 package com.mygame.arkanoid.engine;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SoundManager {
 
-    // --- BỔ SUNG: Hằng số cho tên file âm thanh SFX ---
-    // (Bạn hãy thay "ten_file.wav" bằng tên file thực tế của bạn trong thư mục /sounds/)
-    public static final String SFX_BRICK_HIT = "gach_vo.wav";     // Ví dụ
-    public static final String SFX_PADDLE_HIT = "paddle_cham.wav";  // Ví dụ
-    public static final String SFX_BALL_LOSS = "mat_bong.wav";   // Ví dụ
-    public static final String SFX_EXPLOSION = "no.wav";       // Ví dụ
+    // --- Hằng số tên file SFX (đặt trong /sounds/) ---
+    public static final String SFX_BRICK_HIT = "gach_vo.wav";
+    public static final String SFX_PADDLE_HIT = "paddle_cham.wav";
+    public static final String SFX_BALL_LOSS = "falling.wav";
+    public static final String SFX_EXPLOSION = "no.wav";
+    public static final String SFX_POWERUP = "powerUpSound.wav";
 
-    // --- THAY ĐỔI: Chia 1 volume thành 3 volume ---
-    private float masterVolume = 1.0f; // Âm lượng tổng
-    private float musicVolume = 0.8f;  // Âm lượng nhạc nền
-    private float sfxVolume = 0.5f;    // Âm lượng hiệu ứng
-    private boolean muted = false;     // Trạng thái tắt tiếng
 
+    // --- Volume settings ---
+    private float masterVolume = 1.0f;
+    private float musicVolume = 0.8f;
+    private float sfxVolume = 0.5f;
+    private boolean muted = false;
+
+    // --- Background music clip ---
     private Clip backgroundMusicClip;
+
+    // --- Preloaded sound data (PCM bytes and formats) ---
+    private final Map<String, byte[]> soundData = new HashMap<>();
+    private final Map<String, AudioFormat> soundFormat = new HashMap<>();
+
+    public SoundManager() {
+        // Gọi preload khi tạo SoundManager. Nếu muốn gọi ở chỗ khác, bỏ dòng này
+        preloadAllSfx();
+    }
+
+    // =====================
+    // Background music APIs
+    // =====================
 
     public void playBackgroundMusic(String musicName) {
         stopBackgroundMusic();
@@ -34,12 +49,23 @@ public class SoundManager {
             }
 
             AudioInputStream audioInput = AudioSystem.getAudioInputStream(url);
+            // chuyển về PCM để đảm bảo tương thích
+            AudioFormat baseFormat = audioInput.getFormat();
+            AudioFormat decodedFormat = new AudioFormat(
+                    AudioFormat.Encoding.PCM_SIGNED,
+                    baseFormat.getSampleRate(),
+                    16,
+                    baseFormat.getChannels(),
+                    baseFormat.getChannels() * 2,
+                    baseFormat.getSampleRate(),
+                    false
+            );
+            AudioInputStream dais = AudioSystem.getAudioInputStream(decodedFormat, audioInput);
+
             backgroundMusicClip = AudioSystem.getClip();
-            backgroundMusicClip.open(audioInput);
+            backgroundMusicClip.open(dais);
 
-            // THAY ĐỔI: Áp dụng âm lượng nhạc nền đã tính toán
-            updateBackgroundMusicVolume(); // Sử dụng hàm helper mới
-
+            updateBackgroundMusicVolume();
             backgroundMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
             backgroundMusicClip.start();
 
@@ -48,102 +74,6 @@ public class SoundManager {
             e.printStackTrace();
         }
     }
-
-    public void playSound(String soundName) {
-        try {
-            URL url = this.getClass().getResource("/sounds/" + soundName);
-            if (url == null) {
-                System.err.println("Không tìm thấy file âm thanh: /sounds/" + soundName);
-                return;
-            }
-            AudioInputStream audioInput = AudioSystem.getAudioInputStream(url);
-            Clip clip = AudioSystem.getClip();
-            clip.open(audioInput);
-
-            // THAY ĐỔI: Tính toán âm lượng hiệu ứng (SFX)
-            float effectiveSfxVolume = muted ? 0.0f : masterVolume * sfxVolume;
-            setClipVolume(clip, effectiveSfxVolume); // Áp dụng âm lượng đã tính
-
-            // BỔ SUNG: Tự động đóng clip sau khi phát xong để giải phóng tài nguyên
-            clip.addLineListener(event -> {
-                if (event.getType() == LineEvent.Type.STOP) {
-                    clip.close();
-                }
-            });
-
-            clip.start();
-        } catch (Exception e) {
-            System.err.println("Lỗi khi phát âm thanh: " + e.getMessage());
-        }
-    }
-
-    // --- CÁC HÀM SETTER VÀ GETTER MỚI ---
-
-    // Hàm private để áp dụng âm lượng (0.0f - 1.0f) cho một Clip CỤ THỂ
-    private void setClipVolume(Clip clip, float volume) {
-        if (volume < 0f) volume = 0f;
-        if (volume > 1f) volume = 1f;
-
-        try {
-            if (clip != null && clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-                FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-                // Chuyển đổi âm lượng (0-1) sang thang đo Decibel (dB)
-                // -80.0f (tắt) đến 6.0206f (tối đa)
-                float range = gainControl.getMaximum() - gainControl.getMinimum();
-                float gain = (range * volume) + gainControl.getMinimum();
-                gainControl.setValue(gain);
-            } else if(clip != null) {
-                System.err.println("MASTER_GAIN control không được hỗ trợ.");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Hàm private để cập nhật nhạc nền đang phát (khi master, music, hoặc mute thay đổi)
-    private void updateBackgroundMusicVolume() {
-        if (backgroundMusicClip != null) {
-            float effectiveMusicVolume = muted ? 0.0f : masterVolume * musicVolume;
-            setClipVolume(backgroundMusicClip, effectiveMusicVolume);
-        }
-    }
-
-    // Hàm tiện ích private để giới hạn giá trị từ 0.0f đến 1.0f
-    private float clamp(float value) {
-        if (value < 0f) return 0f;
-        if (value > 1f) return 1f;
-        return value;
-    }
-
-    // --- Các hàm public này sẽ được SettingManager gọi ---
-
-    public void setMasterVolume(float volume) {
-        this.masterVolume = clamp(volume);
-        updateBackgroundMusicVolume(); // Cập nhật nhạc nền ngay lập tức
-    }
-
-    public void setMusicVolume(float volume) {
-        this.musicVolume = clamp(volume);
-        updateBackgroundMusicVolume(); // Cập nhật nhạc nền ngay lập tức
-    }
-
-    public void setSfxVolume(float volume) {
-        this.sfxVolume = clamp(volume);
-        // Không cần cập nhật gì ngay, vì SFX sẽ lấy giá trị này ở lần phát tiếp theo
-    }
-
-    public void setMuted(boolean muted) {
-        this.muted = muted;
-        updateBackgroundMusicVolume(); // Cập nhật nhạc nền ngay lập tức
-    }
-
-    // Các hàm Getter để SettingManager lấy giá trị ban đầu cho slider
-    public float getMasterVolume() { return masterVolume; }
-    public float getMusicVolume() { return musicVolume; }
-    public float getSfxVolume() { return sfxVolume; }
-    public boolean isMuted() { return muted; }
-
-    // --- CÁC HÀM QUẢN LÝ NHẠC NỀN (Giữ nguyên) ---
 
     public void pauseBackgroundMusic() {
         if (backgroundMusicClip != null && backgroundMusicClip.isRunning()) {
@@ -163,8 +93,186 @@ public class SoundManager {
                 backgroundMusicClip.stop();
             }
             backgroundMusicClip.close();
+            backgroundMusicClip = null;
         }
     }
 
-    // Xóa hàm setVolume(float vol) và getVolume() cũ
+    // =====================
+    // Preload and fast play
+    // =====================
+
+    // Preload single sound: đọc file, chuyển về PCM_SIGNED, lưu bytes và format
+    public void preloadSound(String soundName) {
+        try {
+            URL url = this.getClass().getResource("/sounds/" + soundName);
+            if (url == null) {
+                System.err.println("Không tìm thấy file âm thanh: /sounds/" + soundName);
+                return;
+            }
+
+            try (AudioInputStream ais = AudioSystem.getAudioInputStream(url)) {
+                AudioFormat baseFormat = ais.getFormat();
+                AudioFormat decodedFormat = new AudioFormat(
+                        AudioFormat.Encoding.PCM_SIGNED,
+                        baseFormat.getSampleRate(),
+                        16,
+                        baseFormat.getChannels(),
+                        baseFormat.getChannels() * 2,
+                        baseFormat.getSampleRate(),
+                        false
+                );
+                try (AudioInputStream dais = AudioSystem.getAudioInputStream(decodedFormat, ais);
+                     ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+                    byte[] buffer = new byte[4096];
+                    int read;
+                    while ((read = dais.read(buffer)) != -1) {
+                        baos.write(buffer, 0, read);
+                    }
+                    byte[] audioBytes = baos.toByteArray();
+                    soundData.put(soundName, audioBytes);
+                    soundFormat.put(soundName, decodedFormat);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi preload âm thanh: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // Preload các SFX chính; gọi ở constructor hoặc màn loading
+    public void preloadAllSfx() {
+        preloadSound(SFX_BRICK_HIT);
+        preloadSound(SFX_PADDLE_HIT);
+        preloadSound(SFX_BALL_LOSS);
+        preloadSound(SFX_EXPLOSION);
+    }
+
+    // Phát SFX nhanh từ bộ nhớ đã preload. Nếu chưa preload, sẽ cố gắng preload rồi phát.
+    public void playSound(String soundName) {
+        if (muted) return;
+
+        byte[] audioBytes = soundData.get(soundName);
+        AudioFormat format = soundFormat.get(soundName);
+
+        if (audioBytes == null || format == null) {
+            // Fallback: preload on demand (chậm lần đầu)
+            preloadSound(soundName);
+            audioBytes = soundData.get(soundName);
+            format = soundFormat.get(soundName);
+            if (audioBytes == null || format == null) return;
+        }
+
+        AudioInputStream ais = new AudioInputStream(
+                new ByteArrayInputStream(audioBytes),
+                format,
+                audioBytes.length / format.getFrameSize());
+
+        try {
+            Clip clip = AudioSystem.getClip();
+            clip.open(ais);
+
+            float effectiveSfxVolume = muted ? 0.0f : masterVolume * sfxVolume;
+            setClipVolume(clip, effectiveSfxVolume);
+
+            clip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    clip.close();
+                }
+            });
+
+            clip.start();
+        } catch (Exception e) {
+            System.err.println("Lỗi khi phát âm thanh nhanh: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                ais.close();
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    // =====================
+    // Volume helpers
+    // =====================
+
+    private void updateBackgroundMusicVolume() {
+        if (backgroundMusicClip != null) {
+            float effectiveMusicVolume = muted ? 0.0f : masterVolume * musicVolume;
+            setClipVolume(backgroundMusicClip, effectiveMusicVolume);
+        }
+    }
+
+    private void setClipVolume(Clip clip, float volume) {
+        if (volume < 0f) volume = 0f;
+        if (volume > 1f) volume = 1f;
+
+        try {
+            if (clip != null && clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                float min = gainControl.getMinimum();
+                float max = gainControl.getMaximum();
+                float dB;
+                if (volume == 0f) {
+                    dB = min;
+                } else {
+                    // mapping linear 0..1 to dB range (smooth)
+                    dB = (float) (20.0 * Math.log10(volume));
+                    if (dB < min) dB = min;
+                    if (dB > max) dB = max;
+                }
+                gainControl.setValue(dB);
+            } else if (clip != null) {
+                System.err.println("MASTER_GAIN control không được hỗ trợ.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private float clamp(float value) {
+        if (value < 0f) return 0f;
+        if (value > 1f) return 1f;
+        return value;
+    }
+
+    // =====================
+    // Public setters / getters
+    // =====================
+
+    public void setMasterVolume(float volume) {
+        this.masterVolume = clamp(volume);
+        updateBackgroundMusicVolume();
+    }
+
+    public void setMusicVolume(float volume) {
+        this.musicVolume = clamp(volume);
+        updateBackgroundMusicVolume();
+    }
+
+    public void setSfxVolume(float volume) {
+        this.sfxVolume = clamp(volume);
+    }
+
+    public void setMuted(boolean muted) {
+        this.muted = muted;
+        updateBackgroundMusicVolume();
+    }
+
+    public float getMasterVolume() {
+        return masterVolume;
+    }
+
+    public float getMusicVolume() {
+        return musicVolume;
+    }
+
+    public float getSfxVolume() {
+        return sfxVolume;
+    }
+
+    public boolean isMuted() {
+        return muted;
+    }
 }

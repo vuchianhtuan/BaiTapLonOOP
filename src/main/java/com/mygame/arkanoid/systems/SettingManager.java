@@ -7,6 +7,7 @@ import com.mygame.arkanoid.engine.SoundManager;
 import com.mygame.arkanoid.objects.BackButton;
 import com.mygame.arkanoid.objects.Thumb;
 import com.mygame.arkanoid.objects.Track;
+import com.mygame.arkanoid.systems.ScalingManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -14,6 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SettingManager {
+    // --- KHAI BÁO BIẾN ---
+
     private InputHandler inputHandler;
     private GameManager gameManager;
     private SoundManager soundManager;
@@ -45,6 +48,9 @@ public class SettingManager {
     private int muteButtonY = 530;
     private int muteButtonSize = 30;
 
+    // --- BỔ SUNG: Vùng bao phủ cho nhóm Volume ---
+    private Rectangle volumeGroupBounds;
+
     // --- BỔ SUNG: Skin Selector ---
     private List<String> ballSkinKeys;
     private List<String> paddleSkinKeys;
@@ -52,8 +58,8 @@ public class SettingManager {
     private int currentBallSkinIndex = 0;
     private int currentPaddleSkinIndex = 0;
 
-    // Tọa độ UI cho Skin Selector
-    private int selectorX = 600; // X chung
+    // THAY ĐỔI: Đẩy X chung sang phải để tạo 2 cột
+    private int selectorX = 650; // X chung mới
     private int arrowSize = 40;
     private int arrowPadding = 10;
 
@@ -61,11 +67,17 @@ public class SettingManager {
     private int ballLabelY = 220;
     private Rectangle ballDisplayBox;
     private Rectangle ballArrowLeft, ballArrowRight;
+    private Rectangle ballGroupBounds; // Vùng bao phủ cho nhóm Ball
 
     // UI Box cho Paddle
     private int paddleLabelY = 420;
     private Rectangle paddleDisplayBox;
     private Rectangle paddleArrowLeft, paddleArrowRight;
+    private Rectangle paddleGroupBounds; // Vùng bao phủ cho nhóm Paddle
+
+    // Bổ sung để căn giữa label
+    private int ballLabelCenterX;
+    private int paddleLabelCenterX;
 
     // Animation
     private static final int SLIDE_SPEED = 20; // Tốc độ trượt (pixel mỗi frame)
@@ -107,65 +119,110 @@ public class SettingManager {
 
         this.muteButtonRect = new Rectangle(muteButtonX, muteButtonY, muteButtonSize, muteButtonSize);
 
-        // 2. BỔ SUNG: Khởi tạo Skin Selector
-        // (Tên key phải khớp với tên bạn đặt trong GameManager.loadAssets())
-        ballSkinKeys = Arrays.asList("skin_ball_1", "skin_ball_2");
-        paddleSkinKeys = Arrays.asList("skin_paddle_1", "skin_paddle_2");
+        // --- BỔ SUNG: Tính toán vùng bao phủ cho nhóm Volume ---
+        int groupPadding = 30;
+        volumeGroupBounds = new Rectangle(
+                Math.min(trackMaster.getX(), muteButtonRect.x) - groupPadding,
+                masterLabelY - 40,
+                (trackMaster.getX() + trackMaster.getWidth()) - (Math.min(trackMaster.getX(), muteButtonRect.x)) + groupPadding * 2,
+                (muteButtonRect.y + muteButtonRect.height) - (masterLabelY - 40) + groupPadding
+        );
 
-        // Tìm index skin hiện tại (nếu game được load)
+
+        // 2. BỔ SUNG: Khởi tạo Skin Selector
+        ballSkinKeys = Arrays.asList("skin_ball_1", "skin_ball_2", "skin_ball_3", "skin_ball_4", "skin_ball_5", "skin_ball_6");
+        paddleSkinKeys = Arrays.asList("skin_paddle_1", "skin_paddle_2", "skin_paddle_3", "skin_paddle_4");
+
         currentBallSkinIndex = Math.max(0, ballSkinKeys.indexOf(gameManager.getSelectedBallSkinKey()));
         currentPaddleSkinIndex = Math.max(0, paddleSkinKeys.indexOf(gameManager.getSelectedPaddleSkinKey()));
         prevBallSkinIndex = currentBallSkinIndex;
         prevPaddleSkinIndex = currentPaddleSkinIndex;
 
         // Tọa độ Box Ball
-        int ballBoxY = masterTrackY; // Căn theo thanh trượt master
+        int ballBoxY = masterTrackY;
         int ballBoxWidth = 150;
         int ballBoxHeight = 80;
         ballDisplayBox = new Rectangle(selectorX, ballBoxY, ballBoxWidth, ballBoxHeight);
         ballArrowLeft = new Rectangle(selectorX - arrowSize - arrowPadding, ballBoxY + (ballBoxHeight - arrowSize) / 2, arrowSize, arrowSize);
         ballArrowRight = new Rectangle(selectorX + ballBoxWidth + arrowPadding, ballBoxY + (ballBoxHeight - arrowSize) / 2, arrowSize, arrowSize);
 
+        // Tính X căn giữa cho nhãn Ball
+        ballLabelCenterX = ballArrowLeft.x + ( (ballArrowRight.x + ballArrowRight.width) - ballArrowLeft.x) / 2;
+
+        // Tính toán vùng bao phủ cho nhóm Ball (ĐÃ CHỈNH SỬA bao gồm chữ)
+        int ballGroupTopY = ballLabelY - 30;
+
+        ballGroupBounds = new Rectangle(
+                ballArrowLeft.x,
+                ballGroupTopY,
+                (ballArrowRight.x + ballArrowRight.width) - ballArrowLeft.x,
+                Math.max(ballArrowLeft.y + ballArrowLeft.height, ballDisplayBox.y + ballDisplayBox.height) - ballGroupTopY
+        );
+        // Thêm padding cho viền bao phủ
+        ballGroupBounds.x -= groupPadding;
+        ballGroupBounds.y -= groupPadding;
+        ballGroupBounds.width += groupPadding * 2;
+        ballGroupBounds.height += groupPadding * 2;
+
+
         // Tọa độ Box Paddle
-        int paddleBoxY = sfxTrackY; // Căn theo thanh trượt sfx
-        int paddleBoxWidth = 200; // Paddle rộng hơn
+        int paddleBoxY = sfxTrackY;
+        int paddleBoxWidth = 200;
         int paddleBoxHeight = 80;
-        paddleDisplayBox = new Rectangle(selectorX - (paddleBoxWidth - ballBoxWidth)/2, paddleBoxY, paddleBoxWidth, paddleBoxHeight); // Căn giữa với box trên
+        paddleDisplayBox = new Rectangle(selectorX - (paddleBoxWidth - ballBoxWidth)/2, paddleBoxY, paddleBoxWidth, paddleBoxHeight);
         paddleArrowLeft = new Rectangle(selectorX - (paddleBoxWidth - ballBoxWidth)/2 - arrowSize - arrowPadding, paddleBoxY + (paddleBoxHeight - arrowSize) / 2, arrowSize, arrowSize);
         paddleArrowRight = new Rectangle(selectorX - (paddleBoxWidth - ballBoxWidth)/2 + paddleBoxWidth + arrowPadding, paddleBoxY + (paddleBoxHeight - arrowSize) / 2, arrowSize, arrowSize);
+
+        // Tính X căn giữa cho nhãn Paddle
+        paddleLabelCenterX = paddleArrowLeft.x + ( (paddleArrowRight.x + paddleArrowRight.width) - paddleArrowLeft.x) / 2;
+
+        // Tính toán vùng bao phủ cho nhóm Paddle (ĐÃ CHỈNH SỬA bao gồm chữ)
+        int paddleGroupTopY = paddleLabelY - 30;
+
+        paddleGroupBounds = new Rectangle(
+                paddleArrowLeft.x,
+                paddleGroupTopY,
+                (paddleArrowRight.x + paddleArrowRight.width) - paddleArrowLeft.x,
+                Math.max(paddleArrowLeft.y + paddleArrowLeft.height, paddleDisplayBox.y + paddleDisplayBox.height) - paddleGroupTopY
+        );
+        // Thêm padding cho viền bao phủ
+        paddleGroupBounds.x -= groupPadding;
+        paddleGroupBounds.y -= groupPadding;
+        paddleGroupBounds.width += groupPadding * 2;
+        paddleGroupBounds.height += groupPadding * 2;
     }
 
-    // Hàm helper để tính toán vị trí X của Thumb
+    // Hàm helper để tính toán vị trí X của Thumb (Giữ nguyên)
     private int calculateThumbX(Track track, float volume) {
         int x = track.getX() + (int) (track.getWidth() * volume) - (thumbWidth / 2);
         return Math.max(track.getX() - thumbWidth / 2, Math.min(x, track.getX() + track.getWidth() - thumbWidth / 2));
     }
 
+    // Phương thức Update (Giữ nguyên)
     public void update() {
         int virtualMouseX = inputHandler.getVirtualMouseX();
         int virtualMouseY = inputHandler.getVirtualMouseY();
 
-        // --- THAY ĐỔI: GỌI isMouseClicked() MỘT LẦN DUY NHẤT ---
         boolean isClicked = inputHandler.isMouseClicked();
 
         // 1. Xử lý nút Back
-        if (isClicked && backButton.contains(virtualMouseX, virtualMouseY)) { // <-- Dùng 'isClicked'
+        if (isClicked && backButton.contains(virtualMouseX, virtualMouseY)) {
             gameManager.setGameState("MENU");
             return;
         }
 
         // 2. Xử lý nút Mute
-        if (isClicked && muteButtonRect.contains(virtualMouseX, virtualMouseY)) { // <-- Dùng 'isClicked'
+        if (isClicked && muteButtonRect.contains(virtualMouseX, virtualMouseY)) {
             soundManager.setMuted(!soundManager.isMuted());
             return;
         }
 
         // 3. Xử lý kéo thả thanh trượt Âm lượng (Giữ nguyên)
         if (inputHandler.isMousePressed()) {
-            if (draggingThumb == null) { // Chỉ kiểm tra khi chưa kéo
+            if (draggingThumb == null) {
                 if (thumbMaster.getBounds().contains(virtualMouseX, virtualMouseY) || trackMaster.getBounds().contains(virtualMouseX, virtualMouseY)) {
                     draggingThumb = "MASTER";
-                } else if (thumbMusic.getBounds().contains(virtualMouseX, virtualMouseY) || trackMusic.getBounds().contains(virtualMouseX, virtualMouseY)) {
+                } else if (thumbMusic.getBounds().contains(virtualMouseX, virtualMouseY) || trackMusic.getBounds().contains(virtualMouseY, virtualMouseY)) {
                     draggingThumb = "MUSIC";
                 } else if (thumbSfx.getBounds().contains(virtualMouseX, virtualMouseY) || trackSfx.getBounds().contains(virtualMouseX, virtualMouseY)) {
                     draggingThumb = "SFX";
@@ -211,24 +268,24 @@ public class SettingManager {
             }
         }
 
-        // 5. BỔ SUNG: Xử lý Click nút mũi tên
-        if (isClicked) { // <-- Dùng 'isClicked'
-            if (ballSlideDirection == 0) { // Chỉ cho phép click khi không trượt
+        // 5. BỔ SUNG: Xử lý Click nút mũi tên (Giữ nguyên)
+        if (isClicked) {
+            if (ballSlideDirection == 0) {
                 if (ballArrowLeft.contains(virtualMouseX, virtualMouseY)) {
                     prevBallSkinIndex = currentBallSkinIndex;
                     currentBallSkinIndex = (currentBallSkinIndex - 1 + ballSkinKeys.size()) % ballSkinKeys.size();
-                    ballSlideDirection = -1; // Trượt sang trái
+                    ballSlideDirection = -1;
                     ballSlideOffset = 0;
                     gameManager.setSelectedBallSkinKey(ballSkinKeys.get(currentBallSkinIndex));
                 } else if (ballArrowRight.contains(virtualMouseX, virtualMouseY)) {
                     prevBallSkinIndex = currentBallSkinIndex;
                     currentBallSkinIndex = (currentBallSkinIndex + 1) % ballSkinKeys.size();
-                    ballSlideDirection = 1; // Trượt sang phải
+                    ballSlideDirection = 1;
                     ballSlideOffset = 0;
                     gameManager.setSelectedBallSkinKey(ballSkinKeys.get(currentBallSkinIndex));
                 }
             }
-            if (paddleSlideDirection == 0) { // Chỉ cho phép click khi không trượt
+            if (paddleSlideDirection == 0) {
                 if (paddleArrowLeft.contains(virtualMouseX, virtualMouseY)) {
                     prevPaddleSkinIndex = currentPaddleSkinIndex;
                     currentPaddleSkinIndex = (currentPaddleSkinIndex - 1 + paddleSkinKeys.size()) % paddleSkinKeys.size();
@@ -245,12 +302,79 @@ public class SettingManager {
             }
         }
     }
+
+    // --- PHƯƠNG THỨC: Vẽ khung nền hiện đại (Chữ nhật) ---
+    private void drawModernBox(Graphics g, ScalingManager sm, Rectangle box) {
+        Color fillColor = new Color(0, 0, 0, 100);
+        Color borderColor = new Color(200, 200, 200, 255);
+        int borderThickness = sm.scaleWidth(2);
+
+        int scaledBoxX = sm.scaleX(box.x);
+        int scaledBoxY = sm.scaleY(box.y);
+        int scaledBoxWidth = sm.scaleWidth(box.width);
+        int scaledBoxHeight = sm.scaleHeight(box.height);
+
+        Graphics2D g2d = (Graphics2D) g;
+
+        // 1. Vẽ nền (fill)
+        g.setColor(fillColor);
+        g.fillRect(scaledBoxX, scaledBoxY, scaledBoxWidth, scaledBoxHeight);
+
+        // 2. Vẽ viền (draw)
+        g.setColor(borderColor);
+        g2d.setStroke(new BasicStroke(borderThickness));
+        g.drawRect(scaledBoxX, scaledBoxY, scaledBoxWidth, scaledBoxHeight);
+        g2d.setStroke(new BasicStroke(1));
+    }
+
+    // BỔ SUNG: Phương thức vẽ hình ảnh nút với hiệu ứng hover (SÁNG LÊN)
+    private void drawButtonImageWithHover(Graphics g, ScalingManager sm, Rectangle bounds, String imageKey, int virtualMouseX, int virtualMouseY) {
+        Graphics2D g2d = (Graphics2D) g.create(); // Sử dụng g.create() để thao tác trên bản sao
+
+        int scaledX = sm.scaleX(bounds.x);
+        int scaledY = sm.scaleY(bounds.y);
+        int scaledWidth = sm.scaleWidth(bounds.width);
+        int scaledHeight = sm.scaleHeight(bounds.height);
+
+        boolean isHovering = bounds.contains(virtualMouseX, virtualMouseY);
+
+        // Hiệu ứng dịch chuyển nhỏ (nhấn)
+        int pressOffset = isHovering ? sm.scaleWidth(1) : 0;
+
+        int drawX = scaledX + pressOffset;
+        int drawY = scaledY + pressOffset;
+        int drawWidth = scaledWidth - pressOffset * 2;
+        int drawHeight = scaledHeight - pressOffset * 2;
+
+        // 1. Vẽ hình ảnh gốc
+        g2d.drawImage(AssetManager.getInstance().getImage(imageKey), drawX, drawY, drawWidth, drawHeight, null);
+
+        // 2. Vẽ lớp phủ sáng lên khi hover
+        if (isHovering) {
+            // Đặt màu và độ trong suốt cho lớp phủ (ví dụ: Trắng, alpha 80/255)
+            Color hoverColor = new Color(255, 255, 255, 80);
+            g2d.setColor(hoverColor);
+
+            // Sử dụng AlphaComposite để làm sáng (Lighten/Screen blend mode)
+            // Tuy nhiên, cách đơn giản nhất trong Java2D là vẽ một hình chữ nhật trong suốt
+            // LƯU Ý: Đây là cách mô phỏng hiệu ứng sáng lên đơn giản nhất.
+            g2d.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
+        }
+
+        g2d.dispose(); // Giải phóng tài nguyên Graphics2D
+    }
+
+
     public void render(Graphics g) {
         ScalingManager sm = ScalingManager.getInstance();
         Graphics2D g2d = (Graphics2D) g;
 
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        // Lấy vị trí chuột ảo (để xử lý hover)
+        int virtualMouseX = inputHandler.getVirtualMouseX();
+        int virtualMouseY = inputHandler.getVirtualMouseY();
 
         // 1. Vẽ nền, nút Back, Tiêu đề (Giữ nguyên)
         if (BackgroundImage != null) {
@@ -263,12 +387,16 @@ public class SettingManager {
         g.setColor(Color.WHITE);
         g.drawString("SETTINGS", sm.scaleX(titleX), sm.scaleY(titleY));
 
-        // 2. Vẽ Âm lượng (Giữ nguyên)
+
         Font labelFont = new Font("Arial", Font.BOLD, 24);
         Font scaledLabelFont = labelFont.deriveFont((float)(labelFont.getSize() * sm.getScale()));
         g.setFont(scaledLabelFont);
         g.setColor(Color.WHITE);
 
+        // --- 1. VẼ KHUNG CHỮ NHẬT LỚN CHO VOLUME (BÊN TRÁI) ---
+        drawModernBox(g, sm, volumeGroupBounds);
+
+        // 2. Vẽ Âm lượng (Đặt bên trong khung Volume)
         g.drawString("MASTER VOLUME", sm.scaleX(labelX), sm.scaleY(masterLabelY));
         trackMaster.render(g, sm);
         thumbMaster.render(g, sm);
@@ -288,57 +416,70 @@ public class SettingManager {
             g.drawString("X", sm.scaleX(muteButtonRect.x + 7), sm.scaleY(muteButtonRect.y + 24));
         }
 
-        // 3. BỔ SUNG: Vẽ Skin Selector
-        g.setFont(scaledLabelFont);
-        g.setColor(Color.WHITE);
+        // --- 2. VẼ KHUNG CHỮ NHẬT LỚN CHO SKIN SELECTOR (BÊN PHẢI) ---
+        // Lấy khung từ Ball đến Paddle
+        Rectangle skinGroupBounds = new Rectangle(
+                ballGroupBounds.x,
+                ballGroupBounds.y,
+                ballGroupBounds.width,
+                (paddleGroupBounds.y + paddleGroupBounds.height) - ballGroupBounds.y
+        );
 
-        // --- Cụm Ball ---
-        g.drawString("BALL SKIN", sm.scaleX(selectorX), sm.scaleY(ballLabelY));
-        // Vẽ mũi tên
-        g.drawImage(AssetManager.getInstance().getImage("arrow_left"), sm.scaleX(ballArrowLeft.x), sm.scaleY(ballArrowLeft.y), sm.scaleWidth(ballArrowLeft.width), sm.scaleHeight(ballArrowLeft.height), null);
-        g.drawImage(AssetManager.getInstance().getImage("arrow_right"), sm.scaleX(ballArrowRight.x), sm.scaleY(ballArrowRight.y), sm.scaleWidth(ballArrowRight.width), sm.scaleHeight(ballArrowRight.height), null);
-        // Vẽ khung
-        g.drawRect(sm.scaleX(ballDisplayBox.x), sm.scaleY(ballDisplayBox.y), sm.scaleWidth(ballDisplayBox.width), sm.scaleHeight(ballDisplayBox.height));
+        drawModernBox(g, sm, skinGroupBounds);
 
-        // --- Cụm Paddle ---
-        g.drawString("PADDLE SKIN", sm.scaleX(selectorX), sm.scaleY(paddleLabelY));
-        // Vẽ mũi tên
-        g.drawImage(AssetManager.getInstance().getImage("arrow_left"), sm.scaleX(paddleArrowLeft.x), sm.scaleY(paddleArrowLeft.y), sm.scaleWidth(paddleArrowLeft.width), sm.scaleHeight(paddleArrowLeft.height), null);
-        g.drawImage(AssetManager.getInstance().getImage("arrow_right"), sm.scaleX(paddleArrowRight.x), sm.scaleY(paddleArrowRight.y), sm.scaleWidth(paddleArrowRight.width), sm.scaleHeight(paddleArrowRight.height), null);
-        // Vẽ khung
-        g.drawRect(sm.scaleX(paddleDisplayBox.x), sm.scaleY(paddleDisplayBox.y), sm.scaleWidth(paddleDisplayBox.width), sm.scaleHeight(paddleDisplayBox.height));
 
-        // 4. BỔ SUNG: Vẽ Skin với Clipping
-        Shape oldClip = g.getClip(); // Lưu lại vùng clip cũ (toàn màn hình)
+        // 3. BỔ SUNG: Vẽ Skin Selector (Bên trong khung Skin)
+
+        // Cụm Ball
+        FontMetrics fm = g.getFontMetrics(scaledLabelFont);
+        int ballLabelWidth = fm.stringWidth("BALL SKIN");
+        int ballLabelDrawX = sm.scaleX(ballLabelCenterX) - ballLabelWidth/2;
+        g.drawString("BALL SKIN", ballLabelDrawX, sm.scaleY(ballLabelY));
+
+
+        // Vẽ mũi tên Ball với HOVER EFFECT
+        drawButtonImageWithHover(g, sm, ballArrowLeft, "arrow_left", virtualMouseX, virtualMouseY);
+        drawButtonImageWithHover(g, sm, ballArrowRight, "arrow_right", virtualMouseX, virtualMouseY);
+
+        // Cụm Paddle
+        int paddleLabelWidth = fm.stringWidth("PADDLE SKIN");
+        int paddleLabelDrawX = sm.scaleX(paddleLabelCenterX) - paddleLabelWidth/2;
+        g.drawString("PADDLE SKIN", paddleLabelDrawX, sm.scaleY(paddleLabelY));
+
+        // Vẽ mũi tên Paddle với HOVER EFFECT
+        drawButtonImageWithHover(g, sm, paddleArrowLeft, "arrow_left", virtualMouseX, virtualMouseY);
+        drawButtonImageWithHover(g, sm, paddleArrowRight, "arrow_right", virtualMouseX, virtualMouseY);
+
+        // 4. BỔ SUNG: Vẽ Skin với Clipping (Giữ nguyên)
+        Shape oldClip = g.getClip();
 
         // Vẽ Ball (với clipping)
         Rectangle scaledBallBox = new Rectangle(sm.scaleX(ballDisplayBox.x), sm.scaleY(ballDisplayBox.y), sm.scaleWidth(ballDisplayBox.width), sm.scaleHeight(ballDisplayBox.height));
-        g.setClip(scaledBallBox); // Chỉ cho phép vẽ BÊN TRONG khung này
-        renderSlidingImage(g, sm, ballSkinKeys, currentBallSkinIndex, prevBallSkinIndex, ballDisplayBox, ballSlideOffset, ballSlideDirection, 30); // Giả sử bóng 30x30
+        g.setClip(scaledBallBox);
+        renderSlidingImage(g, sm, ballSkinKeys, currentBallSkinIndex, prevBallSkinIndex, ballDisplayBox, ballSlideOffset, ballSlideDirection, 30);
 
         // Vẽ Paddle (với clipping)
         Rectangle scaledPaddleBox = new Rectangle(sm.scaleX(paddleDisplayBox.x), sm.scaleY(paddleDisplayBox.y), sm.scaleWidth(paddleDisplayBox.width), sm.scaleHeight(paddleDisplayBox.height));
-        g.setClip(scaledPaddleBox); // Chỉ cho phép vẽ BÊN TRONG khung này
-        renderSlidingImage(g, sm, paddleSkinKeys, currentPaddleSkinIndex, prevPaddleSkinIndex, paddleDisplayBox, paddleSlideOffset, paddleSlideDirection, 60); // Giả sử paddle 60x18
+        g.setClip(scaledPaddleBox);
+        renderSlidingImage(g, sm, paddleSkinKeys, currentPaddleSkinIndex, prevPaddleSkinIndex, paddleDisplayBox, paddleSlideOffset, paddleSlideDirection, 60);
 
-        g.setClip(oldClip); // Trả lại vùng clip toàn màn hình
+        g.setClip(oldClip);
     }
 
-    // --- HÀM HELPER MỚI: Để vẽ hiệu ứng trượt ---
+    // --- HÀM HELPER MỚI: Để vẽ hiệu ứng trượt (Giữ nguyên) ---
     private void renderSlidingImage(Graphics g, ScalingManager sm, List<String> skins, int currentIndex, int prevIndex, Rectangle box, float slideOffset, int slideDirection, int imageSize) {
 
         String currentSkinKey = skins.get(currentIndex);
         BufferedImage currentImg = AssetManager.getInstance().getImage(currentSkinKey);
 
-        // Tính toán vị trí X, Y (căn giữa trong box)
         int scaledBoxX = sm.scaleX(box.x);
         int scaledBoxY = sm.scaleY(box.y);
         int scaledBoxWidth = sm.scaleWidth(box.width);
         int scaledBoxHeight = sm.scaleHeight(box.height);
 
-        int scaledImgWidth = sm.scaleWidth(imageSize * 2); // Phóng to skin lên cho dễ nhìn
+        int scaledImgWidth = sm.scaleWidth(imageSize * 2);
         int scaledImgHeight = scaledImgWidth;
-        if (currentImg.getHeight() < currentImg.getWidth()) { // Xử lý paddle (nó rộng)
+        if (currentImg.getHeight() < currentImg.getWidth()) {
             scaledImgWidth = sm.scaleWidth(imageSize * 2);
             scaledImgHeight = sm.scaleHeight( (int) ( (float) currentImg.getHeight() / currentImg.getWidth() * (imageSize * 2) ) );
         }
@@ -346,30 +487,28 @@ public class SettingManager {
         int drawY = scaledBoxY + (scaledBoxHeight - scaledImgHeight) / 2;
 
         if (slideDirection == 0) {
-            // Đứng yên: Chỉ vẽ skin hiện tại
             int drawX = scaledBoxX + (scaledBoxWidth - scaledImgWidth) / 2;
             g.drawImage(currentImg, drawX, drawY, scaledImgWidth, scaledImgHeight, null);
         } else {
-            // Đang trượt
             String prevSkinKey = skins.get(prevIndex);
             BufferedImage prevImg = AssetManager.getInstance().getImage(prevSkinKey);
 
             int scaledOffset = sm.scaleWidth((int)slideOffset);
 
             // 1. Skin MỚI (current)
-            int newX = scaledBoxX + (scaledBoxWidth - scaledImgWidth) / 2; // Vị trí cuối
-            if (slideDirection == 1) { // Trượt từ phải sang
+            int newX = scaledBoxX + (scaledBoxWidth - scaledImgWidth) / 2;
+            if (slideDirection == 1) {
                 newX += (scaledBoxWidth - scaledOffset);
-            } else { // Trượt từ trái sang
+            } else {
                 newX -= (scaledBoxWidth - scaledOffset);
             }
             g.drawImage(currentImg, newX, drawY, scaledImgWidth, scaledImgHeight, null);
 
             // 2. Skin CŨ (previous)
-            int oldX = scaledBoxX + (scaledBoxWidth - scaledImgWidth) / 2; // Vị trí đầu
-            if (slideDirection == 1) { // Bị đẩy sang trái
+            int oldX = scaledBoxX + (scaledBoxWidth - scaledImgWidth) / 2;
+            if (slideDirection == 1) {
                 oldX -= scaledOffset;
-            } else { // Bị đẩy sang phải
+            } else {
                 oldX += scaledOffset;
             }
             g.drawImage(prevImg, oldX, drawY, scaledImgWidth, scaledImgHeight, null);
