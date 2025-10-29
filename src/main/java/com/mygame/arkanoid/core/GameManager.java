@@ -819,15 +819,24 @@ public class GameManager {
 
     public void setGameState(String state) {
         if (this.gameState != null && this.gameState.equals(state)) return;
+
+        String oldState = this.gameState;
         if (GAMESTATE_PAUSED.equals(state)) {
             soundManager.pauseBackgroundMusic();
-        } else if ("PLAYING".equals(state) && GAMESTATE_PAUSED.equals(this.gameState)) {
+        } else if ("PLAYING".equals(state) && GAMESTATE_PAUSED.equals(oldState)) {
             soundManager.resumeBackgroundMusic();
         }
         this.gameState = state;
 
         if ("MENU".equals(state)) {
-            soundManager.playBackgroundMusic("Menu.wav");
+            boolean wasInMenuScreens = "MENU".equals(oldState) ||
+                    "SETTING".equals(oldState) ||
+                    "HIGH_SCORES".equals(oldState) ||
+                    "LEVEL_SELECT".equals(oldState);
+
+            if (!wasInMenuScreens) {
+                soundManager.playBackgroundMusic("Menu.wav");
+            }
             if (menuManager != null) menuManager.setContinueAvailable(canContinue);
         } else if ("GAME_OVER".equals(state) || "GAME_WIN".equals(state)) {
             soundManager.stopBackgroundMusic();
