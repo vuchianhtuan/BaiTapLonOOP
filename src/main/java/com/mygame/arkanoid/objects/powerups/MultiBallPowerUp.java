@@ -20,14 +20,12 @@ public class MultiBallPowerUp extends PowerUp {
         super(x, y, width, height, "multi_ball", 50);
     }
 
-    // ... applyEffect và removeEffect giữ nguyên ...
-
     @Override public void applyEffect(GameManager gameManager) {
         Ball mainBall = gameManager.getBall();
         int x = mainBall.getX();
         int y = mainBall.getY();
         for (int i = 0; i < BALL_COUNT; i++) {
-            Ball b = new Ball(x, y, 15, 15, gameManager.getSelectedBallSkinKey());
+            Ball b = new Ball(x, y, 18, 18, gameManager.getSelectedBallSkinKey());
             b.setStuckToPaddle(false);
 
             if (i == 0) {

@@ -20,8 +20,8 @@ public class FastBallPowerUp extends PowerUp {
 
     @Override public void applyEffect(GameManager gameManager) {
         Ball targetBall = gameManager.getBall();
-        double currentSpeed = gameManager.getBall().getSpeed();
-        gameManager.getBall().setSpeed(currentSpeed * FAST_SPEED_FACTOR);
+        double originalSpeed = gameManager.getBall().getOriginalSpeed();
+        gameManager.getBall().setSpeed(originalSpeed * FAST_SPEED_FACTOR);
         targetBall.setBurning(true);
     }
     @Override public void removeEffect(GameManager gameManager) {

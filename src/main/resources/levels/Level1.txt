@@ -2,10 +2,15 @@ type: normal
 theme_music: Forest.wav  # Nhạc nền chủ đề
 theme_assets: forest_         # Sẽ tải ảnh "forest_brick", "forest_ball"...
 theme_background: background_forest.png
-powerups: SLOW_BALL=1
-lasershooter_spawn_rate: 0.02  # 2% tỷ lệ một shooter xuất hiện khi gạch vỡ
+powerups: EXPAND=0.1, SLOW_BALL=0.08, EXTRA_LIFE=0.01
+lasershooter_spawn_rate: 0  # 2% tỷ lệ một shooter xuất hiện khi gạch vỡ
 ---
-
-111111111111111111
-111111111111111111
-111111111111111111
+________1________
+_______111_______
+______11111______
+_____1111111_____
+____111111111____
+_______222_______
+_______222_______
+_______222_______
+_______222_______

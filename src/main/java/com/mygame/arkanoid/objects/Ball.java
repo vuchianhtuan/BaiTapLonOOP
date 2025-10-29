@@ -87,6 +87,23 @@ public class Ball extends MovableObject {
 
             this.dx = Math.sin(reflectAngleRad);
             this.dy = -Math.cos(reflectAngleRad);
+
+            int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
+
+            // Nếu bóng đang ở mép TRÁI (do bị kẹp từ hàm move())
+            // VÀ logic nảy (ở trên) vô tình tính ra dx < 0 (muốn đi sang trái)
+            if (this.x <= 0 && this.dx < 0) {
+                // Ép nó nảy sang phải, bất kể logic tính toán góc
+                this.dx = Math.abs(this.dx);
+                // Bạn cũng có thể gán cứng: this.dx = 0.5; (hoặc một giá trị dương)
+            }
+
+            // Tương tự, nếu bóng ở mép PHẢI
+            // VÀ logic nảy vô tình tính ra dx > 0 (muốn đi sang phải)
+            else if (this.x + this.width >= gameAreaWidth && this.dx > 0) {
+                // Ép nó nảy sang trái
+                this.dx = -Math.abs(this.dx);
+            }
         }
         if (this.getBounds().intersects(new Rectangle(other.x, other.y, other.width, 1))) {
             // Chạm cạnh trên
@@ -113,33 +130,37 @@ public class Ball extends MovableObject {
         return this.getBounds().intersects(other.getBounds()) && !this.isStuckToPaddle();
     }
 
-    // ... (Trong class Ball) ...
-
     @Override public void move() {
         this.x += this.dx * speed;
         this.y += this.dy * speed;
+
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
 
-        // Lấy SoundManager
         SoundManager sm = GameManager.getInstance().getSoundManager();
-
-        if (this.x <= 0 || this.x + this.width >= gameAreaWidth) {
-            if (this.x <= 0) {
-                this.x = 0;
-            } else {
-                this.x = gameAreaWidth - this.width;
-            }
-            dx = - dx; // Đổi hướng
+        // Xử lý tường trái
+        if (this.x <= 0) {
+            this.x = 0; // KẸT (clamp) bóng lại ở mép tường
+            this.dx = Math.abs(this.dx);
             if (sm != null) {
                 sm.playSound(sm.SFX_PADDLE_HIT);
-            }
+            }// Luôn đảm bảo dx LÀ SỐ DƯƠNG (để đi sang phải)
         }
-        if (this.y <= 0) {
-            this.y = 0;
-            dy = - dy; // Đổi hướng
+        // Xử lý tường phải
+        else if (this.x + this.width >= gameAreaWidth) {
+            this.x = gameAreaWidth - this.width; // KẸT bóng lại ở mép tường
+            this.dx = -Math.abs(this.dx);
             if (sm != null) {
                 sm.playSound(sm.SFX_PADDLE_HIT);
-            }
+            }// Luôn đảm bảo dx LÀ SỐ ÂM (để đi sang trái)
+        }
+
+        // Xử lý tường trên
+        if (this.y <= 0) {
+            this.y = 0; // KẸT bóng lại
+            this.dy = Math.abs(this.dy);
+            if (sm != null) {
+                sm.playSound(sm.SFX_PADDLE_HIT);
+            }// Luôn đảm bảo dy LÀ SỐ DƯƠNG (để đi xuống)
         }
     }
 
@@ -288,6 +309,10 @@ public class Ball extends MovableObject {
 
     public void setDy(int dy) {
         this.dy = dy;
+    }
+
+    public double getOriginalSpeed() {
+        return originalSpeed;
     }
 }
 

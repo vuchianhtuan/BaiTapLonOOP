@@ -3,7 +3,7 @@ package com.mygame.arkanoid.objects.bricks;
 
 public final class BrickFactory {
     private static final int DEFAULT_WIDTH = 45;
-    private static final int DEFAULT_HEIGHT = 25;
+    private static final int DEFAULT_HEIGHT = 20;
 
     private static final int DEFAULT_STRONG_HP = 3;
     private static final int DEFAULT_MOVING_SPEED = 2;

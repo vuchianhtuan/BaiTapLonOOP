@@ -50,7 +50,9 @@ public class GamePanel extends JPanel {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        if ("PLAYING".equals(currentState) || GAMESTATE_PAUSED.equals(currentState) || "GAME_OVER".equals(currentState) || "TRANSITION".equals(currentState)) {
+        if ("PLAYING".equals(currentState) || GAMESTATE_PAUSED.equals(currentState)
+                || "GAME_OVER".equals(currentState) || "TRANSITION".equals(currentState)
+                || "GAME_WIN".equals(currentState)) {
             Image bg = gameManager.getCurrentBackground();
             if (bg != null) {
                 g.drawImage(bg,
@@ -84,6 +86,34 @@ public class GamePanel extends JPanel {
             uiManager.draw(g);
             drawSidebarExtras(g, sm);
             gameManager.getLevelTransition().render(g);
+            if ("GAME_WIN".equals(currentState)) {
+                Color overlayColor = new Color(0, 0, 0, 128); // 50% mờ
+                g.setColor(overlayColor);
+                g.fillRect(sm.scaleX(0), sm.scaleY(0),
+                        sm.scaleWidth(sm.NATIVE_WIDTH),
+                        sm.scaleHeight(sm.NATIVE_HEIGHT));
+
+                // 2. Vẽ bảng thống kê
+                gameManager.getGameSummaryPanel().draw(g,
+                        "YOU WIN!",
+                        gameManager.getFinalScore(),
+                        gameManager.getFinalPlaytimeMillis()
+                );
+
+            } else if ("GAME_OVER".equals(currentState)) {
+
+                Color overlayColor = new Color(0, 0, 0, 128); // 50% mờ
+                g.setColor(overlayColor);
+                g.fillRect(sm.scaleX(0), sm.scaleY(0),
+                        sm.scaleWidth(sm.NATIVE_WIDTH),
+                        sm.scaleHeight(sm.NATIVE_HEIGHT));
+
+                gameManager.getGameSummaryPanel().draw(g,
+                        "GAME OVER",
+                        gameManager.getFinalScore(),
+                        gameManager.getFinalPlaytimeMillis()
+                );
+            }
         } else if ("MENU".equals(currentState)) {
             gameManager.getMenuManager().render(g);
         } else if ("HIGH_SCORES".equals(currentState)) {
@@ -100,12 +130,7 @@ public class GamePanel extends JPanel {
      */
     private void drawSidebarExtras(Graphics g, ScalingManager sm) {
         int logicX = 980; // 960 + 20 padding
-
-        // Giả sử UIManager vẽ Score và Lives ở trên
-        // Chúng ta bắt đầu vẽ các thông số khác từ Y = 250
         int currentY = 320;
-
-        // --- BẮT ĐẦU THÊM MỚI ---
 
         // 1. VẼ LEVEL
         Font titleFont = new Font("Arial", Font.BOLD, 24);

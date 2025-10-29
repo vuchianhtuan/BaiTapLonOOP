@@ -23,7 +23,6 @@ public class Main {
 
         GameManager gameManager = GameManager.getInstance();
 
-        // LOAD SAVE NẾU CÓ
         SaveData data = SaveSystem.load();
         if (data != null && data.isCanContinue()) {
             gameManager.restoreFromSave(data);

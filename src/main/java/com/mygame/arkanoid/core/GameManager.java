@@ -28,7 +28,7 @@ public class GameManager {
     private List<Brick> bricks;
     private List<PowerUp> powerUps;
     private List<PowerUp> activePowerUps;
-    private List<Shard> activeShards; // <--- THÊM DÒNG NÀY
+    private List<Shard> activeShards;
     private List<HeartUI> hearts;
     private BackButton backButton;
     private boolean canContinue = false;
@@ -37,6 +37,11 @@ public class GameManager {
     private int lives;
     private String gameState;
     private int gameOverTimer;
+
+    private GameSummaryPanel gameSummaryPanel;
+    private int finalScore = 0;
+    private long finalPlaytimeMillis = 0;
+
     private List<Laser> lasers;
     private Boss boss;
     private List<LaserShooterBrick> laserShooters;
@@ -112,6 +117,9 @@ public class GameManager {
         levelManager.loadLevels();
         this.levelTransition = new LevelTransition(this);
         menuManager = new MenuManager(this, inputHandler);
+
+        this.gameSummaryPanel = new GameSummaryPanel();
+
         scoreManager = new ScoreManager(this, inputHandler);
         settingManager = new SettingManager(inputHandler, this, soundManager);
         selectLevel = new SelectLevel(inputHandler, this, levelManager);
@@ -136,6 +144,7 @@ public class GameManager {
         am.loadImage("gameover1", "/images/gameover1.png");
         am.loadImage("gameover2", "/images/gameover2.png");
         am.loadImage("gameover3", "/images/gameover3.png");
+
         am.loadImage("scoreBackground", "/images/backGroundMenu.png");
         am.loadImage("settingBackground", "/images/backGroundMenu.png");
         am.loadImage("selectLevelBackground", "/images/backGroundMenu.png");
@@ -288,7 +297,7 @@ public class GameManager {
         int nativeHeight = ScalingManager.getInstance().NATIVE_HEIGHT;
 
         int paddleWidth = 120;
-        this.ballSize = 20;
+        this.ballSize = 18;
 
         int finalPaddleX = (gameAreaWidth / 2) - (paddleWidth / 2);
         int spawnPaddleY = nativeHeight + 20;
@@ -727,10 +736,10 @@ public class GameManager {
                 // Dùng getBrickSpawnCount() làm cờ "chỉ chạy 1 lần"
                 if (levelTransition.getBrickSpawnCount() == 0) {
 
-                    loadLevelSetup(); // <-- TẠO PADDLE MỚI (this.paddle)
-                    // Đây là nơi DUY NHẤT gọi loadLevelSetup()
-
-                    // Dọn dẹp và chuẩn bị gạch chờ
+                    loadLevelSetup();
+                    if (boss != null) {
+                        boss.update();
+                    }
                     this.bricks.clear();
                     this.laserShooters.clear();
                     this.stagingBricks.clear();
@@ -778,6 +787,12 @@ public class GameManager {
             if (gameOverTimer <= 0) {
                 setGameState("MENU");
             }
+        } else if ("GAME_WIN".equals(gameState)) {
+            gameOverTimer--;
+            if (gameOverTimer <= 0) {
+                setGameState("MENU");
+            }
+
         } else if ("HIGH_SCORES".equals(gameState)) {
             scoreManager.update();
         } else if ("SETTING".equals(gameState)) {
@@ -816,8 +831,12 @@ public class GameManager {
             if (menuManager != null) menuManager.setContinueAvailable(canContinue);
         } else if ("GAME_OVER".equals(state) || "GAME_WIN".equals(state)) {
             soundManager.stopBackgroundMusic();
-            canContinue = false; // không thể continue sau khi game over/win
+            canContinue = false;
             if (menuManager != null) menuManager.setContinueAvailable(false);
+
+            this.gameOverTimer = 480;
+            this.finalScore = this.score;
+            this.finalPlaytimeMillis = this.playtimeMillis;
 
             if (scoreManager != null) {
                 // Gọi hàm mới, truyền cả điểm, thời gian và trạng thái thắng/thua
@@ -838,15 +857,21 @@ public class GameManager {
     }
 
     private void activatePowerUp(PowerUp newPowerUp) {
-        // Dùng iterator để có thể xóa phần tử một cách an toàn
+        String newType = newPowerUp.getType();
         Iterator<PowerUp> iterator = activePowerUps.iterator();
         while (iterator.hasNext()) {
             PowerUp existingPowerUp = iterator.next();
+            String existingType = existingPowerUp.getType();
             // Nếu đã có power-up cùng loại đang hoạt động
             if (existingPowerUp.getType().equals(newPowerUp.getType())) {
                 // Hủy hiệu ứng cũ và xóa nó khỏi danh sách
                 existingPowerUp.removeEffect(this);
                 iterator.remove();
+            } else if ( (existingType.equals("fast_ball") && newType.equals("slow_ball")) ||
+                    (existingType.equals("slow_ball") && newType.equals("fast_ball")) )
+            {
+                existingPowerUp.removeEffect(this); // Hủy hiệu ứng CŨ
+                iterator.remove(); // Xóa power-up CŨ khỏi danh sách
             }
         }
         soundManager.playSound(SoundManager.SFX_POWERUP);
@@ -1072,6 +1097,19 @@ public class GameManager {
         this.selectedPaddleSkinKey = selectedPaddleSkinKey;
         if (paddle != null) {
             paddle.setImageName(selectedPaddleSkinKey);
-        }    }
+        }
+    }
+
+    public GameSummaryPanel getGameSummaryPanel() {
+        return gameSummaryPanel;
+    }
+
+    public int getFinalScore() {
+        return finalScore;
+    }
+
+    public long getFinalPlaytimeMillis() {
+        return finalPlaytimeMillis;
+    }
 }
 

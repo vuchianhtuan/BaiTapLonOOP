@@ -21,9 +21,8 @@ public class SlowBallPowerUp extends PowerUp {
 
     @Override
     public void applyEffect(GameManager gameManager) {
-        // Lấy tốc độ hiện tại của bóng và giảm nó đi
-        double currentSpeed = gameManager.getBall().getSpeed(); // Cần thêm getSpeed() vào Ball
-        gameManager.getBall().setSpeed(currentSpeed * SLOW_SPEED_FACTOR);
+        double originalSpeed = gameManager.getBall().getOriginalSpeed();
+        gameManager.getBall().setSpeed(originalSpeed * SLOW_SPEED_FACTOR);
     }
 
     @Override

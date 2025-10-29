@@ -24,11 +24,11 @@ public class Level {
 
     // Các hằng số để căn chỉnh layout
     private static final int BRICK_WIDTH = 45;      // Cũ: 40
-    private static final int BRICK_HEIGHT = 25;     // Cũ: 20
-    private static final int PADDING_X = 5;         // Cũ: 10
-    private static final int PADDING_Y = 5;         // Cũ: 10
-    private static final int START_OFFSET_X = 60;   // Cũ: 50
-    private static final int START_OFFSET_Y = 60;
+    private static final int BRICK_HEIGHT = 20;     // Cũ: 20
+    private static final int PADDING_X = 4;         // Cũ: 10
+    private static final int PADDING_Y = 4;         // Cũ: 10
+    private static final int START_OFFSET_X = 40;   // Cũ: 50
+    private static final int START_OFFSET_Y = 30;
 
     public Level(String filePath) {
         this.bricks = new ArrayList<>();
@@ -142,23 +142,6 @@ public class Level {
             this.themeBackground = value;
         }
     }
-
-    /*
-    private Brick createBrick(char type, int x, int y) {
-        switch (type) {
-            case '1': return new NormalBrick(x, y, BRICK_WIDTH, BRICK_HEIGHT);
-            case '2': return new StrongBrick(x, y, BRICK_WIDTH, BRICK_HEIGHT, 2);
-            case 'L': return new LaserShooterBrick(x, y, BRICK_WIDTH, BRICK_HEIGHT, 3);
-            case 'E': return new ExplosiveBrick(x, y, BRICK_WIDTH, BRICK_HEIGHT);
-            case 'M': return new MovingBrick(x, y, BRICK_WIDTH, BRICK_HEIGHT, 2, 200);
-            case 'B': return new NormalBrick(x, y, BRICK_WIDTH, BRICK_HEIGHT);
-            case 'T': return new StrongBrick(x, y, BRICK_WIDTH, BRICK_HEIGHT, 3); // Máu 3
-            case 'C': return new LaserShooterBrick(x, y, BRICK_WIDTH, BRICK_HEIGHT, 5);
-            case '_': case '0': default: return null;
-        }
-    }
-    */
-
 
     public String getThemeBackground() {
         return themeBackground;

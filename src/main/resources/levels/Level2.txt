@@ -2,11 +2,17 @@ type: normal
 theme_music: Storm.wav  # Nhạc nền chủ đề băng giá
 theme_assets: storm_         # Sẽ tải ảnh "ice_brick", "ice_ball"...
 theme_background: background_storm.png
-powerups: EXPAND=0.1, SLOW_BALL=0.05, FAST_BALL=1  # <--- ĐÃ THÊM FAST_BALL (Trọng số 0.1)
+powerups: EXPAND=0.08, SLOW_BALL=0.05, FAST_BALL=0.05, MULTI_BALL=0.02
 lasershooter_spawn_rate: 0.02  # 2% tỷ lệ một shooter xuất hiện khi gạch vỡ
 ---
-2 222 2112 22
-11111E11 1111
-22 222 2  M
-1111111111111
-M____E____2__1
+_22222______22222_
+_2___M______M___2_
+_2_E_L_1111_L_E_2_
+_2_1_L______L_1_2_
+_2_1___2222___1_2_
+___1___2__2___1___
+_2_1___2222___1_2_
+_2_1_L______L_1_2_
+_2_E_L_1111_L_E_2_
+_2___M______M___2_
+_22222______22222_
