@@ -1,5 +1,5 @@
 type:boss
-powerups:MULTI_BALL=0.05,EXTRA_LIFE=0.02,EXPAND=0.1
+powerups:MULTI_BALL=0.005,EXTRA_LIFE=0.002,EXPAND=0.01,SLOW_BALL=0.05
 theme_music: BossFightTheme.wav      # Nhạc nền cho màn boss
 theme_assets: boss_
 theme_background: background_boss.png
@@ -18,6 +18,6 @@ _T_TTTTBTTTT_T_
 _T_TTTTBTTTT_T_
 _C_T_______T_C_
 ____TC___CT____
-__M____E___M___
-__M____M___M___
+__E____M___E___
+__1____M___1___
 

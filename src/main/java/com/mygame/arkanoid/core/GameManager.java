@@ -170,8 +170,8 @@ public class GameManager {
         am.loadImage("fire_ball_animation", "/images/fire_ball_animation.png");
         //am.loadImage("test_ball", "/images/test_ball.png");
         am.loadImage("forest_brick", "/images/forest_normalBrick.png");
-        am.loadImage("arrow_left", "/images/button_back.png"); // <--- Thêm ảnh mũi tên
-        am.loadImage("arrow_right", "/images/button_back.png"); // <--- Thêm ảnh mũi tên
+        am.loadImage("arrow_left", "/images/button_left.png"); // <--- Thêm ảnh mũi tên
+        am.loadImage("arrow_right", "/images/button_right.png"); // <--- Thêm ảnh mũi tên
         // Ví dụ 2 skin cho Ball (bạn tự đổi tên file)
         am.loadImage("skin_ball_1", "/images/test_ball.png");
         am.loadImage("skin_ball_2", "/images/skin_ball_2.png");
@@ -260,7 +260,7 @@ public class GameManager {
         if (music != null && !music.isEmpty()) {
             soundManager.playBackgroundMusic(music);
         } else {
-            soundManager.playBackgroundMusic("ExoticBaryon_PhaseXX.wav");
+            soundManager.playBackgroundMusic("Background_Music_Backup.wav");
         }
     }
 
