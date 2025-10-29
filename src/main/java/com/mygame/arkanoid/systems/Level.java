@@ -3,6 +3,7 @@ package com.mygame.arkanoid.systems;
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.PowerUpType;
 import com.mygame.arkanoid.util.ErrorHandler;
+import static com.mygame.arkanoid.objects.bricks.BrickFactory.create;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -66,7 +67,7 @@ public class Level {
                         int x = START_OFFSET_X + col * (BRICK_WIDTH + PADDING_X);
                         int y = START_OFFSET_Y + row * (BRICK_HEIGHT + PADDING_Y);
 
-                        Brick brick = createBrick(brickType, x, y);
+                        Brick brick = create(brickType, x, y);
                         if (brick != null) {
                             if (isBossBrickType(brickType)) {
                                 bossBricks.add(brick);
@@ -142,6 +143,7 @@ public class Level {
         }
     }
 
+    /*
     private Brick createBrick(char type, int x, int y) {
         switch (type) {
             case '1': return new NormalBrick(x, y, BRICK_WIDTH, BRICK_HEIGHT);
@@ -155,6 +157,8 @@ public class Level {
             case '_': case '0': default: return null;
         }
     }
+    */
+
 
     public String getThemeBackground() {
         return themeBackground;
