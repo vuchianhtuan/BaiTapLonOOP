@@ -20,32 +20,19 @@ import java.util.*;
 import java.util.List;
 
 public class GameManager {
-    private Paddle paddle;
-    private Ball ball;
-    private int ballSize;
-    private List<Ball> balls = new ArrayList<>(); // Danh sách các quả bóng (nếu có Multi-Ball)
-    private List<Brick> stagingBricks;
-    private List<Brick> bricks;
-    private List<PowerUp> powerUps;
-    private List<PowerUp> activePowerUps;
-    private List<Shard> activeShards;
     private List<HeartUI> hearts;
     private BackButton backButton;
     private boolean canContinue = false;
 
-    private int score = 0;
-    private int lives;
+    private PlayerStats playerStats;
+
     private String gameState;
     private int gameOverTimer;
 
     private GameSummaryPanel gameSummaryPanel;
-    private int finalScore = 0;
-    private long finalPlaytimeMillis = 0;
 
-    private List<Laser> lasers;
-    private Boss boss;
-    private List<LaserShooterBrick> laserShooters;
-
+    private EntityManager entityManager;
+    private CollisionSystem collisionSystem;
     private ScoreManager scoreManager;
     private LevelManager levelManager;
     private Renderer renderer;
@@ -55,13 +42,8 @@ public class GameManager {
     private MenuManager menuManager;
     private SettingManager settingManager;
     private SelectLevel selectLevel;
-    private String currentTheme = "";
     private Image currentBackground = null;
 
-    private long playtimeMillis = 0;
-    private long lastUpdateTime = 0;
-    private long currentLevelPlaytimeMillis = 0; // Thời gian của màn hiện tại
-    private int currentLevelScore = 0;
     private boolean pauseCooldown = false;
     private Rectangle pauseButtonRect;
     private Rectangle resumeButtonRect;
@@ -75,8 +57,6 @@ public class GameManager {
     public static final String GAMESTATE_TRANSITION_OUT = "TRANSITION_OUT";
     public static final String GAMESTATE_TRANSITION_IN = "TRANSITION_IN";
 
-    int screenHeight = com.mygame.arkanoid.systems.ScalingManager.getInstance().NATIVE_HEIGHT;
-
     public SoundManager getSoundManager() {
         return soundManager;
     }
@@ -88,15 +68,12 @@ public class GameManager {
 
     private GameManager() {
         inputHandler = new InputHandler();
-        bricks = new ArrayList<>();
-        stagingBricks = new ArrayList<>();
-        laserShooters = new ArrayList<>();
-        powerUps = new ArrayList<>();
-        activePowerUps = new ArrayList<>();
+        entityManager = new EntityManager();
         backButton = new BackButton(10, 10, 40, 40);
-        activeShards = new ArrayList<>(); // <--- KHỞI TẠO DANH SÁCH
         this.soundManager = new SoundManager();
         this.hearts = new ArrayList<>();
+
+        playerStats = new PlayerStats();
 
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH; // 960
         int sidebarWidth = ScalingManager.getInstance().NATIVE_WIDTH - gameAreaWidth; // 160
@@ -110,16 +87,16 @@ public class GameManager {
         resumeButtonRect = new Rectangle(buttonLogicX, buttonLogicY_Pause, buttonWidth, buttonHeight); // <-- Đổi tên
         menuButtonRect = new Rectangle(buttonLogicX, buttonLogicY_Menu, buttonWidth, buttonHeight); // <-- THÊM MỚI
 
-        loadAssets();
+        AssetManager.getInstance().loadGlobalAssets();
 
         levelManager = new LevelManager();
-        this.lasers = new ArrayList<>();
         levelManager.loadLevels();
         this.levelTransition = new LevelTransition(this);
         menuManager = new MenuManager(this, inputHandler);
 
         this.gameSummaryPanel = new GameSummaryPanel();
 
+        collisionSystem = new CollisionSystem();
         scoreManager = new ScoreManager(this, inputHandler);
         settingManager = new SettingManager(inputHandler, this, soundManager);
         selectLevel = new SelectLevel(inputHandler, this, levelManager);
@@ -134,90 +111,12 @@ public class GameManager {
         return Holder.INSTANCE;
     }
 
-    public void loadAssets() {
-        AssetManager am = AssetManager.getInstance();
-
-        // Menu, UI, Game Over
-        am.loadImage("menuBackground", "/images/backGroundMenu.png");
-        am.loadImage("defaultBackground", "/images/default_game_background.png");
-        am.loadImage("heart", "/images/heart.png");
-        am.loadImage("gameover1", "/images/gameover1.png");
-        am.loadImage("gameover2", "/images/gameover2.png");
-        am.loadImage("gameover3", "/images/gameover3.png");
-
-        am.loadImage("scoreBackground", "/images/backGroundMenu.png");
-        am.loadImage("settingBackground", "/images/backGroundMenu.png");
-        am.loadImage("selectLevelBackground", "/images/backGroundMenu.png");
-
-        am.loadImage("level1_preview", "/images/level1_preview.png");
-        am.loadImage("level2_preview", "/images/level2_preview.png");
-        am.loadImage("level3_preview", "/images/level3_preview.png");
-
-        // Power-ups (thường là chung)
-        am.loadImage("expandPowerUp", "/images/expandPowerUp.png");
-        am.loadImage("stickyPowerUp", "/images/stickyPowerUp.png");
-        am.loadImage("slowBallPowerUp", "/images/slowBallPowerUp.png");
-        am.loadImage("fastBallPowerUp", "/images/fastBallPowerUp.png");
-        am.loadImage("extraLifePowerUp", "/images/heart.png");
-        am.loadImage("multiBallPowerUp", "/images/multiBallPowerUp.png");
-        am.loadImage("thumb", "/images/ball_blue_large_alt.png");
-        am.loadImage("track", "/images/paddle.png");
-        am.loadImage("Back", "/images/button_back.png");
-
-        // Laser
-        am.loadImage("laser", "/images/laser.png");
-        am.loadImage("laserShooter", "/images/laser_shooter.png");
-        am.loadImage("fire_ball_animation", "/images/fire_ball_animation.png");
-        //am.loadImage("test_ball", "/images/test_ball.png");
-        am.loadImage("forest_brick", "/images/forest_normalBrick.png");
-        am.loadImage("arrow_left", "/images/button_left.png"); // <--- Thêm ảnh mũi tên
-        am.loadImage("arrow_right", "/images/button_right.png"); // <--- Thêm ảnh mũi tên
-        // Ví dụ 2 skin cho Ball (bạn tự đổi tên file)
-        am.loadImage("skin_ball_1", "/images/test_ball.png");
-        am.loadImage("skin_ball_2", "/images/skin_ball_2.png");
-        am.loadImage("skin_ball_3", "/images/skin_ball_3.png");
-        am.loadImage("skin_ball_4", "/images/skin_ball_4.png");
-        am.loadImage("skin_ball_5", "/images/skin_ball_5.png");
-        am.loadImage("skin_ball_6", "/images/skin_ball_6.png");
-
-
-        // Ví dụ 2 skin cho Paddle (bạn tự đổi tên file)
-        am.loadImage("skin_paddle_1", "/images/skin_paddle_1.png");
-        am.loadImage("skin_paddle_2", "/images/skin_paddle_2.png");
-        am.loadImage("skin_paddle_3", "/images/skin_paddle_3.png");
-        am.loadImage("skin_paddle_4", "/images/skin_paddle_4.png");
-
-        //Explosive efect
-        for (int i = 1; i <= 8; i++) {
-            String imageName = "explosion_render" + i;
-            String imagePath = "/images/" + imageName + ".png"; // Giả sử file có đuôi .png
-            am.loadImage(imageName, imagePath);
-        }
-    }
-
     private void loadThemeAssets(String prefix) {
-        if (prefix.equals(currentTheme)) {
-            return;
-        }
-        currentTheme = prefix;
-        AssetManager am = AssetManager.getInstance();
-
-        // Tải các ảnh với tiền tố (ví dụ "ice_ball.png" hoặc "ball.png")
-        am.loadImage("normalBrick", "/images/" + prefix + "normalBrick.png");
-        am.loadImage("explosiveBrick", "/images/" + prefix + "explosiveBrick.png");
-        am.loadImage("strongBrick", "/images/" + prefix + "strongBrick.png");
-        am.loadImage("strongBrick1", "/images/" + prefix + "strongBrick1.png");
-        am.loadImage("strongBrick2", "/images/" + prefix + "strongBrick2.png");
-
+        AssetManager.getInstance().loadTheme(prefix);
     }
 
     public void startGame() {
-        this.playtimeMillis = 0;
-        this.lastUpdateTime = System.nanoTime();
-        this.lives = 3;
-        this.score = 0;
-        this.currentLevelScore = 0; // Reset điểm màn
-        this.currentLevelPlaytimeMillis = 0;
+        playerStats.resetForNewGame();
         setupLevelObjects();
         canContinue = false;
         levelManager.reset(); // Đưa level manager về màn 1
@@ -225,12 +124,7 @@ public class GameManager {
     }
 
     public void startGameAtLevel(int levelIndex) {
-        this.playtimeMillis = 0; // Reset tổng thời gian session
-        this.lastUpdateTime = System.nanoTime();
-        this.lives = 3;
-        this.score = 0; // Reset tổng điểm session
-        this.currentLevelScore = 0; // Reset điểm cho màn mới
-        this.currentLevelPlaytimeMillis = 0; // Reset thời gian cho màn mới
+        playerStats.resetForNewGame();
         canContinue = false;
 
         // Sử dụng phương thức mới của LevelManager để tải trực tiếp
@@ -246,7 +140,7 @@ public class GameManager {
     }
 
     public void continueGame() {
-        this.lastUpdateTime = System.nanoTime();
+        playerStats.setLastUpdateTime(System.nanoTime());
         if (!canContinue) {
             return;
         }
@@ -277,14 +171,13 @@ public class GameManager {
     }
 
     private void loadNextLevel() {
-        this.currentLevelScore = 0;
-        this.currentLevelPlaytimeMillis = 0;
+        playerStats.resetForNextLevel();
         if (levelManager.loadNextLevel()) {
             if (levelManager.getCurrentLevelIndex() == 0) {
                 levelTransition.startInstantFade();
                 setGameState("TRANSITION");
             } else {
-                levelTransition.startTransition(paddle);
+                levelTransition.startTransition(entityManager.getPaddle());
                 setGameState("TRANSITION");
             }
         } else {
@@ -293,30 +186,11 @@ public class GameManager {
     }
 
     private void setupLevelObjects() {
-        int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
-        int nativeHeight = ScalingManager.getInstance().NATIVE_HEIGHT;
-
-        int paddleWidth = 120;
-        this.ballSize = 18;
-
-        int finalPaddleX = (gameAreaWidth / 2) - (paddleWidth / 2);
-        int spawnPaddleY = nativeHeight + 20;
-
-        paddle = new Paddle(finalPaddleX, spawnPaddleY, paddleWidth, 20, selectedPaddleSkinKey);
-        ball = new Ball(finalPaddleX + (paddleWidth / 2) - (ballSize / 2), spawnPaddleY - ballSize - 1, ballSize, ballSize, selectedBallSkinKey);
-        ball.resetBallPosition(paddle);
-        balls.clear();
-        balls.add(ball);
-        powerUps.clear();
-        lasers.clear();
-        this.boss = null;
-        bricks.clear();
-        laserShooters.clear();
-        activeShards.clear();
-        for (PowerUp p : activePowerUps) {
+        entityManager.resetForNewLevel(selectedPaddleSkinKey, selectedBallSkinKey);
+        for (PowerUp p : entityManager.getActivePowerUps()) {
             p.removeEffect(this);
         }
-        activePowerUps.clear();
+        entityManager.getActivePowerUps().clear();
     }
 
     private void loadLevelAssetsAndBricks() {
@@ -343,17 +217,16 @@ public class GameManager {
                 this.currentBackground = AssetManager.getInstance().getImage("defaultBackground");
             }
 
+            Boss newBoss = null;
             if (currentLevel.isBossLevel() && !currentLevel.getBossBricks().isEmpty()) {
                 java.awt.Rectangle bossBounds = currentLevel.getBossInitialBounds();
                 float startX = (ScalingManager.getInstance().GAME_AREA_WIDTH / 2.0f) - (bossBounds.width / 2.0f);
                 float startY = bossBounds.y;
 
-                // TẠO BOSS VỚI GẠCH CỦA NÓ.
-                this.boss = new Boss(currentLevel.getBossBricks(), startX, startY, bossBounds.x, ScalingManager.getInstance().GAME_AREA_WIDTH);
-            } else {
-                this.boss = null;
+                newBoss = new Boss(currentLevel.getBossBricks(), startX, startY, bossBounds.x, ScalingManager.getInstance().GAME_AREA_WIDTH);
             }
 
+            entityManager.hydrateLevel(currentLevel, newBoss);
             ensureBrickIdsAssigned();
         }
     }
@@ -372,8 +245,8 @@ public class GameManager {
         final float MAX_PROPAGATION_FRAMES = 30.0f;
 
         List<Brick> allActiveBricks = new ArrayList<>();
-        allActiveBricks.addAll(this.laserShooters);
-        allActiveBricks.addAll(this.bricks);
+        allActiveBricks.addAll(entityManager.getLaserShooters());
+        allActiveBricks.addAll(entityManager.getBricks());
         for (Brick otherBrick : allActiveBricks) {
             if (otherBrick == sourceBrick) { // Bỏ qua chính nó
                 continue;
@@ -406,37 +279,30 @@ public class GameManager {
                     boolean wasAboutToDie = otherBrick.getHitPoints() == 1;
 
                     otherBrick.takeHit();
-                    score += 10;
-
+                    addScore(10);
                     if (otherBrick.isDestroyed()) {
-                        activeShards.addAll(otherBrick.shatter()); // Vỡ vụn hoàn toàn
+                        getActiveShards().addAll(otherBrick.shatter()); // Vỡ vụn hoàn toàn
                     } else if (!wasAboutToDie) {
                         // Chỉ tạo vỡ vụn nhẹ nếu nó chưa vỡ (HP > 0) và không phải là cú đánh chí mạng
-                        otherBrick.shatterHit(activeShards);
+                        otherBrick.shatterHit(getActiveShards());
                     }
                 }
             }
         }
     }
 
+    public void addScore(int points) {
+        playerStats.addScore(points);
+    }
+
     public void updateGame() {
         long now = System.nanoTime();
-        long deltaNanos = (lastUpdateTime > 0) ? (now - lastUpdateTime) : 0;
+        long deltaNanos = (playerStats.getLastUpdateTime() > 0) ? (now - playerStats.getLastUpdateTime()) : 0;
         long deltaMillis = deltaNanos / 1_000_000;
-        this.lastUpdateTime = now;
+        playerStats.setLastUpdateTime(now);
         ScalingManager sm = ScalingManager.getInstance();
         if ("PLAYING".equals(gameState)) {
-            this.playtimeMillis += deltaMillis; // Cập nhật tổng thời gian
-            this.currentLevelPlaytimeMillis += deltaMillis;
-
-            Iterator<Shard> shardIterator = activeShards.iterator();
-            while (shardIterator.hasNext()) {
-                Shard s = shardIterator.next();
-                s.update();
-                if (!s.isAlive()) {
-                    shardIterator.remove();
-                }
-            }
+            playerStats.updatePlaytime(deltaMillis);
 
             boolean esc = inputHandler.isKeyDown(java.awt.event.KeyEvent.VK_ESCAPE);
             int screenMouseX = inputHandler.getMouseX();
@@ -472,238 +338,63 @@ public class GameManager {
                 pauseCooldown = false;
             }
 
-            paddle.update(inputHandler);
-            for (Ball b : balls) {
-                b.update(inputHandler, paddle);
-            }
-
-            for (Brick brick : this.bricks) {
-                if( brick instanceof MovingBrick) {
-                    ((MovingBrick) brick).update(this.bricks);
-                }
-                brick.update();
-            }
-
-            for (LaserShooterBrick shooter : laserShooters) {
-                shooter.update();
-                Laser newLaser = shooter.tryToShoot();
-                if (newLaser != null) {
-                    lasers.add(newLaser);
-                }
-            }
-
-            if (boss != null) {
-                boss.update();
-            }
-
-            Iterator<Laser> laserIterator = lasers.iterator();
-            while (laserIterator.hasNext()) {
-                Laser laser = laserIterator.next();
-                laser.update();
-
-                if (paddle != null && laser.getBounds().intersects(paddle.getBounds())) {
-                    lives--;
-                    laserIterator.remove();
-                    if (lives <= 0) {
-                        setGameState("GAME_OVER");
-                        gameOverTimer = 360;
-                    }
-                    continue;
-                }
-
-                if (laser.getY() > screenHeight) {
-                    laserIterator.remove();
-                }
-            }
-
-            // Kiểm tra tương tác với paddle cho tất cả các quả bóng
-            for (Ball b : balls) {
-                if(b.getY() > screenHeight && balls.indexOf(b) != 0) { // Giữ lại quả bóng đầu tiên để tránh mất hết bóng
-                    balls.remove(b);
-                    break; // Thoát vòng lặp để tránh ConcurrentModificationException
-                }
-                if(b.checkCollision(paddle) && !b.isStuckToPaddle()) {
-                    soundManager.playSound(SoundManager.SFX_PADDLE_HIT);
-                    if (paddle.isSticky()) {
-                        b.stickToPaddle(paddle);
-                    } else {
-                        b.bounceOff(paddle);
-                    }
-                }
-            }
-
-            Iterator<PowerUp> fallingPowerUpIterator = powerUps.iterator();
-            while (fallingPowerUpIterator.hasNext()) {
-                PowerUp p = fallingPowerUpIterator.next();
-                p.update(); // Cho power-up rơi xuống
-
-                if (paddle.getBounds().intersects(p.getBounds())) {
-                    // Kích hoạt power-up mới
-                    activatePowerUp(p);
-                    fallingPowerUpIterator.remove(); // Xóa khỏi danh sách đang rơi
-                }
-                // Nếu power-up rơi ra ngoài màn hình
-                else if (p.getY() > screenHeight) {
-                    fallingPowerUpIterator.remove();
-                }
-            }
+            entityManager.updateAll(inputHandler);
 
             // 2. QUẢN LÝ THỜI GIAN CỦA TẤT CẢ POWER-UP ĐANG HOẠT ĐỘNG
-            Iterator<PowerUp> activePowerUpIterator = activePowerUps.iterator();
+            Iterator<PowerUp> activePowerUpIterator = entityManager.getActivePowerUps().iterator();
             while (activePowerUpIterator.hasNext()) {
                 PowerUp p = activePowerUpIterator.next();
                 p.tick(); // Đếm ngược thời gian
-
                 if (p.isExpired()) {
                     p.removeEffect(this); // Hủy hiệu ứng
                     activePowerUpIterator.remove(); // Xóa khỏi danh sách đang hoạt động
                 }
             }
 
-            List<Brick> allTargets = new ArrayList<>();
-            allTargets.addAll(this.laserShooters);
-            allTargets.addAll(this.bricks);
+            collisionSystem.checkAllCollisions(this);
 
-            //Duyệt từng quả bóng tương tác với bricks
-            for (Ball b : balls) {
-                Iterator<Brick> targetIterator = allTargets.iterator();
-                while (targetIterator.hasNext()) {
-                    Brick target = targetIterator.next();
-
-                    // Chỉ kiểm tra va chạm với những viên gạch chưa bị phá hủy
-                    if (!target.isDestroyed() && b.checkCollision(target)) {
-                        soundManager.playSound(SoundManager.SFX_BRICK_HIT);
-                        boolean detonatedImmediately = false;
-
-                        // 1. KIỂM TRA: GẠCH NỔ ĐANG CHỜ BỊ VA CHẠM (KÍCH NỔ TỨC THÌ)
-                        if (target instanceof ExplosiveBrick) {
-                            ExplosiveBrick eb = (ExplosiveBrick) target;
-                            if (eb.isAwaitingDetonation()) {
-                                eb.detonateOnHit(activeShards); // Nổ tức thì, tạo mảnh vụn, chuyển EXPLODING
-                                score += 10;
-                                currentLevelScore += 10;
-                                b.bounceOff(target);
-                                detonatedImmediately = true;
-                            }
-                        }
-
-                        // 2. XỬ LÝ VA CHẠM THƯỜNG (CHỈ XẢY RA NẾU KHÔNG NỔ TỨC THÌ)
-                        if (!detonatedImmediately) {
-
-                            // A. Vỡ vụn nhẹ (SHATTER HIT)
-                            // Nếu gạch còn nhiều hơn 1 hit (chắc chắn chưa vỡ)
-                            if (target.getHitPoints() > 1) {
-                                target.shatterHit(activeShards);
-                            }
-
-                            target.takeHit(); // Gạch nhận sát thương (Giảm HitPoints)
-                            score += 10;
-                            currentLevelScore += 10;
-                            b.bounceOff(target);
-
-                            // B. KIỂM TRA PHÁ HỦY HOÀN TOÀN (SAU KHI takeHit())
-                            if (target.isDestroyed()) {
-
-                                if (target instanceof ExplosiveBrick) {
-                                    // ExplosiveBrick ALIVE đã gọi startExplosion() trong takeHit()
-                                } else {
-                                    // Gạch thường/mạnh bị phá hủy hoàn toàn -> Vỡ vụn nặng
-                                    activeShards.addAll(target.shatter());
-                                }
-
-                                // ... (Logic PowerUp và LaserShooter)
-                                PowerUpType typeToDrop = levelManager.getCurrentLevel().getRandomPowerUpType();
-                                if (typeToDrop != null) {
-                                    PowerUp newPowerUp = PowerUpFactory.create(typeToDrop, target.getX(), target.getY());
-                                    if (newPowerUp != null) {
-                                        powerUps.add(newPowerUp);
-                                    }
-                                }
-                                if (!(target instanceof LaserShooterBrick) && !(target instanceof ExplosiveBrick)) {
-                                    double spawnRate = levelManager.getCurrentLevel().getLaserShooterSpawnRate();
-                                    if (Math.random() < spawnRate) {
-                                        LaserShooterBrick newShooter = new LaserShooterBrick(target.getX(), target.getY(), target.getWidth(), target.getHeight(), 2);
-                                        laserShooters.add(newShooter);
-                                    }
-                                }
-                            }
-                        }
-                        // Bắt buộc ngắt vòng lặp khi va chạm xảy ra
-                        break;
-                    }
-                }
-            }
             List<Brick> newlyFinishedExplosions = new ArrayList<>();
             // Tìm tất cả gạch nổ vừa hoàn thành hoạt ảnh
-            for (Brick brick : bricks) {
+            for (Brick brick : entityManager.getBricks()) {
                 if (brick instanceof ExplosiveBrick && ((ExplosiveBrick) brick).isFinished()) {
                     newlyFinishedExplosions.add(brick);
                 }
             }
-            // (Bạn cũng có thể lặp qua laserShooters và boss.getBricks() nếu chúng có thể nổ)
 
-            // Kích hoạt vụ nổ tiếp theo cho mỗi gạch vừa nổ xong
             for (Brick sourceBrick : newlyFinishedExplosions) {
                 if (sourceBrick instanceof ExplosiveBrick) {
-                    activeShards.addAll(sourceBrick.shatter()); // <--- THÊM DÒNG NÀY
+                    getActiveShards().addAll(sourceBrick.shatter()); // <--- THÊM DÒNG NÀY
                 }
                 soundManager.playSound(SoundManager.SFX_EXPLOSION);
                 explode(sourceBrick, 100.0);
             }
 
-            bricks.removeIf(brick -> {
-                if (brick instanceof ExplosiveBrick) {
-                    return ((ExplosiveBrick) brick).isFinished(); // Remove only when animation is done
-                }
-                return brick.isDestroyed(); // Remove immediately if not explosive
-            });
+            entityManager.cleanupDestroyedObjects(getScreenHeight());
 
-            laserShooters.removeIf(Brick::isDestroyed); // Remove destroyed laser shooters
-
-            if (boss != null) {
-                boss.removeDestroyedBricks(); // Let boss handle its own bricks
-            }
-
-
-            // --- Check Level Win Condition ---
-            boolean levelWon = false;
-            if (boss != null) {
-                // Win boss level if boss is defeated AND no other bricks/shooters remain
-                if (boss.isDefeated() && bricks.isEmpty() && laserShooters.isEmpty()) {
-                    levelWon = true;
-                }
-            } else {
-                // Win normal level if no bricks AND no laser shooters remain
-                if (bricks.isEmpty() && laserShooters.isEmpty()) {
-                    levelWon = true;
-                }
-            }
-
-            if (levelWon) {
+            if (entityManager.isLevelWon()) {
                 // Submit results for the COMPLETED level
                 scoreManager.submitLevelResult(
                         levelManager.getCurrentLevelIndex(), // Index of the level just finished
-                        this.currentLevelScore,
-                        this.currentLevelPlaytimeMillis
+                        playerStats.getCurrentLevelScore(),
+                        playerStats.getCurrentLevelPlaytimeMillis()
                 );
                 loadNextLevel(); // Load the next level (this resets score/time for the new level)
                 return; // IMPORTANT: Exit updateGame immediately after starting loadNextLevel
             }
 
-            balls.removeIf(b -> b.getY() > screenHeight + 50);
 
-            if (balls.isEmpty()) {
-                lives--;
-                if (lives > 0) {
+            if (entityManager.areBallsEmpty()) { // <-- Dùng hàm của EntityManager
+                playerStats.loseLife();
+                if (playerStats.getLives() > 0) {
                     soundManager.playSound(SoundManager.SFX_BALL_LOSS);
-                    ball = new Ball(paddle.getX() + (paddle.getWidth() / 2) - (this.ballSize / 2), paddle.getY() - this.ballSize - 1, this.ballSize, this.ballSize, selectedBallSkinKey);
-                    ball.stickToPaddle(paddle);
-                    balls.add(ball);
+                    entityManager.respawnBall(selectedBallSkinKey);
+
                 } else {
                     setGameState("GAME_OVER");
-                    gameOverTimer = 360;
+                    gameOverTimer = 360; // (Bạn có thể cân nhắc chuyển 360 vào GameConstants)
                 }
             }
+
         } else if (GAMESTATE_PAUSED.equals(gameState)) {
             int screenMouseX = inputHandler.getMouseX();
             int screenMouseY = inputHandler.getMouseY();
@@ -713,7 +404,7 @@ public class GameManager {
             if (resumeButtonRect.contains(mx, my) && inputHandler.isMousePressed()) {
                 if (!pauseCooldown) {
                     setGameState("PLAYING");
-                    this.lastUpdateTime = System.nanoTime();
+                    playerStats.setLastUpdateTime(System.nanoTime());
                     pauseCooldown = true;
                 }
             }
@@ -737,43 +428,52 @@ public class GameManager {
                 if (levelTransition.getBrickSpawnCount() == 0) {
 
                     loadLevelSetup();
-                    if (boss != null) {
-                        boss.update();
+
+                    // SỬA LẠI: boss là của entityManager
+                    if (entityManager.getBoss() != null) {
+                        entityManager.getBoss().update();
                     }
-                    this.bricks.clear();
-                    this.laserShooters.clear();
-                    this.stagingBricks.clear();
+
+                    // SỬA LẠI: Các list này đều là của entityManager
+                    entityManager.getBricks().clear();
+                    entityManager.getLaserShooters().clear();
+                    entityManager.getStagingBricks().clear();
 
                     Level currentLevel = levelManager.getCurrentLevel();
                     if (currentLevel != null) {
-                        this.stagingBricks.addAll(currentLevel.getBricks());
+                        entityManager.getStagingBricks().addAll(currentLevel.getBricks());
                     }
 
-                    if (boss != null) {
-                        this.stagingBricks.addAll(boss.getBricks());
+                    // SỬA LẠI: boss là của entityManager
+                    if (entityManager.getBoss() != null) {
+                        entityManager.getStagingBricks().addAll(entityManager.getBoss().getBricks());
                     }
 
                     levelTransition.setBrickSpawnCount(1); // Đặt cờ để không chạy lại
                 }
+
             }
 
             if (levelTransition.getCurrentState() == LevelTransition.State.BRICK_SPAWN) {
-                if (stagingBricks.isEmpty()) {
+                if (entityManager.getStagingBricks().isEmpty()) {
                     levelTransition.finishTransition();
                 } else {
 
                     final int BRICKS_PER_FRAME = 2;
-                    int bricksToSpawnThisFrame = Math.min(BRICKS_PER_FRAME, stagingBricks.size());
+                    int bricksToSpawnThisFrame = Math.min(BRICKS_PER_FRAME, entityManager.getStagingBricks().size());
 
                     for (int i = 0; i < bricksToSpawnThisFrame; i++) {
-                        Brick brickToSpawn = stagingBricks.remove(0);
+                        // SỬA LẠI: Thao tác trên list của entityManager
+                        Brick brickToSpawn = entityManager.getStagingBricks().remove(0);
                         if (brickToSpawn instanceof LaserShooterBrick) {
-                            laserShooters.add((LaserShooterBrick) brickToSpawn);
+                            entityManager.addLaserShooter((LaserShooterBrick) brickToSpawn);
                         } else {
-                            bricks.add(brickToSpawn);
+                            // Chúng ta quên thêm addBrick(), nên dùng getBricks().add()
+                            entityManager.getBricks().add(brickToSpawn);
                         }
                     }
                 }
+
             }
 
             if (!levelTransition.isTransitioning()) {
@@ -844,20 +544,16 @@ public class GameManager {
             if (menuManager != null) menuManager.setContinueAvailable(false);
 
             this.gameOverTimer = 480;
-            this.finalScore = this.score;
-            this.finalPlaytimeMillis = this.playtimeMillis;
+            playerStats.captureFinalStats();
 
             if (scoreManager != null) {
                 // Gọi hàm mới, truyền cả điểm, thời gian và trạng thái thắng/thua
                 boolean didWin = "GAME_WIN".equals(state);
-                scoreManager.submitSessionResult(score, playtimeMillis, didWin);
+                scoreManager.submitSessionResult(playerStats.getFinalScore(), playerStats.getFinalPlaytimeMillis(), didWin);
             }
 
             // Xoá file save vì phiên chơi đã kết thúc
             SaveSystem.deleteSave();
-
-            score = 0;
-            playtimeMillis = 0;
         }
     }
 
@@ -865,9 +561,9 @@ public class GameManager {
         return this.currentBackground;
     }
 
-    private void activatePowerUp(PowerUp newPowerUp) {
+    public void activatePowerUp(PowerUp newPowerUp) {
         String newType = newPowerUp.getType();
-        Iterator<PowerUp> iterator = activePowerUps.iterator();
+        Iterator<PowerUp> iterator = entityManager.getActivePowerUps().iterator();
         while (iterator.hasNext()) {
             PowerUp existingPowerUp = iterator.next();
             String existingType = existingPowerUp.getType();
@@ -884,8 +580,7 @@ public class GameManager {
             }
         }
         soundManager.playSound(SoundManager.SFX_POWERUP);
-        // Thêm power-up mới vào danh sách và áp dụng hiệu ứng
-        activePowerUps.add(newPowerUp);
+        entityManager.addActivePowerUp(newPowerUp);
         newPowerUp.applyEffect(this);
     }
 
@@ -896,8 +591,9 @@ public class GameManager {
                 if (b.getId() < 0) b.setId(idCounter++);
             }
         }
-        if (boss != null) {
-            for (Brick b : boss.getBricks()) {
+        Boss currentBoss = entityManager.getBoss();
+        if (currentBoss != null) {
+            for (Brick b : currentBoss.getBricks()) {
                 if (b.getId() < 0) b.setId(idCounter++);
             }
         }
@@ -906,37 +602,32 @@ public class GameManager {
     private void ensurePaddleAndBallReadyForPlay() {
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
         int nativeHeight = ScalingManager.getInstance().NATIVE_HEIGHT;
+        int currentBallSize = (entityManager.getBallSize() > 0) ? entityManager.getBallSize() : 18;
 
-        if (ballSize <= 0) ballSize = 20;
-
-        // Trường hợp chưa có hoặc đang ở dưới đáy (spawn ngoài màn)
-        boolean needRecreate = (paddle == null || ball == null);
+        boolean needRecreate = (entityManager.getPaddle() == null || entityManager.getBall() == null);
         if (!needRecreate) {
-            try {
-                // Nếu Paddle có toạ độ ngoài màn hình -> tạo lại
-                needRecreate = paddle.getY() > nativeHeight;
-            } catch (Exception ignored) {
-                needRecreate = true;
-            }
+            needRecreate = entityManager.getPaddle().getY() > nativeHeight;
         }
 
         if (needRecreate) {
             int paddleWidth = 120;
             int px = (gameAreaWidth - paddleWidth) / 2;
-            int py = nativeHeight - 80; // vị trí hiển thị phía cuối màn
-            paddle = new Paddle(px, py, paddleWidth, 30,selectedPaddleSkinKey );
+            int py = nativeHeight - 80;
 
-            ball = new Ball(px + (paddleWidth / 2) - (ballSize / 2), py - ballSize - 1, ballSize, ballSize,selectedBallSkinKey );
-            ball.resetBallPosition(paddle);   // dính lên paddle
+            Paddle newPaddle = new Paddle(px, py, paddleWidth, 30, selectedPaddleSkinKey);
+            Ball newBall = new Ball(px + (paddleWidth / 2) - (currentBallSize / 2), py - currentBallSize - 1, currentBallSize, currentBallSize, selectedBallSkinKey);
+            newBall.resetBallPosition(newPaddle);
 
-            balls.clear();
-            balls.add(ball);
+            // Dọn dẹp và thêm vào EntityManager
+            entityManager.getPaddle(); // (để gán paddle)
+            entityManager.getBalls().clear();
+            entityManager.addBall(newBall);
 
-            // Dọn hiệu ứng PowerUp đang tồn tại để tránh trạng thái lạ khi Continue
-            for (PowerUp p : activePowerUps) {
+            // ... (Dọn dẹp active power-ups)
+            for (PowerUp p : entityManager.getActivePowerUps()) {
                 p.removeEffect(this);
             }
-            activePowerUps.clear();
+            entityManager.getActivePowerUps().clear();
         }
     }
 
@@ -948,19 +639,24 @@ public class GameManager {
         loadLevelAssetsAndBricks();
 
         // Chỉ nạp nếu đang rỗng để tránh nhân đôi
-        if (bricks.isEmpty() && laserShooters.isEmpty()) {
+        if (entityManager.getBricks().isEmpty() && entityManager.getLaserShooters().isEmpty()) {
             List<Brick> source = new ArrayList<>();
             source.addAll(currentLevel.getBricks());
-            if (boss != null) {
-                source.addAll(boss.getBricks());
+
+            // SỬA LẠI: Dùng getter của entityManager
+            if (entityManager.getBoss() != null) {
+                source.addAll(entityManager.getBoss().getBricks());
             }
+
             for (Brick brickToSpawn : source) {
                 if (brickToSpawn instanceof LaserShooterBrick) {
-                    if (!laserShooters.contains(brickToSpawn)) {
-                        laserShooters.add((LaserShooterBrick) brickToSpawn);
+                    // SỬA LẠI: Dùng getter của entityManager
+                    if (!entityManager.getLaserShooters().contains(brickToSpawn)) {
+                        entityManager.getLaserShooters().add((LaserShooterBrick) brickToSpawn);
                     }
-                } else if (!bricks.contains(brickToSpawn)) {
-                    bricks.add(brickToSpawn);
+                } else if (!entityManager.getBricks().contains(brickToSpawn)) {
+                    // SỬA LẠI: Dùng getter của entityManager
+                    entityManager.getBricks().add(brickToSpawn);
                 }
             }
         }
@@ -977,42 +673,23 @@ public class GameManager {
         loadLevelAssetsAndBricks();
         ensureBrickIdsAssigned();
 
-        // Làm sạch rồi hydrate theo danh sách alive
-        this.bricks.clear();
-        this.laserShooters.clear();
-
         List<Integer> aliveList = (data.getAliveBrickIds() != null)
                 ? data.getAliveBrickIds()
                 : java.util.Collections.emptyList();
-        boolean useFallbackAllAlive = aliveList.isEmpty(); // save cũ -> không có dữ liệu gạch
-        java.util.Set<Integer> alive = new java.util.HashSet<>(aliveList);
 
-        Level cur = levelManager.getCurrentLevel();
-        if (cur != null) {
-            for (Brick b : cur.getBricks()) {
-                if (alive.contains(b.getId())) {
-                    if (b instanceof LaserShooterBrick) {
-                        laserShooters.add((LaserShooterBrick) b);
-                    } else {
-                        bricks.add(b);
-                    }
-                }
-            }
-        }
-        if (boss != null) {
-            for (Brick b : boss.getBricks()) {
-                if (alive.contains(b.getId())) {
-                    // Boss bricks va chạm như gạch thường
-                    bricks.add(b);
-                }
-            }
-        }
+        entityManager.hydrateFromSave(
+                levelManager.getCurrentLevel(),
+                entityManager.getBoss(), // Truyền boss đã được tạo
+                new java.util.HashSet<>(aliveList)
+        );
 
         // Áp số liệu phiên chơi
-        this.playtimeMillis = data.getPlaytimeMillis();
-        this.currentLevelPlaytimeMillis = data.getCurrentLevelPlaytimeMillis();
-        this.score = data.getScore();
-        this.lives = data.getLives();
+        playerStats.setSessionStats(
+                data.getScore(),
+                data.getLives(),
+                data.getPlaytimeMillis(),
+                data.getCurrentLevelPlaytimeMillis()
+        );
 
         // Bật continue trong menu
         this.canContinue = data.isCanContinue();
@@ -1024,20 +701,21 @@ public class GameManager {
         setGameState("MENU");
     }
 
-    // THÊM GETTER NÀY ĐỂ GAMEPANEL CÓ THỂ VẼ LASER
+    public PlayerStats getPlayerStats() { return playerStats; }
+
     public List<Laser> getLasers() {
-        return lasers;
+        return entityManager.getLasers();
     }
     public List<LaserShooterBrick> getLaserShooters() {
-        return laserShooters;
+        return entityManager.getLaserShooters();
     }
 
     public Boss getBoss() {
-        return boss;
+        return entityManager.getBoss();
     }
 
     public long getPlaytimeMillis() {
-        return playtimeMillis;
+        return playerStats.getPlaytimeMillis();
     }
 
     public Rectangle getPauseButtonRect() {
@@ -1053,27 +731,29 @@ public class GameManager {
     }
 
     public long getCurrentLevelPlaytimeMillis() {
-        return currentLevelPlaytimeMillis;
+        return playerStats.getCurrentLevelPlaytimeMillis();
     }
 
-    public void handleInput() {}
-    public void checkCollisions() {}
-    public void gameOver() {}
-    public int getLives () { return lives; }
-    public void setLives(int lives) { this.lives = lives; }
-    public int getScore() { return score; }
-    public void setScore(int score) { this.score = score; }
-    public void addball(Ball ball) { balls.add(ball); }
-    public List<Ball> getBalls() { return balls; }
-    public Paddle getPaddle() { return paddle; }
-    public Ball getBall() { return ball; }
+    public int getLives () { return playerStats.getLives(); }
+    public void setLives(int lives) { playerStats.setLives(lives); }
+    public int getScore() { return playerStats.getScore(); }
+    public void setScore(int score) { playerStats.setScore(score); }
+
+
+    public void addball(Ball ball) { entityManager.addBall(ball); }
+    public void addLaserShooter(LaserShooterBrick brick) { entityManager.addLaserShooter(brick); }
+    public void addPowerUp(PowerUp powerUp) { entityManager.addPowerUp(powerUp); }
+
+    public List<Ball> getBalls() { return entityManager.getBalls(); }
+    public Paddle getPaddle() { return entityManager.getPaddle(); }
+    public Ball getBall() { return entityManager.getBall(); }
     public boolean canContinue() { return canContinue; }
     public BackButton getBackButton() { return backButton; }
-    public List<Brick> getBricks() { return bricks; }
-    public List<PowerUp> getPowerUps() { return powerUps; }
+    public List<Brick> getBricks() { return entityManager.getBricks(); }
+    public List<PowerUp> getPowerUps() { return entityManager.getPowerUps(); }
     public InputHandler getInputHandler() { return inputHandler; }
     public List<Shard> getActiveShards() { // <--- THÊM GETTER NÀY
-        return activeShards;
+        return entityManager.getActiveShards();
     }
 
     public LevelTransition getLevelTransition() {
@@ -1090,13 +770,8 @@ public class GameManager {
 
     public void setSelectedBallSkinKey(String selectedBallSkinKey) {
         this.selectedBallSkinKey = selectedBallSkinKey;
-        if (balls != null) {
-            for (Ball b : balls) {
-                if (b != null) {
-                    b.setImageName(selectedBallSkinKey);
-                }
-            }
-        }    }
+        entityManager.setBallSkin(selectedBallSkinKey);
+    }
 
     public String getSelectedPaddleSkinKey() {
         return selectedPaddleSkinKey;
@@ -1104,9 +779,7 @@ public class GameManager {
 
     public void setSelectedPaddleSkinKey(String selectedPaddleSkinKey) {
         this.selectedPaddleSkinKey = selectedPaddleSkinKey;
-        if (paddle != null) {
-            paddle.setImageName(selectedPaddleSkinKey);
-        }
+        entityManager.setPaddleSkin(selectedPaddleSkinKey);
     }
 
     public GameSummaryPanel getGameSummaryPanel() {
@@ -1114,11 +787,17 @@ public class GameManager {
     }
 
     public int getFinalScore() {
-        return finalScore;
+        return playerStats.getFinalScore();
     }
 
     public long getFinalPlaytimeMillis() {
-        return finalPlaytimeMillis;
+        return playerStats.getFinalPlaytimeMillis();
     }
+
+    public int getScreenHeight() {
+        return ScalingManager.getInstance().NATIVE_HEIGHT;
+    }
+
+
 }
 
