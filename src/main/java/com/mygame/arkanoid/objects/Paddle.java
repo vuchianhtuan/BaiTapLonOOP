@@ -1,5 +1,4 @@
 package com.mygame.arkanoid.objects;
-import com.mygame.arkanoid.core.GamePanel;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.powerups.PowerUp;
 import com.mygame.arkanoid.engine.InputHandler;
@@ -7,7 +6,7 @@ import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent;
-import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.systems.helper.ScalingManager;
 
 public class Paddle extends MovableObject {
     private int speed = 15;

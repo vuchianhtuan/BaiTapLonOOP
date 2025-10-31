@@ -1,4 +1,4 @@
-package com.mygame.arkanoid.systems;
+package com.mygame.arkanoid.systems.helper;
 
 import java.awt.Color;
 import java.awt.Font;

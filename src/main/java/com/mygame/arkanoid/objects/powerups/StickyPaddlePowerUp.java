@@ -6,7 +6,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D; // <-- Cần import Graphics2D
 import java.awt.image.BufferedImage;
 import com.mygame.arkanoid.engine.AssetManager;
-import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.systems.helper.ScalingManager;
 
 public class StickyPaddlePowerUp extends PowerUp {
     private String imageName = "stickyPowerUp";

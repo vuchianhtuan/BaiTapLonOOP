@@ -1,4 +1,4 @@
-package com.mygame.arkanoid.systems;
+package com.mygame.arkanoid.systems.helper;
 
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.engine.SoundManager;

@@ -1,9 +1,8 @@
-package com.mygame.arkanoid.systems;
+package com.mygame.arkanoid.systems.menu;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 public class Leaderboard {
     private List<Integer> scores;

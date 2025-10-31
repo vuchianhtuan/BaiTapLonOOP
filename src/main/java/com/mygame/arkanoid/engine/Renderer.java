@@ -1,12 +1,10 @@
 package com.mygame.arkanoid.engine;
-import com.mygame.arkanoid.core.GamePanel;
 import com.mygame.arkanoid.objects.*;
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.*;
-import com.mygame.arkanoid.systems.ScalingManager;
-import com.mygame.arkanoid.systems.LevelTransition; // <-- IMPORT MỚI
+import com.mygame.arkanoid.systems.helper.ScalingManager;
+
 import java.awt.Image;
-import java.awt.Color;
 import java.awt.Graphics;
 import java.util.List;
 

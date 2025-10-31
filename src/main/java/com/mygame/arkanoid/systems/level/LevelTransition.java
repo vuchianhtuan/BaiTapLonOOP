@@ -1,9 +1,9 @@
 
-package com.mygame.arkanoid.systems;
+package com.mygame.arkanoid.systems.level;
 
 import com.mygame.arkanoid.core.GameManager;
-import com.mygame.arkanoid.core.GamePanel;
 import com.mygame.arkanoid.objects.Paddle;
+import com.mygame.arkanoid.systems.helper.ScalingManager;
 
 import java.awt.*;
 // THÊM DÒNG NÀY: Để bật chế độ khử răng cưa

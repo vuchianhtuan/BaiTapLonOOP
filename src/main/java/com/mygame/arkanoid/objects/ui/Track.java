@@ -1,7 +1,8 @@
-package com.mygame.arkanoid.objects;
+package com.mygame.arkanoid.objects.ui;
 
 import com.mygame.arkanoid.engine.AssetManager;
-import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.objects.GameObject;
+import com.mygame.arkanoid.systems.helper.ScalingManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

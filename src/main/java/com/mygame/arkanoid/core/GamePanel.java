@@ -2,11 +2,8 @@ package com.mygame.arkanoid.core;
 
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
-import com.mygame.arkanoid.objects.bricks.Shard;
-import com.mygame.arkanoid.systems.MenuManager;
-import com.mygame.arkanoid.systems.ScalingManager;
-import com.mygame.arkanoid.systems.ScoreManager;
-import com.mygame.arkanoid.systems.UIManager;
+import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.objectsui.UIManager;
 
 import static com.mygame.arkanoid.core.GameManager.GAMESTATE_PAUSED;
 

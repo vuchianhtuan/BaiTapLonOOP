@@ -1,4 +1,4 @@
-package com.mygame.arkanoid.systems;
+package com.mygame.arkanoid.systems.helper;
 
 public class ScalingManager {
     private static ScalingManager instance;

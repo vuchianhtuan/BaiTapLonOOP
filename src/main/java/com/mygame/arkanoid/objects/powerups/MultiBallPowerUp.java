@@ -6,7 +6,7 @@ import com.mygame.arkanoid.objects.Ball;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.systems.helper.ScalingManager;
 
 public class MultiBallPowerUp extends PowerUp {
     private String imageName = "multiBallPowerUp";

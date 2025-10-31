@@ -3,7 +3,7 @@ package com.mygame.arkanoid.core;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.*;
 import com.mygame.arkanoid.objects.bricks.Brick;
-import com.mygame.arkanoid.systems.*;
+import com.mygame.arkanoid.objects.ui.BackButton;
 import com.mygame.arkanoid.objects.Paddle;
 import com.mygame.arkanoid.objects.powerups.PowerUp;
 import com.mygame.arkanoid.engine.InputHandler;
@@ -11,9 +11,22 @@ import com.mygame.arkanoid.engine.Renderer;
 import com.mygame.arkanoid.engine.SoundManager;
 
 import com.mygame.arkanoid.objects.bricks.*;
-import com.mygame.arkanoid.objects.powerups.*;
-import com.mygame.arkanoid.systems.Save.SaveData;
-import com.mygame.arkanoid.systems.Save.SaveSystem;
+import com.mygame.arkanoid.systems.helper.CollisionSystem;
+import com.mygame.arkanoid.systems.helper.ExplosionSystem;
+import com.mygame.arkanoid.systems.helper.GameSummaryPanel;
+import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.level.Level;
+import com.mygame.arkanoid.systems.level.LevelManager;
+import com.mygame.arkanoid.systems.level.LevelTransition;
+import com.mygame.arkanoid.systems.menu.SelectLevel;
+import com.mygame.arkanoid.systems.menu.MenuManager;
+import com.mygame.arkanoid.systems.menu.SettingManager;
+import com.mygame.arkanoid.systems.objectsui.EntityManager;
+import com.mygame.arkanoid.systems.objectsui.HeartUI;
+import com.mygame.arkanoid.systems.objectsui.PlayerStats;
+import com.mygame.arkanoid.systems.objectsui.ScoreManager;
+import com.mygame.arkanoid.systems.save.SaveData;
+import com.mygame.arkanoid.systems.save.SaveSystem;
 
 import java.awt.*;
 import java.util.*;
@@ -43,6 +56,7 @@ public class GameManager {
     private SettingManager settingManager;
     private SelectLevel selectLevel;
     private Image currentBackground = null;
+    private ExplosionSystem explosionSystem;
 
     private boolean pauseCooldown = false;
     private Rectangle pauseButtonRect;
@@ -97,6 +111,7 @@ public class GameManager {
         this.gameSummaryPanel = new GameSummaryPanel();
 
         collisionSystem = new CollisionSystem();
+        explosionSystem = new ExplosionSystem();
         scoreManager = new ScoreManager(this, inputHandler);
         settingManager = new SettingManager(inputHandler, this, soundManager);
         selectLevel = new SelectLevel(inputHandler, this, levelManager);
@@ -236,61 +251,6 @@ public class GameManager {
         loadLevelAssetsAndBricks();
     }
 
-    private void explode(Brick sourceBrick, double radius) {
-        int sourceCenterX = sourceBrick.getX() + sourceBrick.getWidth() / 2;
-        int sourceCenterY = sourceBrick.getY() + sourceBrick.getHeight() / 2;
-
-        // Tốc độ lan truyền của vụ nổ (số frame tối đa để lan truyền hết bán kính)
-        // Bạn có thể điều chỉnh số này, 30 frame là nửa giây (ở 60FPS)
-        final float MAX_PROPAGATION_FRAMES = 30.0f;
-
-        List<Brick> allActiveBricks = new ArrayList<>();
-        allActiveBricks.addAll(entityManager.getLaserShooters());
-        allActiveBricks.addAll(entityManager.getBricks());
-        for (Brick otherBrick : allActiveBricks) {
-            if (otherBrick == sourceBrick) { // Bỏ qua chính nó
-                continue;
-            }
-
-            int otherCenterX = otherBrick.getX() + otherBrick.getWidth() / 2;
-            int otherCenterY = otherBrick.getY() + otherBrick.getHeight() / 2;
-            double distance = Math.sqrt(Math.pow(sourceCenterX - otherCenterX, 2) + Math.pow(sourceCenterY - otherCenterY, 2));
-
-            // Nếu gạch nằm trong bán kính nổ
-            if (distance <= radius) {
-
-                // Tính toán độ trễ dựa trên khoảng cách
-                // (distance / radius) là tỉ lệ từ 0.0 đến 1.0
-                // Gạch ở gần (distance = 0) -> delay = 0
-                // Gạch ở xa (distance = radius) -> delay = MAX_PROPAGATION_FRAMES
-                int delay = (int) ((distance / radius) * MAX_PROPAGATION_FRAMES);
-
-                // Kiểm tra xem gạch lân cận có phải là gạch nổ không
-                if (otherBrick instanceof ExplosiveBrick) {
-                    ExplosiveBrick eb = (ExplosiveBrick) otherBrick;
-
-                    // Chỉ kích hoạt nếu nó còn sống
-                    if (eb.isAlive()) {
-                        eb.ignite(delay); // Kích hoạt với độ trễ
-                    }
-
-                } else if (!otherBrick.isDestroyed()) {
-
-                    boolean wasAboutToDie = otherBrick.getHitPoints() == 1;
-
-                    otherBrick.takeHit();
-                    addScore(10);
-                    if (otherBrick.isDestroyed()) {
-                        getActiveShards().addAll(otherBrick.shatter()); // Vỡ vụn hoàn toàn
-                    } else if (!wasAboutToDie) {
-                        // Chỉ tạo vỡ vụn nhẹ nếu nó chưa vỡ (HP > 0) và không phải là cú đánh chí mạng
-                        otherBrick.shatterHit(getActiveShards());
-                    }
-                }
-            }
-        }
-    }
-
     public void addScore(int points) {
         playerStats.addScore(points);
     }
@@ -366,7 +326,7 @@ public class GameManager {
                     getActiveShards().addAll(sourceBrick.shatter()); // <--- THÊM DÒNG NÀY
                 }
                 soundManager.playSound(SoundManager.SFX_EXPLOSION);
-                explode(sourceBrick, 100.0);
+                explosionSystem.explode(sourceBrick, 100.0, this);
             }
 
             entityManager.cleanupDestroyedObjects(getScreenHeight());

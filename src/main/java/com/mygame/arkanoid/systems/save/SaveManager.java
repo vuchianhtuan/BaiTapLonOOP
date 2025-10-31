@@ -1,4 +1,4 @@
-package com.mygame.arkanoid.systems.Save;
+package com.mygame.arkanoid.systems.save;
 
 import com.mygame.arkanoid.core.GameManager;
 

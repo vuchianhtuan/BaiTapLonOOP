@@ -1,6 +1,6 @@
 package com.mygame.arkanoid.engine;
 
-import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.systems.helper.ScalingManager;
 
 import java.awt.event.*;
 

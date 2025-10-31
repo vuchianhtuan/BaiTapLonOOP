@@ -1,10 +1,9 @@
 package com.mygame.arkanoid.objects;
 import com.mygame.arkanoid.core.GameManager;
-import com.mygame.arkanoid.core.GamePanel;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.SoundManager;
-import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.systems.helper.ScalingManager;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;

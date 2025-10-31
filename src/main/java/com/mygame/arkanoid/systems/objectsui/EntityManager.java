@@ -1,9 +1,11 @@
-package com.mygame.arkanoid.systems;
+package com.mygame.arkanoid.systems.objectsui;
 
 import com.mygame.arkanoid.objects.*;
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.PowerUp;
 import com.mygame.arkanoid.engine.InputHandler;
+import com.mygame.arkanoid.systems.level.Level;
+import com.mygame.arkanoid.systems.helper.ScalingManager;
 
 import java.util.ArrayList;
 import java.util.List;

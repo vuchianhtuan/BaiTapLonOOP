@@ -1,7 +1,6 @@
-package com.mygame.arkanoid.systems;
+package com.mygame.arkanoid.systems.objectsui;
 
 import com.mygame.arkanoid.core.GameManager;
-import com.mygame.arkanoid.core.GamePanel;
 
 import java.awt.*;
 

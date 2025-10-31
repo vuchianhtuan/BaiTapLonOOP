@@ -1,5 +1,5 @@
 // java
-package com.mygame.arkanoid.systems.Save;
+package com.mygame.arkanoid.systems.save;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
