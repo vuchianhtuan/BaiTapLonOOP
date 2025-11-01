@@ -22,7 +22,6 @@ public class EntityManager {
     private List<PowerUp> powerUps = new ArrayList<>(); // Power-up đang rơi
     private List<PowerUp> activePowerUps = new ArrayList<>(); // Power-up đang kích hoạt
     private List<Shard> activeShards = new ArrayList<>();
-    private List<HeartUI> hearts = new ArrayList<>();
     private List<Laser> lasers = new ArrayList<>();
     private Boss boss;
     private List<LaserShooterBrick> laserShooters = new ArrayList<>();
@@ -139,9 +138,31 @@ public class EntityManager {
     /**
      * Nạp gạch từ Level data vào các danh sách
      */
-    public void hydrateLevel(Level currentLevel, Boss newBoss) {
-        this.boss = newBoss; // Nhận boss đã được tạo
+    public void hydrateLevel(Level currentLevel) {
+        Boss newBoss = null;
+        if (currentLevel.isBossLevel() && !currentLevel.getBossBricks().isEmpty()) {
+            java.awt.Rectangle bossBounds = currentLevel.getBossInitialBounds();
+            float startX = (ScalingManager.getInstance().GAME_AREA_WIDTH / 2.0f) - (bossBounds.width / 2.0f);
+            float startY = bossBounds.y;
 
+            newBoss = new Boss(currentLevel.getBossBricks(), startX, startY, bossBounds.x, ScalingManager.getInstance().GAME_AREA_WIDTH);
+        }
+
+        this.boss = newBoss; // Gán boss vừa tạo
+
+        // 2. Gán ID cho gạch (Logic đã chuyển từ GameManager)
+        // Chúng ta phải gán ID cho gạch GỐC trong 'currentLevel'
+        int idCounter = 0;
+        for (Brick b : currentLevel.getBricks()) {
+            if (b.getId() < 0) b.setId(idCounter++);
+        }
+        if (this.boss != null) {
+            for (Brick b : this.boss.getBricks()) {
+                if (b.getId() < 0) b.setId(idCounter++);
+            }
+        }
+
+        // 3. Nạp gạch vào danh sách
         bricks.clear();
         laserShooters.clear();
 
@@ -163,8 +184,7 @@ public class EntityManager {
     /**
      * Nạp gạch từ SaveData
      */
-    public void hydrateFromSave(Level currentLevel, Boss loadedBoss, Set<Integer> aliveBrickIds) {
-        this.boss = loadedBoss;
+    public void hydrateFromSave(Level currentLevel, Set<Integer> aliveBrickIds) {
         bricks.clear();
         laserShooters.clear();
 
@@ -236,5 +256,12 @@ public class EntityManager {
                 if (b != null) b.setImageName(skinKey);
             }
         }
+    }
+    public void setPaddle(Paddle paddle) {
+        this.paddle = paddle;
+    }
+
+    public void setBall(Ball ball) {
+        this.ball = ball;
     }
 }

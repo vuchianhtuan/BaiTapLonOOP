@@ -129,8 +129,15 @@ public class AssetManager {
             }
         }
     }
-
-
+    public BufferedImage getBackgroundImage(String bgName) {
+        if (bgName == null || bgName.isEmpty()) {
+            return this.getImage("defaultBackground");
+        }
+        String assetKey = "bg_" + bgName;
+        String path = IMAGE_PATH_PREFIX + bgName;
+        this.loadImage(assetKey, path);
+        return this.getImage(assetKey);
+    }
 
     public BufferedImage getImage(String name) {
         return images.get(name);

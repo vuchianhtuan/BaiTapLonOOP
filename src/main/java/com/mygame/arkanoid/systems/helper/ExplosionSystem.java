@@ -18,7 +18,7 @@ public class ExplosionSystem {
 
         // Tốc độ lan truyền của vụ nổ (số frame tối đa để lan truyền hết bán kính)
         // Bạn có thể điều chỉnh số này, 30 frame là nửa giây (ở 60FPS)
-        final float MAX_PROPAGATION_FRAMES = 30.0f;
+        final float MAX_PROPAGATION_FRAMES = 5.0f;
 
         List<Brick> allActiveBricks = new ArrayList<>();
         allActiveBricks.addAll(gm.getLaserShooters());

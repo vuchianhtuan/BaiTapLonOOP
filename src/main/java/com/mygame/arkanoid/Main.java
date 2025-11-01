@@ -2,7 +2,6 @@ package com.mygame.arkanoid;
 
 import com.mygame.arkanoid.core.*;
 import com.mygame.arkanoid.systems.helper.ScalingManager;
-import com.mygame.arkanoid.systems.objectsui.UIManager;
 import com.mygame.arkanoid.systems.save.SaveSystem;
 import com.mygame.arkanoid.systems.save.SaveData;
 
@@ -27,9 +26,8 @@ public class Main {
             gameManager.restoreFromSave(data);
         }
 
-        UIManager uiManager = new UIManager(gameManager);
-        GamePanel gamePanel = new GamePanel(gameManager, uiManager);
-        GameLoop gameLoop = new GameLoop(gameManager, gamePanel, uiManager);
+        GamePanel gamePanel = new GamePanel(gameManager);
+        GameLoop gameLoop = new GameLoop(gameManager, gamePanel);
 
         window.add(gamePanel);
 

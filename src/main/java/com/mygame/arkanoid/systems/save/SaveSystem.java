@@ -49,9 +49,6 @@ public final class SaveSystem {
 
     // NEW: capture cả danh sách ID gạch còn sống
     public static SaveData capture(GameManager gm) {
-        // Đảm bảo mọi gạch trong màn đã có ID
-        gm.ensureBrickIdsAssigned();
-
         SaveData d = new SaveData();
         d.setLevelIndex(gm.getLevelManager() != null ? gm.getLevelManager().getCurrentLevelIndex() : 0);
         d.setScore(gm.getScore());

@@ -1,5 +1,7 @@
 package com.mygame.arkanoid.systems.objectsui;
 
+import com.mygame.arkanoid.config.GameConstants;
+
 public class PlayerStats {
 
     private int score;
@@ -47,7 +49,7 @@ public class PlayerStats {
     public void resetForNewGame() {
         this.playtimeMillis = 0;
         this.lastUpdateTime = System.nanoTime(); // Cập nhật thời điểm bắt đầu
-        this.lives = 3; // Hoặc dùng GameConstants.PLAYER_STARTING_LIVES
+        this.lives = GameConstants.PLAYER_STARTING_LIVES;
         this.score = 0;
         this.currentLevelScore = 0;
         this.currentLevelPlaytimeMillis = 0;
