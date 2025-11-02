@@ -1,4 +1,5 @@
 package com.mygame.arkanoid.objects;
+import com.mygame.arkanoid.config.GameConstants;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.powerups.PowerUp;
 import com.mygame.arkanoid.engine.InputHandler;
@@ -9,7 +10,7 @@ import java.awt.event.KeyEvent;
 import com.mygame.arkanoid.systems.helper.ScalingManager;
 
 public class Paddle extends MovableObject {
-    private int speed = 15;
+    private int speed = GameConstants.PADDLE_SPEED;
     private PowerUp currentPowerUp;
     private String imageName;
     private final int originalWidth;

@@ -1,4 +1,5 @@
 package com.mygame.arkanoid.objects;
+import com.mygame.arkanoid.config.GameConstants;
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.engine.InputHandler;
@@ -14,7 +15,7 @@ public class Ball extends MovableObject {
     private static final double MAX_REFLECT_ANGLE_DEG = 60.0; // góc tối đa
     private static final double CENTER_EPS = 0.02; // vùng chết ở giữa paddle
 
-    private double speed = 7;
+    private double speed = GameConstants.BALL_SPEED;
     private final double originalSpeed;
     private boolean stuckToPaddle = true;
     private String imageName;

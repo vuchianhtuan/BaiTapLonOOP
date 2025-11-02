@@ -1,6 +1,7 @@
 
 package com.mygame.arkanoid.systems.level;
 
+import com.mygame.arkanoid.config.GameConstants;
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.objects.Paddle;
 import com.mygame.arkanoid.systems.helper.ScalingManager;
@@ -304,6 +305,6 @@ public class LevelTransition {
     public void finishTransition() {
         currentState = State.COUNTDOWN;
         timer = 0;
-        maxDuration = 1;
+        maxDuration = GameConstants.GAME_START_TIMER_FRAMES;
     }
 }

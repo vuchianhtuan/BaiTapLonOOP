@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.systems.objectsui;
 
+import com.mygame.arkanoid.config.GameConstants;
 import com.mygame.arkanoid.objects.*;
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.PowerUp;
@@ -114,13 +115,14 @@ public class EntityManager {
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
         int nativeHeight = ScalingManager.getInstance().NATIVE_HEIGHT;
 
-        int paddleWidth = 120;
-        this.ballSize = 18;
+        int paddleWidth = GameConstants.PADDLE_WIDTH;
+        int paddleHeight = GameConstants.PADDLE_HEIGHT;
+        this.ballSize = GameConstants.BALL_SIZE;
 
         int finalPaddleX = (gameAreaWidth / 2) - (paddleWidth / 2);
         int spawnPaddleY = nativeHeight + 20;
 
-        paddle = new Paddle(finalPaddleX, spawnPaddleY, paddleWidth, 20, paddleSkinKey);
+        paddle = new Paddle(finalPaddleX, spawnPaddleY, paddleWidth, paddleHeight, paddleSkinKey);
         ball = new Ball(finalPaddleX + (paddleWidth / 2) - (ballSize / 2), spawnPaddleY - ballSize - 1, ballSize, ballSize, ballSkinKey);
         ball.resetBallPosition(paddle);
 

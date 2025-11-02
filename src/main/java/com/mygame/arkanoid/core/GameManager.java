@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.core;
 
+import com.mygame.arkanoid.config.GameConstants;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.*;
 import com.mygame.arkanoid.objects.bricks.Brick;
@@ -222,7 +223,7 @@ public class GameManager {
                     entityManager.respawnBall(settingManager.getSelectedBallSkinKey());
                 } else {
                     setGameState("GAME_OVER");
-                    gameOverTimer = 360;
+                    gameOverTimer = GameConstants.GAME_OVER_TIMER_FRAMES;
                 }
             }
 
