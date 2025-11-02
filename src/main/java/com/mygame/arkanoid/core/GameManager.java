@@ -1,6 +1,5 @@
 package com.mygame.arkanoid.core;
 
-import com.mygame.arkanoid.config.GameConstants;
 import com.mygame.arkanoid.effects.Shard;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.*;
@@ -27,6 +26,7 @@ import com.mygame.arkanoid.ui.screens.MenuManager;
 import com.mygame.arkanoid.ui.screens.SettingManager;
 import com.mygame.arkanoid.save.SaveData;
 import com.mygame.arkanoid.save.SaveSystem;
+import com.mygame.arkanoid.util.config.GameConstants;
 
 import java.awt.*;
 import java.util.*;

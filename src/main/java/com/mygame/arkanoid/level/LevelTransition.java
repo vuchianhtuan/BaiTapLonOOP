@@ -1,10 +1,11 @@
 
 package com.mygame.arkanoid.level;
 
-import com.mygame.arkanoid.config.GameConstants;
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.objects.Paddle;
 import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.util.config.GameConstants;
+
 import java.awt.*;
 
 
