@@ -3,7 +3,7 @@ package com.mygame.arkanoid.objects.bricks;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import com.mygame.arkanoid.engine.AssetManager;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
 
 public class NormalBrick extends Brick {
     @Override public void update() {}

@@ -1,4 +1,3 @@
-// java
 package com.mygame.arkanoid.objects.bricks;
 
 public final class BrickFactory {
@@ -30,19 +29,5 @@ public final class BrickFactory {
             case '_': case '0': default: return null;
             //default: throw new IllegalArgumentException("Unsupported BrickType: " + type);
         }
-    }
-
-    // Overload cho loại cần tham số bổ sung
-
-    public static Brick createStrong(int x, int y, int width, int height, int hp) {
-        return new StrongBrick(x, y, width, height, hp);
-    }
-
-    public static Brick createMoving(int x, int y, int width, int height, int speed) {
-        return new MovingBrick(x, y, width, height, speed, 200 );
-    }
-
-    public static Brick createLaserShooter(int x, int y, int width, int height, int fireRate) {
-        return new LaserShooterBrick(x, y, width, height, fireRate);
     }
 }

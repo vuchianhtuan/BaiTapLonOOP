@@ -1,5 +1,4 @@
 package com.mygame.arkanoid.core;
-import com.mygame.arkanoid.systems.objectsui.UIManager;
 
 // Đa luồng: GameLoop chạy update + render song song với GUI
 public class GameLoop extends Thread {

@@ -1,6 +1,7 @@
 package com.mygame.arkanoid.core;
 
 import com.mygame.arkanoid.config.GameConstants;
+import com.mygame.arkanoid.effects.Shard;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.*;
 import com.mygame.arkanoid.objects.bricks.Brick;
@@ -10,19 +11,22 @@ import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.SoundManager;
 
 import com.mygame.arkanoid.objects.bricks.*;
-import com.mygame.arkanoid.systems.helper.CollisionSystem;
-import com.mygame.arkanoid.systems.helper.ExplosionSystem;
-import com.mygame.arkanoid.systems.helper.GameSummaryPanel;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
-import com.mygame.arkanoid.systems.level.Level;
-import com.mygame.arkanoid.systems.level.LevelManager;
-import com.mygame.arkanoid.systems.level.LevelTransition;
-import com.mygame.arkanoid.systems.menu.SelectLevel;
-import com.mygame.arkanoid.systems.menu.MenuManager;
-import com.mygame.arkanoid.systems.menu.SettingManager;
-import com.mygame.arkanoid.systems.objectsui.*;
-import com.mygame.arkanoid.systems.save.SaveData;
-import com.mygame.arkanoid.systems.save.SaveSystem;
+import com.mygame.arkanoid.systems.CollisionSystem;
+import com.mygame.arkanoid.systems.ExplosionSystem;
+import com.mygame.arkanoid.ui.screens.ScoreManager;
+import com.mygame.arkanoid.ui.hud.GameSummaryPanel;
+import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.level.Level;
+import com.mygame.arkanoid.level.LevelManager;
+import com.mygame.arkanoid.level.LevelTransition;
+import com.mygame.arkanoid.systems.PlayerStats;
+import com.mygame.arkanoid.ui.hud.Sidebar;
+import com.mygame.arkanoid.systems.EntityManager;
+import com.mygame.arkanoid.ui.screens.SelectLevel;
+import com.mygame.arkanoid.ui.screens.MenuManager;
+import com.mygame.arkanoid.ui.screens.SettingManager;
+import com.mygame.arkanoid.save.SaveData;
+import com.mygame.arkanoid.save.SaveSystem;
 
 import java.awt.*;
 import java.util.*;
@@ -34,7 +38,7 @@ public class GameManager {
     private String gameState;
     private int gameOverTimer;
     private GameSummaryPanel gameSummaryPanel;
-    private UIManager uiManager;
+    private Sidebar sidebar;
     private EntityManager entityManager;
     private CollisionSystem collisionSystem;
     private ScoreManager scoreManager;
@@ -60,7 +64,7 @@ public class GameManager {
         entityManager = new EntityManager();
         this.soundManager = new SoundManager();
         playerStats = new PlayerStats();
-        this.uiManager = new UIManager(this, inputHandler);
+        this.sidebar = new Sidebar(this, inputHandler);
         AssetManager.getInstance().loadGlobalAssets();
         levelManager = new LevelManager();
         levelManager.loadLevels();
@@ -71,7 +75,7 @@ public class GameManager {
         explosionSystem = new ExplosionSystem();
         scoreManager = new ScoreManager(this, inputHandler);
         settingManager = new SettingManager(inputHandler, this, soundManager);
-        selectLevel = new SelectLevel(inputHandler, this, levelManager);
+        selectLevel = new SelectLevel(inputHandler, this);
         this.gameState = "MENU";
         canContinue = false;
         soundManager.playBackgroundMusic("Menu.wav");
@@ -176,7 +180,7 @@ public class GameManager {
         if ("PLAYING".equals(gameState)) {
             playerStats.updatePlaytime(deltaMillis);
             entityManager.updateAll(inputHandler);
-            uiManager.update();
+            sidebar.update();
 
             Iterator<PowerUp> activePowerUpIterator = entityManager.getActivePowerUps().iterator();
             while (activePowerUpIterator.hasNext()) {
@@ -228,7 +232,7 @@ public class GameManager {
             }
 
         } else if (GAMESTATE_PAUSED.equals(gameState)) {
-            uiManager.update();
+            sidebar.update();
 
         } else if ("TRANSITION".equals(gameState)) {
             levelTransition.update();
@@ -430,7 +434,7 @@ public class GameManager {
     public String getSelectedBallSkinKey() { return settingManager.getSelectedBallSkinKey(); }
     public String getSelectedPaddleSkinKey() { return settingManager.getSelectedPaddleSkinKey(); }
     public GameSummaryPanel getGameSummaryPanel() { return gameSummaryPanel; }
-    public UIManager getUIManager() { return uiManager; }
+    public Sidebar getUIManager() { return sidebar; }
     public MenuManager getMenuManager() { return menuManager; }
     public ScoreManager getScoreManager() { return scoreManager; }
     public SettingManager getSettingManager() { return settingManager; }

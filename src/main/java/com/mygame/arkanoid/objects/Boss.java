@@ -1,13 +1,11 @@
 package com.mygame.arkanoid.objects;
 
 import com.mygame.arkanoid.objects.bricks.Brick;
-
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 public class Boss {
     private float x, y;

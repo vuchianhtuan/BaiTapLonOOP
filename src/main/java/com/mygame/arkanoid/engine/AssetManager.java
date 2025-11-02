@@ -1,7 +1,6 @@
 package com.mygame.arkanoid.engine;
 
-import com.mygame.arkanoid.config.AssetDefinition;
-
+import com.mygame.arkanoid.util.config.AssetDefinition;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;

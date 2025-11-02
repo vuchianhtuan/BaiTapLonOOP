@@ -1,6 +1,6 @@
 package com.mygame.arkanoid.objects;
 
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
 import com.mygame.arkanoid.engine.AssetManager;
 import java.awt.Color;
 import java.awt.Graphics;

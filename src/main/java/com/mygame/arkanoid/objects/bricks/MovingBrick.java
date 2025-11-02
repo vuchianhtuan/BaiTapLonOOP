@@ -1,7 +1,7 @@
 package com.mygame.arkanoid.objects.bricks;
 
 import com.mygame.arkanoid.engine.AssetManager;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
