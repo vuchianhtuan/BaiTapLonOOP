@@ -1,6 +1,6 @@
 package com.mygame.arkanoid.effects;
 
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.Color;
 import java.awt.Graphics;
 

@@ -1,9 +1,9 @@
 package com.mygame.arkanoid;
 
 import com.mygame.arkanoid.core.*;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
-import com.mygame.arkanoid.systems.save.SaveSystem;
-import com.mygame.arkanoid.systems.save.SaveData;
+import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.save.SaveSystem;
+import com.mygame.arkanoid.save.SaveData;
 
 import javax.swing.*;
 import java.awt.event.ComponentAdapter;

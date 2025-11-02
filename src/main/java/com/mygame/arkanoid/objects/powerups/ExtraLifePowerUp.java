@@ -4,7 +4,7 @@ import com.mygame.arkanoid.engine.AssetManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
 
 public class ExtraLifePowerUp extends PowerUp {
     private String imageName = "extraLifePowerUp";

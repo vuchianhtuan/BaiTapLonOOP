@@ -1,4 +1,4 @@
-package com.mygame.arkanoid.systems.level;
+package com.mygame.arkanoid.level;
 
 import java.util.ArrayList;
 import java.util.List;

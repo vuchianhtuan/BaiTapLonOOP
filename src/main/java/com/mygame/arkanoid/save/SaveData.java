@@ -1,4 +1,4 @@
-package com.mygame.arkanoid.systems.save;
+package com.mygame.arkanoid.save;
 
 import java.io.Serializable;
 import java.util.ArrayList;

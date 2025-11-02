@@ -1,7 +1,7 @@
 package com.mygame.arkanoid.objects.powerups;
 import com.mygame.arkanoid.objects.GameObject;
 import com.mygame.arkanoid.core.GameManager;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
 
 import java.awt.Graphics;
 

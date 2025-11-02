@@ -1,4 +1,4 @@
-package com.mygame.arkanoid.systems.level;
+package com.mygame.arkanoid.level;
 
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.PowerUpType;

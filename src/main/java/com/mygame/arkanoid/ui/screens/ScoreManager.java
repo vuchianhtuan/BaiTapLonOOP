@@ -1,10 +1,10 @@
-package com.mygame.arkanoid.systems.objectsui;
+package com.mygame.arkanoid.ui.screens;
 
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.engine.InputHandler;
-import com.mygame.arkanoid.objects.ui.BackButton;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.ui.controls.BackButton;
 
 import java.awt.*;
 import java.io.IOException;

@@ -2,9 +2,9 @@ package com.mygame.arkanoid.core;
 
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
-import com.mygame.arkanoid.systems.level.LevelTransition;
-import com.mygame.arkanoid.systems.objectsui.Sidebar;
+import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.level.LevelTransition;
+import com.mygame.arkanoid.ui.hud.Sidebar;
 
 import static com.mygame.arkanoid.core.GameManager.GAMESTATE_PAUSED;
 

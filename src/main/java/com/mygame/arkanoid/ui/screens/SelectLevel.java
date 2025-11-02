@@ -1,11 +1,10 @@
-package com.mygame.arkanoid.systems.menu;
+package com.mygame.arkanoid.ui.screens;
 
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.engine.InputHandler;
-import com.mygame.arkanoid.objects.ui.BackButton;
-import com.mygame.arkanoid.systems.level.LevelManager;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.ui.controls.BackButton;
+import com.mygame.arkanoid.systems.ScalingManager;
 
 import java.awt.*;
 import java.awt.Image;

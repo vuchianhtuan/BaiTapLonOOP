@@ -1,9 +1,9 @@
-package com.mygame.arkanoid.objects.ui;
+package com.mygame.arkanoid.ui.controls;
 
 import com.mygame.arkanoid.engine.AssetManager;
 // Xóa các import không cần thiết (InputHandler, SoundManager)
 import com.mygame.arkanoid.objects.GameObject;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

@@ -1,4 +1,4 @@
-package com.mygame.arkanoid.config;
+package com.mygame.arkanoid.util.config;
 
 public enum AssetDefinition {
 

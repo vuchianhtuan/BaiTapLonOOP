@@ -1,4 +1,6 @@
-package com.mygame.arkanoid.systems.helper;
+package com.mygame.arkanoid.ui.hud;
+
+import com.mygame.arkanoid.systems.ScalingManager;
 
 import java.awt.Color;
 import java.awt.Font;

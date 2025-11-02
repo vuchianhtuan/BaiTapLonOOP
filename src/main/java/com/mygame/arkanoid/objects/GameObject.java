@@ -1,6 +1,6 @@
 package com.mygame.arkanoid.objects;
 
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 
 public abstract class GameObject {

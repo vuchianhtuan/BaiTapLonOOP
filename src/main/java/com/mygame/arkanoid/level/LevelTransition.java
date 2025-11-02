@@ -1,9 +1,9 @@
 
-package com.mygame.arkanoid.systems.level;
+package com.mygame.arkanoid.level;
 
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.objects.Paddle;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 
 

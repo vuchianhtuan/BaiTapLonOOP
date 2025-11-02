@@ -1,6 +1,6 @@
 package com.mygame.arkanoid.engine;
 
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.event.*;
 
 public class InputHandler implements KeyListener, MouseMotionListener, MouseListener {

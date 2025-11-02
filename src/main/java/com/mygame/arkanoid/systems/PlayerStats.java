@@ -1,6 +1,6 @@
-package com.mygame.arkanoid.systems.objectsui;
+package com.mygame.arkanoid.systems;
 
-import com.mygame.arkanoid.config.GameConstants;
+import com.mygame.arkanoid.util.config.GameConstants;
 
 public class PlayerStats {
 

@@ -1,8 +1,9 @@
-package com.mygame.arkanoid.systems.save;
+package com.mygame.arkanoid.save;
 
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.objects.bricks.Brick;
 import com.mygame.arkanoid.objects.bricks.LaserShooterBrick;
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;

@@ -7,7 +7,7 @@ import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent;
-import com.mygame.arkanoid.systems.helper.ScalingManager;
+import com.mygame.arkanoid.systems.ScalingManager;
 
 public class Paddle extends MovableObject {
     private int speed = 15;
