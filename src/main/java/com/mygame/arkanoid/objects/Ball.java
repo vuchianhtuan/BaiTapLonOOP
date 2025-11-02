@@ -105,23 +105,24 @@ public class Ball extends MovableObject {
                 // Ép nó nảy sang trái
                 this.dx = -Math.abs(this.dx);
             }
-        }
-        if (this.getBounds().intersects(new Rectangle(other.x, other.y, other.width, 1))) {
-            // Chạm cạnh trên
-            this.dy = -Math.abs(this.dy);
-        } else if (this.getBounds().intersects(new Rectangle(other.x, other.y + other.height - 1, other.width, 1))) {
-            // Chạm cạnh dưới
-            this.dy = Math.abs(this.dy);
-        } else if (this.getBounds().intersects(new Rectangle(other.x, other.y, 1, other.height))) {
-            // Chạm cạnh trái
-            this.dx = -Math.abs(this.dx);
-        } else if (this.getBounds().intersects(new Rectangle(other.x + other.width - 1, other.y, 1, other.height))) {
-            // Chạm cạnh phải
-            this.dx = Math.abs(this.dx);
         } else {
-            // Trường hợp chạm góc hoặc không xác định
-            this.dx = -this.dx;
-            this.dy = -this.dy;
+            if (this.getBounds().intersects(new Rectangle(other.x, other.y, other.width, 1))) {
+                // Chạm cạnh trên
+                this.dy = -Math.abs(this.dy);
+            } else if (this.getBounds().intersects(new Rectangle(other.x, other.y + other.height - 1, other.width, 1))) {
+                // Chạm cạnh dưới
+                this.dy = Math.abs(this.dy);
+            } else if (this.getBounds().intersects(new Rectangle(other.x, other.y, 1, other.height))) {
+                // Chạm cạnh trái
+                this.dx = -Math.abs(this.dx);
+            } else if (this.getBounds().intersects(new Rectangle(other.x + other.width - 1, other.y, 1, other.height))) {
+                // Chạm cạnh phải
+                this.dx = Math.abs(this.dx);
+            } else {
+                // Trường hợp chạm góc hoặc không xác định
+                this.dx = -this.dx;
+                this.dy = -this.dy;
+            }
         }
     }
 
