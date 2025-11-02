@@ -15,8 +15,6 @@ public class Sidebar {
     private HeartUI heartUI;
     private ScoreUI scoreUI;
 
-    // Các nút bấm và thành phần UI (đã di chuyển từ GameManager)
-    private BackButton backButton;
     private Rectangle pauseButtonRect;
     private Rectangle resumeButtonRect;
     private Rectangle menuButtonRect;
@@ -27,9 +25,6 @@ public class Sidebar {
         this.inputHandler = inputHandler;
         this.heartUI = new HeartUI(gm);
         this.scoreUI = new ScoreUI(gm);
-
-        // --- Di chuyển logic khởi tạo UI từ GameManager sang đây ---
-        this.backButton = new BackButton(10, 10, 40, 40);
 
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH; // 960
         int sidebarWidth = ScalingManager.getInstance().NATIVE_WIDTH - gameAreaWidth; // 160
@@ -78,15 +73,6 @@ public class Sidebar {
                     return; // Thoát sớm
                 }
             }
-
-            if (backButton.contains(mx, my) && inputHandler.isMousePressed()) {
-                if (!pauseCooldown) {
-                    gameManager.goToMenuAndEnableContinue(); // Yêu cầu GameManager xử lý
-                    pauseCooldown = true;
-                    return; // Thoát sớm
-                }
-            }
-
         } else if (GAMESTATE_PAUSED.equals(gameState)) {
             if (resumeButtonRect.contains(mx, my) && inputHandler.isMousePressed()) {
                 if (!pauseCooldown) {
@@ -120,9 +106,6 @@ public class Sidebar {
 
         // 2. Vẽ các thành phần "Extras" (đã di chuyển từ GamePanel)
         drawSidebarExtras(g);
-
-        // 3. Vẽ nút Back
-        backButton.draw(g, ScalingManager.getInstance());
     }
 
     /**
@@ -222,5 +205,4 @@ public class Sidebar {
     public Rectangle getPauseButtonRect() { return pauseButtonRect; }
     public Rectangle getResumeButtonRect() { return resumeButtonRect; }
     public Rectangle getMenuButtonRect() { return menuButtonRect; }
-    public BackButton getBackButton() { return backButton; }
 }

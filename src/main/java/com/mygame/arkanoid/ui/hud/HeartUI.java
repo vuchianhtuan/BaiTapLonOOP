@@ -11,13 +11,7 @@ public class HeartUI {
     private String imageName;
     private int lastKnownLives;
     private static final int HEART_SIZE = 24;
-
-    // Biến cho hiệu ứng nhấp nháy thông thường
-    private int blinkTimer = 0;
-
-    // Biến cho hiệu ứng biến mất
-    private int disappearingHeartIndex = -1; // Vị trí của tim đang biến mất
-    private int disappearEffectTimer = 0; // Bộ đếm thời gian cho hiệu ứng
+    private int lifeLossBlinkTimer = 0;
 
     public HeartUI(GameManager gm) {
         this.gameManager = gm;
@@ -26,55 +20,54 @@ public class HeartUI {
     }
 
     public void update() {
-        blinkTimer = (blinkTimer + 1) % 60; // Lặp lại mỗi giây
-
-        // Kiểm tra nếu mất mạng
         int currentLives = gameManager.getLives();
         if (currentLives < lastKnownLives) {
-            disappearingHeartIndex = lastKnownLives - 1; // Đánh dấu trái tim vừa mất
-            disappearEffectTimer = 60; // Bắt đầu đếm ngược hiệu ứng (60 frame = 1 giây)
+            lifeLossBlinkTimer = 180; // Bắt đầu 1 giây nhấp nháy (60 frames)
             lastKnownLives = currentLives;
         }
 
-        // Cập nhật bộ đếm của hiệu ứng biến mất
-        if (disappearEffectTimer > 0) {
-            disappearEffectTimer--;
-            if (disappearEffectTimer <= 0) {
-                disappearingHeartIndex = -1; // Kết thúc hiệu ứng
-            }
+        // Cập nhật bộ đếm thời gian nhấp nháy
+        if (lifeLossBlinkTimer > 0) {
+            lifeLossBlinkTimer--;
         }
     }
 
     public void draw(Graphics g) {
-        // Lấy instance của ScalingManager
         ScalingManager sm = ScalingManager.getInstance();
 
         int lives = gameManager.getLives();
         BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
         if (img == null) return;
 
-        // Lặp qua số mạng để vẽ
-        for (int i = 0; i < gameManager.getLives(); i++) {
-            int logicBaseX = 980; // 960 (game) + 20 (padding)
-            int logicBaseY = 230; // Vị trí Y (bạn có thể điều chỉnh)
-            int heartPadding = 5;
-
-            int logicX = logicBaseX + (i * (HEART_SIZE + heartPadding));
-            int logicY = logicBaseY;
-
-            // Chỉ vẽ nếu hiệu ứng cho phép
-            boolean shouldDraw = true;
-            if (i == disappearingHeartIndex) {
-                if (disappearEffectTimer <= 0 || (disappearEffectTimer / 5) % 2 != 0) {
-                    shouldDraw = false;
-                }
-            } else if (i < lives) {
-                if (i == lives - 1 && blinkTimer < 30) {
-                    shouldDraw = false;
-                }
+        // Xác định xem có nên vẽ tim hay không (logic nhấp nháy)
+        boolean shouldDraw = true;
+        if (lifeLossBlinkTimer > 0) {
+            // Cứ 5 frame thì ẩn, 5 frame thì hiện
+            if ((lifeLossBlinkTimer / 20) % 2 != 0) {
+                shouldDraw = false;
             }
+        }
+        // Nếu lifeLossBlinkTimer <= 0, shouldDraw luôn là true (không nhấp nháy)
 
-            if (shouldDraw) {
+        // Chỉ vẽ nếu logic cho phép
+        if (shouldDraw) {
+            // Lặp qua số mạng để vẽ
+            for (int i = 0; i < gameManager.getLives(); i++) {
+                int logicBaseX = 980; // 960 (game) + 20 (padding)
+                int logicBaseY = 150; // Vị trí Y (bạn có thể điều chỉnh)
+                int heartPadding = 5;
+
+                // Logic chia 3 tim mỗi hàng (từ yêu cầu trước)
+                final int HEARTS_PER_ROW = 3;
+                int heartSpacingX = HEART_SIZE + heartPadding;
+                int heartSpacingY = HEART_SIZE + heartPadding;
+
+                int col = i % HEARTS_PER_ROW; // Cột (0, 1, 2)
+                int row = i / HEARTS_PER_ROW; // Hàng (0, 1, ...)
+
+                int logicX = logicBaseX + (col * heartSpacingX);
+                int logicY = logicBaseY + (row * heartSpacingY);
+
                 // Sử dụng ScalingManager để "dịch" tọa độ và kích thước logic ra màn hình thật
                 g.drawImage(img,
                         sm.scaleX(logicX),

@@ -106,11 +106,10 @@ public class GameSummaryPanel {
         Font scaledStatValueFont = statValueFont.deriveFont((float)(statValueFont.getSize() * sm.getScale()));
 
         // Vị trí cố định cho nhãn (căn trái)
-        int labelDrawX = screenX + sm.scaleX(50);
+        int labelDrawX = screenX + sm.scaleWidth(50); // <-- SỬA LỖI: Dùng scaleWidth
 
         // Vị trí cho giá trị (căn phải so với một điểm tham chiếu)
-        int valueRefX = screenX + screenWidth - sm.scaleX(50); // Điểm tham chiếu bên phải
-
+        int valueRefX = screenX + screenWidth - sm.scaleWidth(50);
         // --- Score ---
         g2d.setFont(scaledStatLabelFont);
         g2d.setColor(Color.LIGHT_GRAY);
