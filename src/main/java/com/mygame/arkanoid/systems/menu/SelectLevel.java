@@ -111,6 +111,7 @@ public class SelectLevel {
         for (int i = 0; i < levelButtons.length; i++) {
             Rectangle virtualRect = levelButtons[i];
 
+            // Tọa độ và kích thước ĐÍCH (trên màn hình)
             int x = sm.scaleX(virtualRect.x);
             int y = sm.scaleY(virtualRect.y);
             int width = sm.scaleWidth(virtualRect.width);
@@ -119,8 +120,43 @@ public class SelectLevel {
             Image preview = levelPreviews[i];
 
             // Vẽ nền nút (ảnh preview hoặc hộp màu)
-            if (preview != null) {
-                g.drawImage(preview, x, y, width, height, null);
+            if (preview != null && preview.getWidth(null) > 0 && preview.getHeight(null) > 0) {
+
+                // --- BẮT ĐẦU LOGIC CẮT ẢNH (ASPECT FILL) ---
+
+                double imgWidth = preview.getWidth(null);
+                double imgHeight = preview.getHeight(null);
+                double rectWidth = virtualRect.width;
+                double rectHeight = virtualRect.height;
+
+                double imgAspect = imgWidth / imgHeight;
+                double rectAspect = rectWidth / rectHeight;
+
+                int sx1 = 0;
+                int sy1 = 0;
+                int sx2 = (int) imgWidth;
+                int sy2 = (int) imgHeight;
+
+                if (imgAspect > rectAspect) {
+                    // Ảnh rộng hơn khung -> Cắt trái/phải
+                    double newWidth = imgHeight * rectAspect; // Chiều rộng mới của ảnh nguồn
+                    sx1 = (int) ((imgWidth - newWidth) / 2);
+                    sx2 = (int) (sx1 + newWidth);
+                } else if (imgAspect < rectAspect) {
+                    // Ảnh cao hơn khung -> Cắt trên/dưới
+                    double newHeight = imgWidth / rectAspect; // Chiều cao mới của ảnh nguồn
+                    sy1 = (int) ((imgHeight - newHeight) / 2);
+                    sy2 = (int) (sy1 + newHeight);
+                }
+
+                // Thay thế hàm drawImage cũ
+                g.drawImage(preview,
+                        x, y, x + width, y + height, // Tọa độ ĐÍCH (trên màn hình)
+                        sx1, sy1, sx2, sy2,           // Tọa độ NGUỒN (cắt từ ảnh gốc)
+                        null);
+
+                // --- KẾT THÚC LOGIC CẮT ẢNH ---
+
             } else {
                 // Hộp màu tối nếu không có ảnh
                 g.setColor(new Color(30, 30, 30, 200));

@@ -15,7 +15,6 @@ public class ScalingManager {
     private int offsetY = 0;
 
     private ScalingManager() {
-        // Private constructor
     }
 
     public static synchronized ScalingManager getInstance() {
@@ -89,7 +88,6 @@ public class ScalingManager {
         return (int) ((screenY - offsetY) / scale);
     }
 
-    // --- CÁC HÀM GETTER (Hữu ích cho các file khác) ---
 
     public double getScale() {
         return scale;
