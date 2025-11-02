@@ -3,7 +3,6 @@ package com.mygame.arkanoid.objects.powerups;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.systems.helper.ScalingManager;
-
 import java.awt.Graphics;
 import java.awt.Graphics2D;      // <-- THÊM
 import java.awt.AlphaComposite; // <-- THÊM

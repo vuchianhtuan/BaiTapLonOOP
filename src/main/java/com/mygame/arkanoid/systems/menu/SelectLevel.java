@@ -12,7 +12,6 @@ import java.awt.Image;
 
 public class SelectLevel {
     private InputHandler inputHandler;
-    private LevelManager levelManager;
     private Image BackgroundImage;
     private Rectangle[] levelButtons = new Rectangle[3];
     private Image[] levelPreviews = new Image[3]; // <-- MỚI: Dành cho ảnh preview
@@ -20,9 +19,8 @@ public class SelectLevel {
     private GameManager gameManager;
     private BackButton backButton;
 
-    public SelectLevel(InputHandler inputHandler, GameManager gameManager, LevelManager levelManager) {
+    public SelectLevel(InputHandler inputHandler, GameManager gameManager) {
         this.inputHandler = inputHandler;
-        this.levelManager = levelManager;
         this.BackgroundImage = AssetManager.getInstance().getImage("selectLevelBackground");
         this.gameManager = gameManager;
         this.backButton = new BackButton(10, 10, 40, 40);

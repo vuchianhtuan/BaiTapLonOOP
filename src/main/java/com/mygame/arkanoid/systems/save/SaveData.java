@@ -1,8 +1,5 @@
-// java
 package com.mygame.arkanoid.systems.save;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,18 +30,6 @@ public class SaveData implements Serializable {
     private List<Integer> aliveBrickIds = new ArrayList<>();
 
     public SaveData() {}
-
-    public SaveData(int levelIndex, int score, int lives,
-                    long playtimeMillis, long currentLevelPlaytimeMillis,
-                    boolean canContinue, long savedAtEpochMillis) {
-        this.levelIndex = levelIndex;
-        this.score = score;
-        this.lives = lives;
-        this.playtimeMillis = playtimeMillis;
-        this.currentLevelPlaytimeMillis = currentLevelPlaytimeMillis;
-        this.canContinue = canContinue;
-        this.savedAtEpochMillis = savedAtEpochMillis;
-    }
 
     // Getters/Setters
     public int getVersion() { return version; }
@@ -77,10 +62,4 @@ public class SaveData implements Serializable {
     public List<Integer> getAliveBrickIds() { return aliveBrickIds; }
     public void setAliveBrickIds(List<Integer> aliveBrickIds) { this.aliveBrickIds = aliveBrickIds; }
 
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        if (aliveBrickIds == null) {
-            aliveBrickIds = new ArrayList<>();
-        }
-    }
 }

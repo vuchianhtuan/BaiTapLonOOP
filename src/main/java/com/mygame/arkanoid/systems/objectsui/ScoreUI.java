@@ -1,9 +1,7 @@
 package com.mygame.arkanoid.systems.objectsui;
 
-// File: UI.java (trong package systems.ui)
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.systems.helper.ScalingManager;
-
 import java.awt.*;
 
 public class ScoreUI {

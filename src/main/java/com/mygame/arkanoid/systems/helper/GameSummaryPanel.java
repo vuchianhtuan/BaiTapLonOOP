@@ -11,11 +11,9 @@ import java.awt.geom.RoundRectangle2D; // Để vẽ hình chữ nhật bo góc
 
 public class GameSummaryPanel {
 
-    // Kích thước logic của hộp thống kê
     private int logicWidth, logicHeight;
     private int logicX, logicY;
 
-    // Kích thước của bo góc
     private final int ARC_SIZE = 30; // Bo tròn 30px
 
     private Font titleFont;

@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.objects.bricks;
 
+import com.mygame.arkanoid.effects.Shard;
 import com.mygame.arkanoid.objects.GameObject;
 import com.mygame.arkanoid.systems.helper.ScalingManager;
 

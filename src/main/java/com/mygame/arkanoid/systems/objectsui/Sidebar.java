@@ -4,12 +4,11 @@ import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.objects.ui.BackButton;
 import com.mygame.arkanoid.systems.helper.ScalingManager;
-
 import java.awt.*;
 
 import static com.mygame.arkanoid.core.GameManager.GAMESTATE_PAUSED;
 
-public class UIManager {
+public class Sidebar {
     private GameManager gameManager;
     private InputHandler inputHandler;
     private HeartUI heartUI;
@@ -22,7 +21,7 @@ public class UIManager {
     private Rectangle menuButtonRect;
     private boolean pauseCooldown = false; // Quản lý cooldown ngay tại đây
 
-    public UIManager(GameManager gm, InputHandler inputHandler) {
+    public Sidebar(GameManager gm, InputHandler inputHandler) {
         this.gameManager = gm;
         this.inputHandler = inputHandler;
         this.heartUI = new HeartUI(gm);
@@ -127,7 +126,7 @@ public class UIManager {
 
     /**
      * Đây là hàm private, lấy logic từ GamePanel.drawSidebarExtras
-     * Giờ đây nó là một phần của UIManager
+     * Giờ đây nó là một phần của Sidebar
      */
     private void drawSidebarExtras(Graphics g) {
         ScalingManager sm = ScalingManager.getInstance();

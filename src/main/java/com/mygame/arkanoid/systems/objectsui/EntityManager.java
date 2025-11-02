@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.systems.objectsui;
 
+import com.mygame.arkanoid.effects.Shard;
 import com.mygame.arkanoid.objects.*;
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.PowerUp;

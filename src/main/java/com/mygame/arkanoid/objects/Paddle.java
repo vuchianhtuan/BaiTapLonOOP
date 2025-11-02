@@ -1,4 +1,5 @@
 package com.mygame.arkanoid.objects;
+
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.powerups.PowerUp;
 import com.mygame.arkanoid.engine.InputHandler;
@@ -32,7 +33,6 @@ public class Paddle extends MovableObject {
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
         if (x + width > gameAreaWidth) x = gameAreaWidth - width;
     }
-    public void applyPowerUp(PowerUp powerUp) {}
 
     public Paddle(int x, int y, int width, int height, String skinKey) {
         super(x, y, width, height);

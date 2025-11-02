@@ -1,7 +1,6 @@
-// File: com/mygame/arkanoid/objects/bricks/ExplosiveBrick.java
-
 package com.mygame.arkanoid.objects.bricks;
 
+import com.mygame.arkanoid.effects.Shard;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.systems.helper.ScalingManager;
 import java.awt.*;

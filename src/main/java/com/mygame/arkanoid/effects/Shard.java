@@ -1,4 +1,4 @@
-package com.mygame.arkanoid.objects.bricks;
+package com.mygame.arkanoid.effects;
 
 import com.mygame.arkanoid.systems.helper.ScalingManager;
 import java.awt.Color;

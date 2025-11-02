@@ -1,8 +1,6 @@
 package com.mygame.arkanoid.objects.powerups;
 
 public final class PowerUpFactory {
-    private static final int SIZE = 30;
-
     private PowerUpFactory() {}
 
     public static PowerUp create(PowerUpType type, int x, int y) {

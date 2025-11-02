@@ -1,9 +1,10 @@
 package com.mygame.arkanoid.engine;
+
+import com.mygame.arkanoid.effects.Shard;
 import com.mygame.arkanoid.objects.*;
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.*;
 import com.mygame.arkanoid.systems.helper.ScalingManager;
-
 import java.awt.Image;
 import java.awt.Graphics;
 import java.util.List;

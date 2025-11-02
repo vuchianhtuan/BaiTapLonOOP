@@ -1,7 +1,6 @@
 package com.mygame.arkanoid.objects.powerups;
 
 import com.mygame.arkanoid.core.GameManager;
-
 import java.awt.Graphics;
 import java.awt.Graphics2D; // <-- Cần import Graphics2D
 import java.awt.image.BufferedImage;

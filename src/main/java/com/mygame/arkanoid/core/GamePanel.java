@@ -4,7 +4,7 @@ import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.Renderer;
 import com.mygame.arkanoid.systems.helper.ScalingManager;
 import com.mygame.arkanoid.systems.level.LevelTransition;
-import com.mygame.arkanoid.systems.objectsui.UIManager;
+import com.mygame.arkanoid.systems.objectsui.Sidebar;
 
 import static com.mygame.arkanoid.core.GameManager.GAMESTATE_PAUSED;
 
@@ -16,7 +16,7 @@ public class GamePanel extends JPanel {
     public static final int HEIGHT = 720;
 
     private final GameManager gameManager;
-    private final UIManager uiManager;
+    private final Sidebar sidebar;
     private final LevelTransition levelTransition;
     private final Renderer renderer;
 
@@ -26,7 +26,7 @@ public class GamePanel extends JPanel {
 
         this.gameManager = gameManager;
         this.renderer = new Renderer();
-        this.uiManager = gameManager.getUIManager();
+        this.sidebar = gameManager.getUIManager();
         this.levelTransition = gameManager.getLevelTransition();
         InputHandler inputHandler = gameManager.getInputHandler();
 
@@ -83,7 +83,7 @@ public class GamePanel extends JPanel {
                     gameManager.getLaserShooters(),
                     gameManager.getCurrentBackground(),
                     gameManager.getActiveShards());
-            uiManager.draw(g);
+            sidebar.draw(g);
             levelTransition.render(g);
             if ("GAME_WIN".equals(currentState)) {
                 Color overlayColor = new Color(0, 0, 0, 128); // 50% mờ

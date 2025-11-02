@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.core;
 
+import com.mygame.arkanoid.effects.Shard;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.objects.*;
 import com.mygame.arkanoid.objects.bricks.Brick;
@@ -33,7 +34,7 @@ public class GameManager {
     private String gameState;
     private int gameOverTimer;
     private GameSummaryPanel gameSummaryPanel;
-    private UIManager uiManager;
+    private Sidebar sidebar;
     private EntityManager entityManager;
     private CollisionSystem collisionSystem;
     private ScoreManager scoreManager;
@@ -59,7 +60,7 @@ public class GameManager {
         entityManager = new EntityManager();
         this.soundManager = new SoundManager();
         playerStats = new PlayerStats();
-        this.uiManager = new UIManager(this, inputHandler);
+        this.sidebar = new Sidebar(this, inputHandler);
         AssetManager.getInstance().loadGlobalAssets();
         levelManager = new LevelManager();
         levelManager.loadLevels();
@@ -70,7 +71,7 @@ public class GameManager {
         explosionSystem = new ExplosionSystem();
         scoreManager = new ScoreManager(this, inputHandler);
         settingManager = new SettingManager(inputHandler, this, soundManager);
-        selectLevel = new SelectLevel(inputHandler, this, levelManager);
+        selectLevel = new SelectLevel(inputHandler, this);
         this.gameState = "MENU";
         canContinue = false;
         soundManager.playBackgroundMusic("Menu.wav");
@@ -175,7 +176,7 @@ public class GameManager {
         if ("PLAYING".equals(gameState)) {
             playerStats.updatePlaytime(deltaMillis);
             entityManager.updateAll(inputHandler);
-            uiManager.update();
+            sidebar.update();
 
             Iterator<PowerUp> activePowerUpIterator = entityManager.getActivePowerUps().iterator();
             while (activePowerUpIterator.hasNext()) {
@@ -227,7 +228,7 @@ public class GameManager {
             }
 
         } else if (GAMESTATE_PAUSED.equals(gameState)) {
-            uiManager.update();
+            sidebar.update();
 
         } else if ("TRANSITION".equals(gameState)) {
             levelTransition.update();
@@ -429,7 +430,7 @@ public class GameManager {
     public String getSelectedBallSkinKey() { return settingManager.getSelectedBallSkinKey(); }
     public String getSelectedPaddleSkinKey() { return settingManager.getSelectedPaddleSkinKey(); }
     public GameSummaryPanel getGameSummaryPanel() { return gameSummaryPanel; }
-    public UIManager getUIManager() { return uiManager; }
+    public Sidebar getUIManager() { return sidebar; }
     public MenuManager getMenuManager() { return menuManager; }
     public ScoreManager getScoreManager() { return scoreManager; }
     public SettingManager getSettingManager() { return settingManager; }

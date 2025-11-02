@@ -1,4 +1,3 @@
-// Đặt trong com.mygame.arkanoid.systems
 package com.mygame.arkanoid.systems.level;
 
 import com.mygame.arkanoid.systems.helper.ScalingManager;

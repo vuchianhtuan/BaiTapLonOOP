@@ -1,8 +1,7 @@
-// File: 'src/main/java/com/mygame/arkanoid/systems/ExplosionSystem.java'
 package com.mygame.arkanoid.systems.helper;
 
 import com.mygame.arkanoid.core.GameManager;
-import com.mygame.arkanoid.objects.bricks.Shard;
+import com.mygame.arkanoid.effects.Shard;
 import com.mygame.arkanoid.objects.bricks.Brick;
 import com.mygame.arkanoid.objects.bricks.ExplosiveBrick;
 
