@@ -28,7 +28,6 @@ import java.util.*;
 import java.util.List;
 
 public class GameManager {
-    // ... (Tất cả các biến thành viên giữ nguyên) ...
     private boolean canContinue = false;
     private PlayerStats playerStats;
     private String gameState;
@@ -47,8 +46,6 @@ public class GameManager {
     private SelectLevel selectLevel;
     private Image currentBackground = null;
     private ExplosionSystem explosionSystem;
-    private String selectedBallSkinKey = "skin_ball_1";
-    private String selectedPaddleSkinKey = "skin_paddle_1";
     public static final String GAMESTATE_PAUSED = "PAUSED";
 
     public SoundManager getSoundManager() { return soundManager; }
@@ -136,7 +133,7 @@ public class GameManager {
     }
 
     private void setupLevelObjects() {
-        entityManager.resetForNewLevel(selectedPaddleSkinKey, selectedBallSkinKey);
+        entityManager.resetForNewLevel(settingManager.getSelectedPaddleSkinKey(), settingManager.getSelectedBallSkinKey());
         for (PowerUp p : entityManager.getActivePowerUps()) {
             p.removeEffect(this);
         }
@@ -167,10 +164,6 @@ public class GameManager {
         entityManager.hydrateLevel(currentLevel); // 3. NẠP THỰC THỂ (Gạch/Boss)
     }
 
-
-    public void addScore(int points) {
-        playerStats.addScore(points);
-    }
 
     // Hàm updateGame giữ nguyên
     public void updateGame() {
@@ -226,7 +219,7 @@ public class GameManager {
                 playerStats.loseLife();
                 if (playerStats.getLives() > 0) {
                     soundManager.playSound(SoundManager.SFX_BALL_LOSS);
-                    entityManager.respawnBall(selectedBallSkinKey);
+                    entityManager.respawnBall(settingManager.getSelectedBallSkinKey());
                 } else {
                     setGameState("GAME_OVER");
                     gameOverTimer = 360;
@@ -332,7 +325,7 @@ public class GameManager {
             SaveSystem.deleteSave();
         }
     }
-    public Image getCurrentBackground() { return this.currentBackground; }
+
     public void activatePowerUp(PowerUp newPowerUp) {
         String newType = newPowerUp.getType();
         Iterator<PowerUp> iterator = entityManager.getActivePowerUps().iterator();
@@ -364,8 +357,8 @@ public class GameManager {
             int paddleWidth = 120;
             int px = (gameAreaWidth - paddleWidth) / 2;
             int py = nativeHeight - 80;
-            Paddle newPaddle = new Paddle(px, py, paddleWidth, 30, selectedPaddleSkinKey);
-            Ball newBall = new Ball(px + (paddleWidth / 2) - (currentBallSize / 2), py - currentBallSize - 1, currentBallSize, currentBallSize, selectedBallSkinKey);
+            Paddle newPaddle = new Paddle(px, py, paddleWidth, 30, settingManager.getSelectedPaddleSkinKey());
+            Ball newBall = new Ball(px + (paddleWidth / 2) - (currentBallSize / 2), py - currentBallSize - 1, currentBallSize, currentBallSize, settingManager.getSelectedBallSkinKey());
             newBall.resetBallPosition(newPaddle);
             entityManager.setPaddle(newPaddle);
             entityManager.getBalls().clear();
@@ -423,6 +416,28 @@ public class GameManager {
     }
 
     public PlayerStats getPlayerStats() { return playerStats; }
+    public LevelTransition getLevelTransition() { return levelTransition; }
+    public LevelManager getLevelManager() { return levelManager; }
+    public InputHandler getInputHandler() { return inputHandler; }
+    public boolean canContinue() { return canContinue; }
+    public void applyBallSkin(String selectedBallSkinKey) {
+        entityManager.setBallSkin(selectedBallSkinKey);
+    }
+    public void applyPaddleSkin(String selectedPaddleSkinKey) {
+        entityManager.setPaddleSkin(selectedPaddleSkinKey);
+    }
+    public String getSelectedBallSkinKey() { return settingManager.getSelectedBallSkinKey(); }
+    public String getSelectedPaddleSkinKey() { return settingManager.getSelectedPaddleSkinKey(); }
+    public GameSummaryPanel getGameSummaryPanel() { return gameSummaryPanel; }
+    public UIManager getUIManager() { return uiManager; }
+    public MenuManager getMenuManager() { return menuManager; }
+    public ScoreManager getScoreManager() { return scoreManager; }
+    public SettingManager getSettingManager() { return settingManager; }
+    public SelectLevel getSelectLevel() { return selectLevel; }
+    public String getGameState() { return gameState; }
+    public Image getCurrentBackground() { return this.currentBackground; }
+
+
     public List<Laser> getLasers() { return entityManager.getLasers(); }
     public List<LaserShooterBrick> getLaserShooters() { return entityManager.getLaserShooters(); }
     public Boss getBoss() { return entityManager.getBoss(); }
@@ -438,32 +453,14 @@ public class GameManager {
     public List<Ball> getBalls() { return entityManager.getBalls(); }
     public Paddle getPaddle() { return entityManager.getPaddle(); }
     public Ball getBall() { return entityManager.getBall(); }
-    public boolean canContinue() { return canContinue; }
     public List<Brick> getBricks() { return entityManager.getBricks(); }
     public List<PowerUp> getPowerUps() { return entityManager.getPowerUps(); }
-    public InputHandler getInputHandler() { return inputHandler; }
     public List<Shard> getActiveShards() { return entityManager.getActiveShards(); }
-    public LevelTransition getLevelTransition() { return levelTransition; }
-    public LevelManager getLevelManager() { return levelManager; }
-    public String getSelectedBallSkinKey() { return selectedBallSkinKey; }
-    public void setSelectedBallSkinKey(String selectedBallSkinKey) {
-        this.selectedBallSkinKey = selectedBallSkinKey;
-        entityManager.setBallSkin(selectedBallSkinKey);
-    }
-    public String getSelectedPaddleSkinKey() { return selectedPaddleSkinKey; }
-    public void setSelectedPaddleSkinKey(String selectedPaddleSkinKey) {
-        this.selectedPaddleSkinKey = selectedPaddleSkinKey;
-        entityManager.setPaddleSkin(selectedPaddleSkinKey);
-    }
-    public GameSummaryPanel getGameSummaryPanel() { return gameSummaryPanel; }
     public int getFinalScore() { return playerStats.getFinalScore(); }
     public long getFinalPlaytimeMillis() { return playerStats.getFinalPlaytimeMillis(); }
     public int getScreenHeight() { return ScalingManager.getInstance().NATIVE_HEIGHT; }
-    public UIManager getUIManager() { return uiManager; }
+    public void addScore(int points) {
+        playerStats.addScore(points);
+    }
 
-    public MenuManager getMenuManager() { return menuManager; }
-    public ScoreManager getScoreManager() { return scoreManager; }
-    public SettingManager getSettingManager() { return settingManager; }
-    public SelectLevel getSelectLevel() { return selectLevel; }
-    public String getGameState() { return gameState; }
 }

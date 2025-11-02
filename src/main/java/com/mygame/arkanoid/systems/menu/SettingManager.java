@@ -22,6 +22,9 @@ public class SettingManager {
     private SoundManager soundManager;
     private BackButton backButton;
     private Image BackgroundImage;
+    private String selectedBallSkinKey = "skin_ball_1"; // XÓA DÒNG NÀY
+    private String selectedPaddleSkinKey = "skin_paddle_1"; // XÓA DÒNG NÀY
+
 
     // --- Thanh trượt âm lượng (Giữ nguyên) ---
     private Thumb thumbMaster, thumbMusic, thumbSfx;
@@ -133,8 +136,8 @@ public class SettingManager {
         ballSkinKeys = Arrays.asList("skin_ball_1", "skin_ball_2", "skin_ball_3", "skin_ball_4", "skin_ball_5", "skin_ball_6");
         paddleSkinKeys = Arrays.asList("skin_paddle_1", "skin_paddle_2", "skin_paddle_3", "skin_paddle_4");
 
-        currentBallSkinIndex = Math.max(0, ballSkinKeys.indexOf(gameManager.getSelectedBallSkinKey()));
-        currentPaddleSkinIndex = Math.max(0, paddleSkinKeys.indexOf(gameManager.getSelectedPaddleSkinKey()));
+        currentBallSkinIndex = Math.max(0, ballSkinKeys.indexOf(this.selectedBallSkinKey));
+        currentPaddleSkinIndex = Math.max(0, paddleSkinKeys.indexOf(this.selectedPaddleSkinKey));
         prevBallSkinIndex = currentBallSkinIndex;
         prevPaddleSkinIndex = currentPaddleSkinIndex;
 
@@ -276,13 +279,13 @@ public class SettingManager {
                     currentBallSkinIndex = (currentBallSkinIndex - 1 + ballSkinKeys.size()) % ballSkinKeys.size();
                     ballSlideDirection = -1;
                     ballSlideOffset = 0;
-                    gameManager.setSelectedBallSkinKey(ballSkinKeys.get(currentBallSkinIndex));
+                    this.setSelectedBallSkinKey(ballSkinKeys.get(currentBallSkinIndex));
                 } else if (ballArrowRight.contains(virtualMouseX, virtualMouseY)) {
                     prevBallSkinIndex = currentBallSkinIndex;
                     currentBallSkinIndex = (currentBallSkinIndex + 1) % ballSkinKeys.size();
                     ballSlideDirection = 1;
                     ballSlideOffset = 0;
-                    gameManager.setSelectedBallSkinKey(ballSkinKeys.get(currentBallSkinIndex));
+                    this.setSelectedBallSkinKey(ballSkinKeys.get(currentBallSkinIndex));
                 }
             }
             if (paddleSlideDirection == 0) {
@@ -291,13 +294,13 @@ public class SettingManager {
                     currentPaddleSkinIndex = (currentPaddleSkinIndex - 1 + paddleSkinKeys.size()) % paddleSkinKeys.size();
                     paddleSlideDirection = -1;
                     paddleSlideOffset = 0;
-                    gameManager.setSelectedPaddleSkinKey(paddleSkinKeys.get(currentPaddleSkinIndex));
+                    this.setSelectedPaddleSkinKey(paddleSkinKeys.get(currentPaddleSkinIndex));
                 } else if (paddleArrowRight.contains(virtualMouseX, virtualMouseY)) {
                     prevPaddleSkinIndex = currentPaddleSkinIndex;
                     currentPaddleSkinIndex = (currentPaddleSkinIndex + 1) % paddleSkinKeys.size();
                     paddleSlideDirection = 1;
                     paddleSlideOffset = 0;
-                    gameManager.setSelectedPaddleSkinKey(paddleSkinKeys.get(currentPaddleSkinIndex));
+                    this.setSelectedPaddleSkinKey(paddleSkinKeys.get(currentPaddleSkinIndex));
                 }
             }
         }
@@ -513,5 +516,22 @@ public class SettingManager {
             }
             g.drawImage(prevImg, oldX, drawY, scaledImgWidth, scaledImgHeight, null);
         }
+    }
+
+    public String getSelectedBallSkinKey() {
+        return selectedBallSkinKey;
+    }
+
+    public String getSelectedPaddleSkinKey() {
+        return selectedPaddleSkinKey;
+    }
+    public void setSelectedBallSkinKey(String selectedBallSkinKey) {
+        this.selectedBallSkinKey = selectedBallSkinKey;
+        gameManager.applyBallSkin(selectedBallSkinKey);
+    }
+
+    public void setSelectedPaddleSkinKey(String selectedPaddleSkinKey) {
+        this.selectedPaddleSkinKey = selectedPaddleSkinKey;
+        gameManager.applyPaddleSkin(selectedPaddleSkinKey);
     }
 }
