@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.util.config;
 
+// ĐỊNH NGHĨA TÀI SẢN ẢNH TOÀN CỤC VÀ THEMED
 public enum AssetDefinition {
 
     // --- UI, Menu, Backgrounds ---

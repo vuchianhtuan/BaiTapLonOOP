@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.lang.Math;          // <-- THÊM
 
+// POWER-UP MỞ RỘNG PADDLE
 public class ExpandPaddlePowerUp extends PowerUp {
     private String imageName;
     private static final int EXPAND_AMOUNT = 50;
@@ -34,6 +35,10 @@ public class ExpandPaddlePowerUp extends PowerUp {
         this.imageName = "expandPowerUp";
     }
 
+    /**
+     * ÁP DỤNG HIỆU ỨNG: Mở rộng chiều rộng paddle.
+     * @param gameManager
+     */
     @Override
     public void applyEffect(GameManager gameManager) {
         gameManager.getPaddle().resetWidth();

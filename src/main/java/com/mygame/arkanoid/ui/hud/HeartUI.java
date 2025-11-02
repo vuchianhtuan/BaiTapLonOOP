@@ -6,6 +6,7 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.Graphics; // CHỈ DÙNG Graphics
 import java.awt.image.BufferedImage;
 
+// GIAO DIỆN HIỂN THỊ TIM MẠNG
 public class HeartUI {
     private GameManager gameManager;
     private String imageName;
@@ -19,6 +20,9 @@ public class HeartUI {
         this.imageName = "heart";
     }
 
+    /**
+     * CẬP NHẬT LOGIC HIỂN THỊ TIM MẠNG VÀ HIỆU ỨNG NHẤP NHÁY KHI MẤT MẠNG.
+     */
     public void update() {
         int currentLives = gameManager.getLives();
         if (currentLives < lastKnownLives) {

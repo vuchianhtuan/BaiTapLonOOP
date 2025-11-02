@@ -2,6 +2,9 @@ package com.mygame.arkanoid.core;
 
 // Đa luồng: GameLoop chạy update + render song song với GUI
 public class GameLoop extends Thread {
+    /**
+     * Cờ để kiểm soát vòng lặp game.
+     */
     private volatile boolean running = true;
     private final GameManager gameManager;
     private final GamePanel gamePanel;
@@ -15,6 +18,9 @@ public class GameLoop extends Thread {
         this.gamePanel = gamePanel;
     }
 
+    /**
+     * Vòng lặp chính của game, chạy liên tục để cập nhật trạng thái game và vẽ lại màn hình.
+     */
     @Override
     public void run() {
         long lastLoopTime = System.nanoTime();

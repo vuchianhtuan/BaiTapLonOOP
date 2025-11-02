@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+// QUẢN LÝ ĐIỂM SỐ VÀ THỜI GIAN CHƠI
 public class ScoreManager {
     private final GameManager gameManager;
     private InputHandler inputHandler;
@@ -104,7 +105,9 @@ public class ScoreManager {
     public List<Integer> getTopScores() { return new ArrayList<>(topScores); }
     public List<Long> getTopTimes() { return new ArrayList<>(topTimes); }
 
-
+    /**
+     * Hàm này sẽ được gọi BÊN TRONG GameManager.updateGame() khi ở state "HIGH_SCORES".
+     */
     public void update() {
         int virtualMouseX = inputHandler.getVirtualMouseX();
         int virtualMouseY = inputHandler.getVirtualMouseY();
@@ -134,6 +137,11 @@ public class ScoreManager {
         }
     }
 
+    /**
+     * Lấy điểm cao nhất của một màn chơi cụ thể.
+     * @param levelIndex
+     * @return
+     */
     public int getBestScoreForLevel(int levelIndex) {
         return perLevelHighScores.getOrDefault(levelIndex, 0);
     }
@@ -142,7 +150,9 @@ public class ScoreManager {
     }
 
     /**
-     * Helper function to format milliseconds into MM:SS.sss
+     * Định dạng thời gian từ milliseconds sang định dạng mm:ss.SSS.
+     * @param millis
+     * @return
      */
     private String formatTime(long millis) {
         if (millis == Long.MAX_VALUE || millis <= 0) {
@@ -326,6 +336,10 @@ public class ScoreManager {
         g2d.setComposite(defaultComposite);
     }
 
+    /**
+     * Xác định vị trí file lưu điểm dựa trên hệ thống.
+     * @return Path đến file điểm hoặc null nếu không tìm được vị trí phù hợp.
+     */
     private static Path resolveResourceBackedScoreFile() {
         // Ưu tiên 1: Thư mục người dùng (ổn định nhất)
         try {
@@ -364,7 +378,10 @@ public class ScoreManager {
         return null; // Trả về null nếu không tìm được vị trí
     }
 
-    // --- ensureFileExists() ĐÃ SỬA ---
+    /**
+     * Đảm bảo file điểm tồn tại, nếu không thì tạo mới với giá trị mặc định.
+     * @throws IOException nếu không thể tạo file.
+     */
     private void ensureFileExists() throws IOException {
         if (SCORE_FILE == null || SCORE_DIR == null) {
             throw new IOException("Không thể xác định đường dẫn lưu điểm.");
@@ -393,7 +410,9 @@ public class ScoreManager {
         }
     }
 
-    // --- loadScoresFromFile() ĐÃ SỬA ---
+    /**
+     * Phương thức tải điểm từ file.
+     */
     private void loadScoresFromFile() {
         if (SCORE_FILE == null) {
             System.err.println("Không thể tải điểm do đường dẫn file không hợp lệ.");
@@ -459,6 +478,10 @@ public class ScoreManager {
     }
 
     // --- THÊM HÀM MỚI: Khởi tạo điểm mặc định ---
+
+    /**
+     * Khởi tạo điểm số mặc định trong bộ nhớ khi file bị lỗi.
+     */
     private void initializeDefaultScores() {
         highScore = 0;
         fastestTime = Long.MAX_VALUE;
@@ -473,8 +496,9 @@ public class ScoreManager {
         System.out.println("Đã khởi tạo điểm số mặc định do lỗi file.");
     }
 
-
-    // --- saveScoresToFile() ĐÃ SỬA ---
+    /**
+     * Phương thức lưu điểm vào file.
+     */
     private void saveScoresToFile() {
         if (SCORE_FILE == null) {
             System.err.println("Không thể lưu điểm do đường dẫn file không hợp lệ.");

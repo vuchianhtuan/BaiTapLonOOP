@@ -3,6 +3,7 @@ package com.mygame.arkanoid.objects;
 import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 
+// LỚP TRỪU TƯỢNG CHO CÁC ĐỐI TƯỢNG TRONG GAME
 public abstract class GameObject {
     protected int x, y;
     protected int width, height;

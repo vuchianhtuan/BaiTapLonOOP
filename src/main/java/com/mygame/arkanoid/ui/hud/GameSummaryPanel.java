@@ -11,8 +11,10 @@ import java.awt.Graphics2D;    // Để sử dụng GradientPaint và setRenderi
 import java.awt.RenderingHints; // Để làm mịn các đường vẽ (anti-aliasing)
 import java.awt.geom.RoundRectangle2D; // Để vẽ hình chữ nhật bo góc
 
+// BẢNG TỔNG KẾT TRÒ CHƠI (GAME OVER / YOU WIN)
 public class GameSummaryPanel {
 
+    // Kích thước và vị trí hộp thống kê (logic coordinates)
     private int logicWidth, logicHeight;
     private int logicX, logicY;
 

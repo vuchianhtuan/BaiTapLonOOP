@@ -7,7 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// QUẢN LÝ BOSS VỚI NHIỀU KHỐI GẠCH
 public class Boss {
+
+    // VỊ TRÍ HIỆN TẠI CỦA BOSS, VẬN TỐC THEO TRỤC X, DANH SÁCH GẠCH VÀ BẢN ĐỒ VỊ TRÍ TƯƠNG ĐỐI
     private float x, y;
     private float dx;
     private final List<Brick> bricks;
@@ -30,6 +33,9 @@ public class Boss {
         }
     }
 
+    /**
+     * CẬP NHẬT VỊ TRÍ CỦA BOSS VÀ CÁC KHỐI GẠCH BÊN TRONG NÓ.
+     */
     public void update() {
         x += dx;
 
@@ -65,7 +71,9 @@ public class Boss {
         }
     }
 
-    // SỬA LẠI PHƯƠNG THỨC NÀY ĐỂ CẬP NHẬT MAP
+    /**
+     * XÓA CÁC KHỐI GẠCH ĐÃ BỊ PHÁ HỦY KHỎI DANH SÁCH VÀ BẢN ĐỒ VỊ TRÍ TƯƠNG ĐỐI.
+     */
     public void removeDestroyedBricks() {
         bricks.removeIf(brick -> {
             if (brick.isDestroyed()) {
@@ -76,6 +84,10 @@ public class Boss {
         });
     }
 
+    /**
+     * KIỂM TRA NẾU BOSS ĐÃ BỊ ĐÁNH BẠI (KHÔNG CÒN GẠCH NÀO).
+     * @return true NẾU BOSS ĐÃ BỊ ĐÁNH BẠI, NGƯỢC LẠI LÀ false.
+     */
     public boolean isDefeated() {
         return bricks.isEmpty();
     }

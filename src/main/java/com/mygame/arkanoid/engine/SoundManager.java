@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+// Quản lý âm thanh của trò chơi: nhạc nền và hiệu ứng âm thanh (SFX)
 public class SoundManager {
 
     // --- Hằng số tên file SFX (đặt trong /sounds/) ---
@@ -32,13 +33,21 @@ public class SoundManager {
 
     public SoundManager() {
         // Gọi preload khi tạo SoundManager. Nếu muốn gọi ở chỗ khác, bỏ dòng này
-        preloadAllSfx();
+        try {
+            preloadAllSfx();
+        } catch (LoadException e) {
+            System.err.println("Không thể tải trước SFX: " + e.getMessage());
+        }
     }
 
     // =====================
     // Background music APIs
     // =====================
 
+    /**
+     * Phát nhạc nền từ file đã cho.
+     * @param musicName
+     */
     public void playBackgroundMusic(String musicName) {
         stopBackgroundMusic();
         try {
@@ -75,18 +84,27 @@ public class SoundManager {
         }
     }
 
+    /**
+     * Tạm dừng nhạc nền.
+     */
     public void pauseBackgroundMusic() {
         if (backgroundMusicClip != null && backgroundMusicClip.isRunning()) {
             backgroundMusicClip.stop();
         }
     }
 
+    /**
+     * Tiếp tục phát nhạc nền.
+     */
     public void resumeBackgroundMusic() {
         if (backgroundMusicClip != null && !backgroundMusicClip.isRunning()) {
             backgroundMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
         }
     }
 
+    /**
+     * Dừng nhạc nền và giải phóng tài nguyên.
+     */
     public void stopBackgroundMusic() {
         if (backgroundMusicClip != null) {
             if (backgroundMusicClip.isRunning()) {
@@ -101,13 +119,16 @@ public class SoundManager {
     // Preload and fast play
     // =====================
 
-    // Preload single sound: đọc file, chuyển về PCM_SIGNED, lưu bytes và format
-    public void preloadSound(String soundName) {
+    /**
+     * Preload một file âm thanh vào bộ nhớ để phát nhanh sau này.
+     * @param soundName
+     * @throws LoadException
+     */
+    public void preloadSound(String soundName) throws LoadException {
         try {
             URL url = this.getClass().getResource("/sounds/" + soundName);
             if (url == null) {
-                System.err.println("Không tìm thấy file âm thanh: /sounds/" + soundName);
-                return;
+                throw new LoadException("Không tìm thấy file âm thanh: /sounds/" + soundName);
             }
 
             try (AudioInputStream ais = AudioSystem.getAudioInputStream(url)) {
@@ -135,13 +156,12 @@ public class SoundManager {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Lỗi preload âm thanh: " + e.getMessage());
-            e.printStackTrace();
+            throw new LoadException("Lỗi khi preload âm thanh: " + soundName, e);
         }
     }
 
     // Preload các SFX chính; gọi ở constructor hoặc màn loading
-    public void preloadAllSfx() {
+    public void preloadAllSfx() throws LoadException {
         preloadSound(SFX_BRICK_HIT);
         preloadSound(SFX_PADDLE_HIT);
         preloadSound(SFX_BALL_LOSS);
@@ -157,10 +177,15 @@ public class SoundManager {
 
         if (audioBytes == null || format == null) {
             // Fallback: preload on demand (chậm lần đầu)
-            preloadSound(soundName);
-            audioBytes = soundData.get(soundName);
-            format = soundFormat.get(soundName);
-            if (audioBytes == null || format == null) return;
+            try {
+                preloadSound(soundName);
+                audioBytes = soundData.get(soundName);
+                format = soundFormat.get(soundName);
+                if (audioBytes == null || format == null) return;
+            } catch (LoadException e) {
+                System.err.println("Không thể nạp âm thanh khi đang phát: " + e.getMessage());
+                return;
+            }
         }
 
         AudioInputStream ais = new AudioInputStream(
@@ -197,6 +222,9 @@ public class SoundManager {
     // Volume helpers
     // =====================
 
+    /**
+     * Cập nhật âm lượng nhạc nền dựa trên thiết lập hiện tại.
+     */
     private void updateBackgroundMusicVolume() {
         if (backgroundMusicClip != null) {
             float effectiveMusicVolume = muted ? 0.0f : masterVolume * musicVolume;
@@ -204,6 +232,11 @@ public class SoundManager {
         }
     }
 
+    /**
+     * Đặt âm lượng cho một Clip cụ thể.
+     * @param clip
+     * @param volume
+     */
     private void setClipVolume(Clip clip, float volume) {
         if (volume < 0f) volume = 0f;
         if (volume > 1f) volume = 1f;
@@ -231,6 +264,11 @@ public class SoundManager {
         }
     }
 
+    /**
+     * Giới hạn giá trị từ 0.0 đến 1.0
+     * @param value
+     * @return
+     */
     private float clamp(float value) {
         if (value < 0f) return 0f;
         if (value > 1f) return 1f;
@@ -241,11 +279,19 @@ public class SoundManager {
     // Public setters / getters
     // =====================
 
+    /**
+     * Đặt âm lượng tổng (master volume).
+     * @param volume
+     */
     public void setMasterVolume(float volume) {
         this.masterVolume = clamp(volume);
         updateBackgroundMusicVolume();
     }
 
+    /**
+     * Đặt âm lượng nhạc nền.
+     * @param volume
+     */
     public void setMusicVolume(float volume) {
         this.musicVolume = clamp(volume);
         updateBackgroundMusicVolume();

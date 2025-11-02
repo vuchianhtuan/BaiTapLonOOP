@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.systems.ScalingManager;
 
+// POWER-UP CHO PHÉP PADDLE DÍNH BÓNG
 public class StickyPaddlePowerUp extends PowerUp {
     private String imageName = "stickyPowerUp";
 
@@ -18,6 +19,10 @@ public class StickyPaddlePowerUp extends PowerUp {
         super(x, y, width, height, "sticky", 600);
     }
 
+    /**
+     * ÁP DỤNG HIỆU ỨNG: Cho phép paddle dính bóng.
+     * @param gameManager
+     */
     @Override public void applyEffect(GameManager gameManager) {
         gameManager.getPaddle().setSticky(true);
     }

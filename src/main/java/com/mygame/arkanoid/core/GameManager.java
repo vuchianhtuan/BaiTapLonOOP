@@ -32,7 +32,11 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+// Lớp quản lý trò chơi chính, chịu trách nhiệm cập nhật trạng thái trò chơi và quản lý các hệ thống con.
 public class GameManager {
+    /**
+     * Các biến và đối tượng quản lý trò chơi chính
+     */
     private boolean canContinue = false;
     private PlayerStats playerStats;
     private String gameState;
@@ -54,10 +58,6 @@ public class GameManager {
     public static final String GAMESTATE_PAUSED = "PAUSED";
 
     public SoundManager getSoundManager() { return soundManager; }
-
-    private static class Holder {
-        private static final GameManager INSTANCE = new GameManager();
-    }
 
     private GameManager() {
         inputHandler = new InputHandler();
@@ -81,8 +81,24 @@ public class GameManager {
         soundManager.playBackgroundMusic("Menu.wav");
     }
 
+    /**
+     * Singleton Holder pattern để đảm bảo chỉ có một instance của GameManager.
+     */
+    private static class Holder {
+        private static final GameManager INSTANCE = new GameManager();
+    }
+
+    /**
+     * Lấy instance duy nhất của GameManager.
+     * @return Instance của GameManager.
+     */
     public static GameManager getInstance() { return Holder.INSTANCE; }
+
     private void loadThemeAssets(String prefix) { AssetManager.getInstance().loadTheme(prefix); }
+
+    /**
+     * Bắt đầu trò chơi từ đầu với level đầu tiên.
+     */
     public void startGame() {
         playerStats.resetForNewGame();
         setupLevelObjects();
@@ -102,6 +118,10 @@ public class GameManager {
             setGameState("MENU");
         }
     }
+
+    /**
+     * Tiếp tục trò chơi từ trạng thái tạm dừng hoặc menu khi có thể tiếp tục.
+     */
     public void continueGame() {
         playerStats.setLastUpdateTime(System.nanoTime());
         if (!canContinue) return;
@@ -122,6 +142,11 @@ public class GameManager {
         setGameState("MENU");
         SaveSystem.save(SaveSystem.capture(this));
     }
+
+    /**
+     * Tải level tiếp theo trong trò chơi.
+     * Nếu không còn level nào, chuyển sang trạng thái chiến thắng.
+     */
     private void loadNextLevel() {
         playerStats.resetForNextLevel();
         if (levelManager.loadNextLevel()) {
@@ -137,6 +162,9 @@ public class GameManager {
         }
     }
 
+    /**
+     * Thiết lập các đối tượng cần thiết cho level mới.
+     */
     private void setupLevelObjects() {
         entityManager.resetForNewLevel(settingManager.getSelectedPaddleSkinKey(), settingManager.getSelectedBallSkinKey());
         for (PowerUp p : entityManager.getActivePowerUps()) {
@@ -145,6 +173,10 @@ public class GameManager {
         entityManager.getActivePowerUps().clear();
     }
 
+    /**
+     * Tải các tài nguyên (assets) cần thiết cho level hiện tại.
+     * @param currentLevel Level hiện tại.
+     */
     private void loadLevelAssets(Level currentLevel) {
         String prefix = currentLevel.getThemeAssetPrefix();
         loadThemeAssets(prefix);
@@ -160,6 +192,9 @@ public class GameManager {
         this.currentBackground = AssetManager.getInstance().getBackgroundImage(bgName);
     }
 
+    /**
+     * Tải thiết lập level bao gồm dọn dẹp đối tượng, tải assets và nạp thực thể.
+     */
     private void loadLevelSetup() {
         Level currentLevel = levelManager.getCurrentLevel();
         if (currentLevel == null) return;
@@ -170,7 +205,9 @@ public class GameManager {
     }
 
 
-    // Hàm updateGame giữ nguyên
+    /**
+     * Cập nhật trạng thái trò chơi dựa trên gameState hiện tại.
+     */
     public void updateGame() {
         long now = System.nanoTime();
         long deltaNanos = (playerStats.getLastUpdateTime() > 0) ? (now - playerStats.getLastUpdateTime()) : 0;
@@ -302,6 +339,11 @@ public class GameManager {
             selectLevel.update();
         }
     }
+
+    /**
+     * Cập nhật trạng thái trò chơi và xử lý các hành động liên quan.
+     * @param state Trạng thái mới của trò chơi.
+     */
     public void setGameState(String state) {
         if (this.gameState != null && this.gameState.equals(state)) return;
         String oldState = this.gameState;
@@ -331,6 +373,10 @@ public class GameManager {
         }
     }
 
+    /**
+     * Kích hoạt một PowerUp mới, xử lý xung đột với các PowerUp hiện có.
+     * @param newPowerUp PowerUp mới cần kích hoạt.
+     */
     public void activatePowerUp(PowerUp newPowerUp) {
         String newType = newPowerUp.getType();
         Iterator<PowerUp> iterator = entityManager.getActivePowerUps().iterator();
@@ -350,6 +396,10 @@ public class GameManager {
         newPowerUp.applyEffect(this);
     }
 
+    /**
+     * Đảm bảo rằng paddle và ball đã sẵn sàng để chơi.
+     * Nếu không, tạo mới chúng và đặt vào vị trí thích hợp.
+     */
     private void ensurePaddleAndBallReadyForPlay() {
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
         int nativeHeight = ScalingManager.getInstance().NATIVE_HEIGHT;
@@ -376,6 +426,10 @@ public class GameManager {
         }
     }
 
+    /**
+     * Đảm bảo rằng level hiện tại đã được nạp đầy đủ các thực thể.
+     * Nếu chưa, tiến hành nạp lại các thực thể từ dữ liệu level.
+     */
     private void ensureLevelHydrated() {
         Level currentLevel = levelManager.getCurrentLevel();
         if (currentLevel == null) return;
@@ -385,6 +439,10 @@ public class GameManager {
         }
     }
 
+    /**
+     * Khôi phục trạng thái trò chơi từ dữ liệu lưu trữ.
+     * @param data Dữ liệu lưu trữ để khôi phục.
+     */
     public void restoreFromSave(SaveData data) {
         if (data == null) return;
 

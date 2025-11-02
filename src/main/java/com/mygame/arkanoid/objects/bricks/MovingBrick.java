@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+// GẠCH DI CHUYỂN
 public class MovingBrick extends Brick {
     private int speedX;
     private int originalX;
@@ -21,6 +22,10 @@ public class MovingBrick extends Brick {
     // cập nhật vị trí sau mỗi loop
     @Override public void update() {}
 
+    /**
+     * Cập nhật vị trí của gạch di chuyển và xử lý va chạm.
+     * @param brickList
+     */
     public void update(List<Brick> brickList) {
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
         this.x += this.speedX;

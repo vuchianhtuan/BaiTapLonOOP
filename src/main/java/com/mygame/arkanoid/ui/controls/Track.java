@@ -7,6 +7,7 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+// THANH TRACK CỦA THANH TRƯỢT
 public class Track extends GameObject {
     String imageName;
 

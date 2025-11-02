@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// Lớp đại diện cho một level trong trò chơi Arkanoid
 public class Level {
     private final List<Brick> bricks;
     private final List<Brick> bossBricks;
@@ -37,11 +38,17 @@ public class Level {
         loadLevelFromFile(filePath);
     }
 
+    /**
+     * Tải level từ file định dạng văn bản.
+     * Cấu trúc file:
+     * - Header (cấu hình) ở đầu, mỗi dòng "key: value"
+     * - Dòng "---" để phân tách header và layout
+     * - Layout gạch, mỗi ký tự đại diện cho một loại gạch
+     */
     private void loadLevelFromFile(String filePath) {
         try (InputStream is = Level.class.getResourceAsStream(filePath)) {
             if (is == null) {
-                ErrorHandler.log("Không thể tìm thấy file level: " + filePath);
-                return;
+                throw new IllegalArgumentException("Không thể tìm thấy file level: " + filePath);
             }
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
@@ -78,16 +85,28 @@ public class Level {
                     }
                 }
             }
+        } catch (IllegalArgumentException e) {
+            // lỗi file không tồn tại hoặc format sai
+            throw e;
         } catch (Exception e) {
-            ErrorHandler.log("Lỗi khi đọc file level: " + filePath + " | " + e.getMessage());
-            e.printStackTrace();
+            throw new RuntimeException("Lỗi khi đọc file level: " + filePath, e);
         }
     }
 
+    /**
+     * Kiểm tra xem loại gạch có phải là gạch trùm không.
+     * @param type
+     * @return
+     */
     private boolean isBossBrickType(char type) {
         return type == 'B' || type == 'T' || type == 'C';
     }
 
+    /**
+     * Phân tích một dòng trong phần header để lấy cấu hình.
+     * Hỗ trợ loại bỏ comment (phần sau dấu #).
+     * @param line Dòng văn bản từ file level
+     */
     private void parseHeaderLine(String line) {
         String[] parts = line.split(":", 2);
         if (parts.length < 2) return;
@@ -185,6 +204,10 @@ public class Level {
         return "boss".equals(levelType);
     }
 
+    /**
+     * Tính toán và trả về hình chữ nhật bao quanh tất cả gạch trùm.
+     * Dùng để căn chỉnh vị trí ban đầu của trùm.
+     */
     public java.awt.Rectangle getBossInitialBounds() {
         if (bossBricks.isEmpty()) {
             return new java.awt.Rectangle(0, 0, 0, 0);

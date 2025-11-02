@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.io.InputStream;
 
+// Quản lý tài sản (ảnh) của trò chơi với hỗ trợ theme và animation
 public class AssetManager {
     private static final AssetManager instance = new AssetManager();
     private final Map<String, BufferedImage> images = new HashMap<>();
@@ -24,16 +25,16 @@ public class AssetManager {
     /**
      * Hàm nội bộ để thực hiện tải ảnh, trả về null nếu thất bại.
      */
-    private BufferedImage internalLoadImage(String path) {
+    private BufferedImage internalLoadImage(String path) throws LoadException {
         try (InputStream is = getClass().getResourceAsStream(path)) {
             if (is != null) {
                 return ImageIO.read(is);
+            } else {
+                throw new LoadException("Không tìm thấy file ảnh: " + path);
             }
         } catch (IOException e) {
-            System.err.println("Lỗi IO khi tải ảnh: " + path);
-            e.printStackTrace();
+            throw new LoadException("Lỗi khi tải ảnh: " + path, e);
         }
-        return null; // Không tìm thấy hoặc lỗi
     }
 
     /**
@@ -47,12 +48,12 @@ public class AssetManager {
             return; // Đã tải rồi
         }
 
-        BufferedImage image = internalLoadImage(path);
-
-        if (image != null) {
+        try {
+            BufferedImage image = internalLoadImage(path);
             images.put(name, image);
-        } else {
-            System.err.println("Lỗi: Không thể tải ảnh: " + path);
+        } catch (LoadException e) {
+            System.err.println("Không thể tải ảnh: " + path);
+            e.printStackTrace();
         }
     }
 
@@ -70,19 +71,16 @@ public class AssetManager {
         String themedPath = IMAGE_PATH_PREFIX + themePrefix + baseFileName;
         String defaultPath = IMAGE_PATH_PREFIX + baseFileName;
 
-        // 1. Thử tải ảnh chủ đề
-        BufferedImage image = internalLoadImage(themedPath);
-
-        if (image != null) {
+        try {
+            BufferedImage image = internalLoadImage(themedPath);
             images.put(name, image);
-        } else {
-            // 2. Thử tải ảnh mặc định (fallback)
-            BufferedImage defaultImage = internalLoadImage(defaultPath);
-            if (defaultImage != null) {
+        } catch (LoadException e1) {
+            try {
+                BufferedImage defaultImage = internalLoadImage(defaultPath);
                 images.put(name, defaultImage);
-            } else {
-                // 3. Lỗi: Không tìm thấy cả hai
-                System.err.println("Lỗi nghiêm trọng: Không thể tải " + themedPath + " hoặc " + defaultPath);
+            } catch (LoadException e2) {
+                System.err.println("Không thể tải được ảnh theo theme hoặc mặc định: " + name);
+                e2.printStackTrace();
             }
         }
     }
@@ -102,6 +100,9 @@ public class AssetManager {
         }
     }
 
+    /**
+     * Tải tất cả tài sản toàn cục (global assets) không theo theme.
+     */
     public void loadGlobalAssets() {
         // 1. Tải tất cả tài sản từ bản kê khai
         for (AssetDefinition asset : AssetDefinition.values()) {
@@ -115,6 +116,10 @@ public class AssetManager {
         loadAnimation("explosion_render", "explosion_render", 8, ".png");
     }
 
+    /**
+     * Tải tất cả tài nguyên theo theme.
+     * @param prefix Tiền tố theme (ví dụ: "ice_")
+     */
     public void loadTheme(String prefix) {
         if (prefix == null || prefix.equals(currentTheme)) {
             return; // Không làm gì nếu theme đã được tải
@@ -128,6 +133,12 @@ public class AssetManager {
             }
         }
     }
+
+    /**
+     * Lấy ảnh nền theo tên, với ảnh mặc định nếu tên rỗng.
+     * @param bgName Tên ảnh nền (không có đường dẫn)
+     * @return BufferedImage
+     */
     public BufferedImage getBackgroundImage(String bgName) {
         if (bgName == null || bgName.isEmpty()) {
             return this.getImage("defaultBackground");

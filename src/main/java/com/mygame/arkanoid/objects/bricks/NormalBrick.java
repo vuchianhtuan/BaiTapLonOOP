@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.systems.ScalingManager;
 
+// GẠCH THƯỜNG
 public class NormalBrick extends Brick {
     @Override public void update() {}
     @Override public void render(Graphics g, ScalingManager sm) {

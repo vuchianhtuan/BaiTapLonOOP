@@ -10,7 +10,10 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
 
+// LỚP TRỪU TƯỢNG CHO CÁC LOẠI GẠCH
 public abstract class Brick extends GameObject {
+
+    // Thuộc tính chung cho tất cả các gạch
     protected int hitPoints;
     protected String type;
     protected String imageName;
@@ -23,17 +26,27 @@ public abstract class Brick extends GameObject {
         this.imageName = imageName;
     }
 
+    /**
+     * Phương thức giảm điểm máu của gạch khi bị đánh trúng.
+     */
     public void takeHit() {
         if (this.hitPoints > 0) {
             this.hitPoints--;
         }
     }
 
+    /**
+     * Kiểm tra xem gạch đã bị phá hủy hay chưa.
+     * @return true nếu gạch đã bị phá hủy, false nếu chưa.
+     */
     public boolean isDestroyed() {
         return this.hitPoints <= 0;
     }
 
-    // Phương thức tạo ra các mảnh vụn (SHARDS)
+    /**
+     * Phương thức tạo mảnh vụn khi gạch bị phá hủy.
+     * @return Danh sách các mảnh vụn được tạo ra.
+     */
     public List<Shard> shatter() {
         List<Shard> shards = new ArrayList<>();
         final int NUM_SHARDS = 20;
@@ -54,6 +67,10 @@ public abstract class Brick extends GameObject {
         return shards;
     }
 
+    /**
+     * Phương thức tạo mảnh vụn khi gạch bị đánh trúng.
+     * @param targetList
+     */
     public void shatterHit(List<Shard> targetList) {
         final int NUM_SHARDS = 4; // Số lượng mảnh vụn ít hơn (3-5 hạt)
 
@@ -71,6 +88,10 @@ public abstract class Brick extends GameObject {
         }
     }
 
+    /**
+     * Lấy điểm máu hiện tại của gạch.
+     * @return
+     */
     public int getHitPoints() {
         return hitPoints;
     }

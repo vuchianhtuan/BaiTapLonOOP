@@ -6,7 +6,7 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-
+// POWER-UP TĂNG TỐC ĐÁNH BÓNG
 public class FastBallPowerUp extends PowerUp {
     private String imageName = "fastBallPowerUp";
     private static final double FAST_SPEED_FACTOR = 1.5; // Tăng 50
@@ -18,6 +18,10 @@ public class FastBallPowerUp extends PowerUp {
         super(x, y, width, height, "fast_ball", 300);
     }
 
+    /**
+     * ÁP DỤNG HIỆU ỨNG: Tăng tốc độ bóng và đặt trạng thái cháy
+     * @param gameManager
+     */
     @Override public void applyEffect(GameManager gameManager) {
         Ball targetBall = gameManager.getBall();
         double originalSpeed = gameManager.getBall().getOriginalSpeed();

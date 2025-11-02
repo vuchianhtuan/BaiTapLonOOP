@@ -9,6 +9,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+// Lớp quản lý hoạt ảnh hiển thị chữ "LEVEL X" khi bắt đầu một level mới
 public class LevelTextAnimation {
     // Trạng thái của hoạt ảnh
     private enum AnimState {
@@ -35,6 +36,9 @@ public class LevelTextAnimation {
 
     private Font levelFont;
 
+    /**
+     * Khởi tạo hoạt ảnh chữ LEVEL.
+     */
     public LevelTextAnimation() {
         // Tùy chỉnh Font chữ của bạn ở đây
         this.levelFont = new Font("Arial", Font.BOLD, 48);
@@ -52,6 +56,10 @@ public class LevelTextAnimation {
         this.yPos = Y_START;
     }
 
+    /**
+     * Cập nhật trạng thái hoạt ảnh.
+     * Gọi hàm này mỗi frame.
+     */
     public void update() {
         if (currentState == AnimState.IDLE) return;
 
@@ -96,6 +104,10 @@ public class LevelTextAnimation {
         if (this.alpha > 1.0f) this.alpha = 1.0f;
     }
 
+    /**
+     * Vẽ hoạt ảnh chữ LEVEL lên màn hình.
+     * @param g
+     */
     public void render(Graphics g) {
         if (currentState == AnimState.IDLE || this.alpha <= 0.0f) {
             return;

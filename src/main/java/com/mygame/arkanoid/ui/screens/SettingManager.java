@@ -14,6 +14,7 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.List;
 
+// QUẢN LÝ CÀI ĐẶT TRONG GAME
 public class SettingManager {
     // --- KHAI BÁO BIẾN ---
 
@@ -195,13 +196,14 @@ public class SettingManager {
         paddleGroupBounds.height += groupPadding * 2;
     }
 
-    // Hàm helper để tính toán vị trí X của Thumb (Giữ nguyên)
     private int calculateThumbX(Track track, float volume) {
         int x = track.getX() + (int) (track.getWidth() * volume) - (thumbWidth / 2);
         return Math.max(track.getX() - thumbWidth / 2, Math.min(x, track.getX() + track.getWidth() - thumbWidth / 2));
     }
 
-    // Phương thức Update (Giữ nguyên)
+    /**
+     * CẬP NHẬT LOGIC CÀI ĐẶT.
+     */
     public void update() {
         int virtualMouseX = inputHandler.getVirtualMouseX();
         int virtualMouseY = inputHandler.getVirtualMouseY();
@@ -306,7 +308,6 @@ public class SettingManager {
         }
     }
 
-    // --- PHƯƠNG THỨC: Vẽ khung nền hiện đại (Chữ nhật) ---
     private void drawModernBox(Graphics g, ScalingManager sm, Rectangle box) {
         Color fillColor = new Color(0, 0, 0, 100);
         Color borderColor = new Color(200, 200, 200, 255);
@@ -469,7 +470,18 @@ public class SettingManager {
         g.setClip(oldClip);
     }
 
-    // --- HÀM HELPER MỚI: Để vẽ hiệu ứng trượt (Giữ nguyên) ---
+    /**
+     * Vẽ hình ảnh với hiệu ứng trượt.
+     * @param g
+     * @param sm
+     * @param skins
+     * @param currentIndex
+     * @param prevIndex
+     * @param box
+     * @param slideOffset
+     * @param slideDirection
+     * @param imageSize
+     */
     private void renderSlidingImage(Graphics g, ScalingManager sm, List<String> skins, int currentIndex, int prevIndex, Rectangle box, float slideOffset, int slideDirection, int imageSize) {
 
         String currentSkinKey = skins.get(currentIndex);

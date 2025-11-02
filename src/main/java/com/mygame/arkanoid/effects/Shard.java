@@ -4,7 +4,11 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.Color;
 import java.awt.Graphics;
 
+// Lớp đại diện cho một mảnh vụn nhỏ khi viên gạch bị phá hủy
 public class Shard {
+    /**
+     * Vị trí, vận tốc, màu sắc và tuổi thọ của mảnh vụn
+     */
     private double x, y; // Vị trí (dùng double để tính toán chính xác hơn)
     private double dx, dy; // Vận tốc
     private final Color color;
@@ -13,7 +17,7 @@ public class Shard {
 
     private static final double GRAVITY = 0.2; // Gia tốc trọng trường
     private static final double DRAG = 0.98; // Lực cản không khí
-
+    
     public Shard(int startX, int startY, Color c) {
         this.x = startX;
         this.y = startY;
@@ -35,6 +39,10 @@ public class Shard {
         // Tùy chọn: Thêm một lực đẩy xuống ban đầu để rơi nhanh hơn
         this.dy += 1.0;
     }
+
+    /**
+     * Cập nhật vị trí và trạng thái của mảnh vụn
+     */
     public void update() {
         // Áp dụng trọng lực
         dy += GRAVITY;
@@ -51,6 +59,9 @@ public class Shard {
         lifetime--;
     }
 
+    /**
+     * Kiểm tra xem mảnh vụn còn sống hay không.
+     */
     public boolean isAlive() {
         return lifetime > 0;
     }

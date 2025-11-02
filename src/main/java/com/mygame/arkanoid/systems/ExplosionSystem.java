@@ -8,9 +8,15 @@ import com.mygame.arkanoid.objects.bricks.ExplosiveBrick;
 import java.util.ArrayList;
 import java.util.List;
 
+// HỆ THỐNG XỬ LÝ VỤ NỔ
 public class ExplosionSystem {
 
-    // Giữ nguyên logic cũ, chỉ di dời khỏi GameManager
+    /**
+     * Xử lý vụ nổ từ một viên gạch nổ, ảnh hưởng đến các viên gạch lân cận trong bán kính nhất định.
+     * @param sourceBrick Viên gạch nổ phát ra vụ nổ
+     * @param radius Bán kính ảnh hưởng của vụ nổ
+     * @param gm Quản lý game để truy cập các đối tượng khác
+     */
     public void explode(Brick sourceBrick, double radius, GameManager gm) {
         int sourceCenterX = sourceBrick.getX() + sourceBrick.getWidth() / 2;
         int sourceCenterY = sourceBrick.getY() + sourceBrick.getHeight() / 2;

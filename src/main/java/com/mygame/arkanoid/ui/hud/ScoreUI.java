@@ -4,6 +4,7 @@ import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 
+// GIAO DIỆN HIỂN THỊ ĐIỂM SỐ
 public class ScoreUI {
     GameManager gameManager;
     public ScoreUI(GameManager gm) {
@@ -14,7 +15,7 @@ public class ScoreUI {
         // Hiện chưa có logic gì để update
     }
 
-    public void draw(Graphics g) { // Nên dùng Graphics thay vì Graphics2D cho nhất quán
+    public void draw(Graphics g) {
         ScalingManager sm = ScalingManager.getInstance();
 
         String scoreText = "SCORE";

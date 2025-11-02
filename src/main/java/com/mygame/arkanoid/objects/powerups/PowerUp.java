@@ -5,6 +5,7 @@ import com.mygame.arkanoid.systems.ScalingManager;
 
 import java.awt.Graphics;
 
+// LỚP TRỪU TƯỢNG POWER-UP CHUNG
 public abstract class PowerUp extends GameObject {
     protected String type;
     protected int duration; // Thời gian hiệu lực (tính bằng tick/frame)
@@ -20,6 +21,9 @@ public abstract class PowerUp extends GameObject {
         return type;
     }
 
+    /**
+     * Cập nhật thời gian hiệu lực của power-up mỗi tick.
+     */
     public void tick() {
         if (duration > 0) {
             duration--;
@@ -31,6 +35,9 @@ public abstract class PowerUp extends GameObject {
         return duration <= 0;
     }
 
+    /**
+     * Cập nhật vị trí power-up (rơi xuống).
+     */
     @Override
     public void update() {
         this.y += fallSpeed;

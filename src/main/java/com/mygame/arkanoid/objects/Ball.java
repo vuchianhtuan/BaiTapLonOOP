@@ -11,6 +11,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent;
 
+// QUẢ BÓNG
 public class Ball extends MovableObject {
     private static final double MIN_REFLECT_ANGLE_DEG = 30.0; // góc tối thiểu
     private static final double MAX_REFLECT_ANGLE_DEG = 60.0; // góc tối đa
@@ -39,6 +40,10 @@ public class Ball extends MovableObject {
         return Math.atan2(this.dy, this.dx);
     }
 
+    /**
+     * Đặt trạng thái cháy của quả bóng.
+     * @param burning
+     */
     public void setBurning(boolean burning) {
         this.isBurning = burning;
         if (!burning) {
@@ -46,11 +51,19 @@ public class Ball extends MovableObject {
         }
     }
 
+    /**
+     * Kiểm tra xem quả bóng có đang cháy không.
+     * @return true nếu đang cháy, false nếu không.
+     */
     public void stickToPaddle(Paddle paddle) {
         this.stuckToPaddle = true;
         this.paddleOffsetX = this.x - paddle.getX();
     }
 
+    /**
+     * Đặt lại vị trí quả bóng trên paddle.
+     * @param paddle
+     */
     public void resetBallPosition(Paddle paddle) {
         this.stuckToPaddle = true;
         this.paddleOffsetX = (paddle.getWidth() - this.width) / 2;
@@ -58,6 +71,10 @@ public class Ball extends MovableObject {
         this.y = paddle.getY() - this.height;
     }
 
+    /**
+     * Xử lý va chạm và tính toán góc phản xạ khi bóng chạm vào đối tượng khác.
+     * @param other Đối tượng mà bóng va chạm.
+     */
     public void bounceOff(GameObject other) {
         if (other instanceof Paddle) {
             Paddle paddle = (Paddle) other;
@@ -126,12 +143,24 @@ public class Ball extends MovableObject {
         }
     }
 
+    /**
+     * Kiểm tra xem quả bóng có đang dính vào paddle không.
+     * @return
+     */
     public boolean isStuckToPaddle() { return stuckToPaddle; }
 
+    /**
+     * Kiểm tra va chạm giữa quả bóng và đối tượng khác.
+     * @param other Đối tượng để kiểm tra va chạm.
+     * @return true nếu có va chạm, false nếu không.
+     */
     public boolean checkCollision(GameObject other) {
         return this.getBounds().intersects(other.getBounds()) && !this.isStuckToPaddle();
     }
 
+    /**
+     * Cập nhật vị trí của quả bóng và xử lý va chạm với tường.
+     */
     @Override public void move() {
         this.x += this.dx * speed;
         this.y += this.dy * speed;
@@ -166,7 +195,11 @@ public class Ball extends MovableObject {
         }
     }
 
-    // thêm phương thức update cho Ball với InputHandler, Paddle
+    /**
+     * Cập nhật trạng thái của quả bóng dựa trên đầu vào và vị trí paddle.
+     * @param inputHandler
+     * @param paddle
+     */
     public void update(InputHandler inputHandler, Paddle paddle) {
         if(!stuckToPaddle) {
             move();

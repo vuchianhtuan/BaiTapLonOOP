@@ -12,8 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+// HỆ THỐNG QUẢN LÝ TẤT CẢ ĐỐI TƯỢNG TRONG GAME
 public class EntityManager {
 
+    // --- Danh sách các đối tượng trong game ---
     private Paddle paddle;
     private Ball ball; // Bóng chính (dùng khi reset)
     private int ballSize;
@@ -206,6 +208,9 @@ public class EntityManager {
         }
     }
 
+    /**
+     * Hồi sinh một quả bóng mới và đặt nó lên paddle.
+     */
     public void respawnBall(String ballSkinKey) {
         if (paddle == null) return; // Không thể hồi sinh nếu không có paddle
 
@@ -247,11 +252,20 @@ public class EntityManager {
     public void addPowerUp(PowerUp p) { powerUps.add(p); }
     public void addActivePowerUp(PowerUp p) { activePowerUps.add(p); }
 
+    /**
+     * Thay đổi skin của paddle
+     * @param skinKey
+     */
     public void setPaddleSkin(String skinKey) {
         if (paddle != null) {
             paddle.setImageName(skinKey);
         }
     }
+
+    /**
+     * Thay đổi skin của tất cả các quả bóng
+     * @param skinKey
+     */
     public void setBallSkin(String skinKey) {
         if (balls != null) {
             for (Ball b : balls) {

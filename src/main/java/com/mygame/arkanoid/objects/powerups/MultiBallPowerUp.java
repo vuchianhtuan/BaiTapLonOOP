@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import com.mygame.arkanoid.systems.ScalingManager;
 
+// POWER-UP NHIỀU BÓNG
 public class MultiBallPowerUp extends PowerUp {
     private String imageName = "multiBallPowerUp";
     public static final int BALL_COUNT = 3;
@@ -20,6 +21,10 @@ public class MultiBallPowerUp extends PowerUp {
         super(x, y, width, height, "multi_ball", 50);
     }
 
+    /**
+     * ÁP DỤNG HIỆU ỨNG: Tạo thêm nhiều bóng từ vị trí bóng chính.
+     * @param gameManager
+     */
     @Override public void applyEffect(GameManager gameManager) {
         Ball mainBall = gameManager.getBall();
         int x = mainBall.getX();

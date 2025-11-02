@@ -1,6 +1,8 @@
 package com.mygame.arkanoid.objects.bricks;
 
+// Nhà máy tạo gạch dựa trên loại gạch
 public final class BrickFactory {
+    // Kích thước mặc định cho gạch
     private static final int DEFAULT_WIDTH = 45;
     private static final int DEFAULT_HEIGHT = 20;
 

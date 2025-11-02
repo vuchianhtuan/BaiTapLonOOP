@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+// LỚP DỮ LIỆU LƯU TRẠNG THÁI GAME
 public class SaveData implements Serializable {
     private static final long serialVersionUID = 1L;
 

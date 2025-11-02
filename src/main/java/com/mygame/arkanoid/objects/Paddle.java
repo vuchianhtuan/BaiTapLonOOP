@@ -9,6 +9,7 @@ import java.awt.event.KeyEvent;
 import com.mygame.arkanoid.systems.ScalingManager;
 import com.mygame.arkanoid.util.config.GameConstants;
 
+// LỚP QUẢN LÝ PADDLE
 public class Paddle extends MovableObject {
     private int speed = GameConstants.PADDLE_SPEED;
     private PowerUp currentPowerUp;
@@ -16,10 +17,18 @@ public class Paddle extends MovableObject {
     private final int originalWidth;
     private boolean isSticky = false;
 
+    /**
+     * Kiểm tra xem paddle có tính năng dính bóng không.
+     * @return true nếu paddle có tính năng dính bóng, false nếu không.
+     */
     public boolean isSticky() {
         return isSticky;
     }
 
+    /**
+     * Đặt tính năng dính bóng cho paddle.
+     * @param sticky true để bật tính năng dính bóng, false để tắt.
+     */
     public void setSticky(boolean sticky) {
         this.isSticky = sticky;
     }
@@ -40,12 +49,19 @@ public class Paddle extends MovableObject {
         this.originalWidth = width;
     }
 
+    /**
+     * Mở rộng chiều rộng paddle.
+     * @param amount
+     */
     public void expand(int amount) {
         // Tăng chiều rộng và điều chỉnh lại vị trí x để nó mở rộng đều 2 bên
         this.x -= amount / 2;
         this.width += amount;
     }
 
+    /**
+     * Thu hẹp chiều rộng paddle về kích thước ban đầu.
+     */
     public void resetWidth() {
         // Điều chỉnh lại vị trí x trước khi thu hẹp
         this.x += (this.width - this.originalWidth) / 2;

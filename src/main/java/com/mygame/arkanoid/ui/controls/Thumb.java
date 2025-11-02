@@ -9,12 +9,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.Rectangle; // <-- THÊM IMPORT NÀY
 
+// NÚT THUMB TRÊN THANH TRƯỢT
 public class Thumb extends GameObject {
 
-    // Sửa cảnh báo "may be final" bằng cách thêm 'final'
     private final String imageName;
-
-    // <-- THÊM BIẾN 'bounds' VÀO ĐÂY
     private Rectangle bounds;
 
     public Thumb(int x, int y, int width, int height) {
@@ -26,12 +24,12 @@ public class Thumb extends GameObject {
     }
 
     @Override
-    public void update() {
-        // SettingManager sẽ điều khiển Thumb
-    }
+    public void update() {}
 
-    // --- BỔ SUNG: Hàm setX() ---
-    // SettingManager cần hàm này để ra lệnh cho Thumb di chuyển
+    /**
+     * CẬP NHẬT TỌA ĐỘ X VÀ VÙNG CHỨA CỦA THUMB
+     * @param x Tọa độ x mới
+     */
     public void setX(int x) {
         this.x = x; // Cập nhật tọa độ x (thừa hưởng từ GameObject)
 
@@ -41,8 +39,10 @@ public class Thumb extends GameObject {
         }
     }
 
-    // --- BỔ SUNG: Hàm getBounds() ---
-    // SettingManager cần hàm này để kiểm tra xem chuột có click vào Thumb không
+    /**
+     * LẤY VÙNG CHỨA CỦA THUMB
+     * @return
+     */
     public Rectangle getBounds() {
         return this.bounds; // Giờ đây this.bounds đã tồn tại
     }

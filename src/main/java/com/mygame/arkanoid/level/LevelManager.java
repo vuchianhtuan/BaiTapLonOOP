@@ -30,8 +30,19 @@ public class LevelManager {
         if (index >= 0 && index < levelFiles.size()) {
             currentLevelIndex = index; // Cập nhật chỉ số hiện tại
             String levelFile = levelFiles.get(currentLevelIndex);
-            currentLevel = new Level(levelFile); // Tải level
-            return true;
+
+            try {
+                currentLevel = new Level(levelFile);
+                return true;
+            } catch (IllegalArgumentException e) {
+                System.err.println("Không thể tải level (không hợp lệ): " + e.getMessage());
+            } catch (RuntimeException e) {
+                System.err.println("Lỗi khi tải level: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            currentLevel = null;
+            return false;
         }
         System.err.println("Lỗi: Chỉ số level không hợp lệ: " + index);
         currentLevel = null; // Đặt level hiện tại là null nếu lỗi
@@ -59,8 +70,14 @@ public class LevelManager {
         currentLevelIndex++; // Tăng chỉ số để lấy level tiếp theo
         if (hasMoreLevels()) {
             String nextLevelFile = levelFiles.get(currentLevelIndex);
-            currentLevel = new Level(nextLevelFile); // Tải level mới
-            return true;
+            try {
+                currentLevel = new Level(nextLevelFile);
+                return true;
+            } catch (RuntimeException e) {
+                System.err.println("Không thể tải level tiếp theo: " + e.getMessage());
+                e.printStackTrace();
+                currentLevel = null;
+            }
         }
         currentLevel = null; // Đặt là null khi hết level
         return false; // Không còn level nào

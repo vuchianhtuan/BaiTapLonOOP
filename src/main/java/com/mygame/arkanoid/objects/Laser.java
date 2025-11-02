@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
+// LỚP QUẢN LÝ TIA LASER BẮN TỪ BOSS
 public class Laser {
     private int x, y;
     private final int width, height;

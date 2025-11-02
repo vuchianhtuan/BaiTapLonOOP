@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+// HỆ THỐNG KIỂM TRA VA CHẠM GIỮA CÁC ĐỐI TƯỢNG TRONG GAME
 public class CollisionSystem {
 
     // Danh sách tạm để tránh tạo mới mỗi frame
@@ -41,6 +42,12 @@ public class CollisionSystem {
         checkBallVsBricks(gm);
     }
 
+    /**
+     * Kiểm tra va chạm giữa Laser và Paddle, cũng như loại bỏ Laser ra.
+     * @param gm
+     * @param paddle
+     * @param screenHeight
+     */
     private void checkLaserVsPaddle(GameManager gm, Paddle paddle, int screenHeight) {
         Iterator<Laser> laserIterator = gm.getLasers().iterator();
         while (laserIterator.hasNext()) {
@@ -63,6 +70,11 @@ public class CollisionSystem {
         }
     }
 
+    /**
+     * Kiểm tra va chạm giữa Ball và Paddle.
+     * @param gm
+     * @param paddle
+     */
     private void checkBallVsPaddle(GameManager gm, Paddle paddle) {
         for (Ball b : gm.getBalls()) {
             if(b.checkCollision(paddle) && !b.isStuckToPaddle()) {
@@ -76,6 +88,12 @@ public class CollisionSystem {
         }
     }
 
+    /**
+     * Kiểm tra va chạm giữa PowerUp và Paddle.
+     * @param gm
+     * @param paddle
+     * @param screenHeight
+     */
     private void checkPowerUpVsPaddle(GameManager gm, Paddle paddle, int screenHeight) {
         // gm.getPowerUps() là danh sách power-up đang rơi
         Iterator<PowerUp> fallingPowerUpIterator = gm.getPowerUps().iterator();
@@ -94,6 +112,10 @@ public class CollisionSystem {
         }
     }
 
+    /**
+     * Kiểm tra va chạm giữa Ball và tất cả các loại gạch (bao gồm LaserShooter).
+     * @param gm
+     */
     private void checkBallVsBricks(GameManager gm) {
         // Xây dựng danh sách mục tiêu
         allTargets.clear();

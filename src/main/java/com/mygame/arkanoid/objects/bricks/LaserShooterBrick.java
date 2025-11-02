@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 
 import java.awt.*;
 
+// GẠCH BẮN TIA LAZE
 public class LaserShooterBrick extends StrongBrick {
     private BufferedImage laserShooterImage;
 

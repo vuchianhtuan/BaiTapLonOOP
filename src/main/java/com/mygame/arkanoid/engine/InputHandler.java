@@ -3,6 +3,8 @@ package com.mygame.arkanoid.engine;
 import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.event.*;
 
+
+// Xử lý đầu vào từ bàn phím và chuột
 public class InputHandler implements KeyListener, MouseMotionListener, MouseListener {
     private final boolean[] keys = new boolean[256];
     private int mouseX, mouseY;
@@ -14,6 +16,11 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
         this.mouseY = 0;
     }
 
+    /**
+     * Kiểm tra xem phím có đang được nhấn không.
+     * @param keyCode
+     * @return true nếu phím đang được nhấn, false nếu không.
+     */
     public boolean isKeyDown(int keyCode) {
         if (keyCode >= 0 && keyCode < keys.length) {
             return keys[keyCode];
@@ -25,6 +32,10 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
 
     public int getMouseY() { return mouseY; }
 
+    /**
+     * Kiểm tra xem chuột có vừa được click không.
+     * @return true nếu chuột vừa được click, false nếu không.
+     */
     public boolean isMouseClicked() {
         if (mouseClicked) {
             mouseClicked = false; // Reset lại ngay sau khi kiểm tra
@@ -33,10 +44,18 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
         return false;
     }
 
+    /**
+     * Kiểm tra xem chuột có đang được nhấn không.
+     * @return true nếu chuột đang được nhấn, false nếu không.
+     */
     public boolean isMousePressed() {
         return isCurrentlyPressed;
     }
 
+    /**
+     * Xử lý sự kiện khi một phím được nhấn.
+     * @param e the event to be processed
+     */
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
@@ -45,6 +64,10 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
         }
     }
 
+    /**
+     * Xử lý sự kiện khi một phím được thả.
+     * @param e the event to be processed
+     */
     @Override
     public void keyReleased(KeyEvent e) {
         int keyCode = e.getKeyCode();
@@ -53,12 +76,20 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
         }
     }
 
+    /**
+     * Xử lý sự kiện khi chuột di chuyển.
+     * @param e the event to be processed
+     */
     @Override
     public void mouseMoved(MouseEvent e) {
         this.mouseX = e.getX(); // Cập nhật vị trí chuột
         this.mouseY = e.getY();
     }
 
+    /**
+     * Xử lý sự kiện khi chuột được nhấn.
+     * @param e the event to be processed
+     */
     @Override
     public void mousePressed(MouseEvent e) {
         // Đánh dấu là chuột vừa được click khi nhấn xuống
@@ -68,17 +99,26 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
         }
     }
 
+    /**
+     * Lấy tọa độ chuột ảo (đã qua scaling).
+     * @return Tọa độ X và Y của chuột đã được unscale.
+     */
     public int getVirtualMouseX() {
         return ScalingManager.getInstance().unscaleX(this.mouseX);
     }
-
     public int getVirtualMouseY() {
         return ScalingManager.getInstance().unscaleY(this.mouseY);
     }
 
+
     @Override public void keyTyped(KeyEvent e) {}
     @Override public void mouseDragged(MouseEvent e) { mouseMoved(e); }
     @Override public void mouseClicked(MouseEvent e) {}
+
+    /**
+     * Xử lý sự kiện khi chuột được thả.
+     * @param e the event to be processed
+     */
     @Override public void mouseReleased(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
             this.isCurrentlyPressed = false; // Đánh dấu đã thả chuột

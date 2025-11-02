@@ -4,6 +4,7 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
+// GẠCH MẠNH
 public class StrongBrick extends Brick {
 
     @Override public void update() {
@@ -16,6 +17,11 @@ public class StrongBrick extends Brick {
         }
     }
 
+    /**
+     * Lấy tên hình ảnh ban đầu dựa trên số máu.
+     * @param health số máu ban đầu của gạch.
+     * @return tên hình ảnh ban đầu.
+     */
     private static String getInitialImageName(int health) {
         if (health == 2) {
             return "strongBrick1"; // Gạch 2 HP bắt đầu với ảnh 1

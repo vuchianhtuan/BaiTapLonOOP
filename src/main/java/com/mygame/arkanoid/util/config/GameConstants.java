@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.util.config;
 
+// LỚP CHỨA CÁC HẰNG SỐ CỐ ĐỊNH CỦA TRÒ CHƠI
 public final class GameConstants {
 
     private GameConstants() {}

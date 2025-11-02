@@ -9,10 +9,24 @@ import java.awt.Image;
 import java.awt.Graphics;
 import java.util.List;
 
+// Lớp chịu trách nhiệm vẽ tất cả các đối tượng game lên màn hình
 public class Renderer {
     public Renderer() {}
 
-    // THAY ĐỔI: Thêm LevelTransition transition vào danh sách tham số
+    /**
+     * Phương thức để vẽ tất cả các đối tượng game.
+     * @param g
+     * @param paddle
+     * @param ball
+     * @param bricks
+     * @param powerUps
+     * @param balls
+     * @param boss
+     * @param lasers
+     * @param laserShooters
+     * @param background
+     * @param shards
+     */
     public void renderGame(Graphics g, Paddle paddle, Ball ball, List<Brick> bricks,
                            List<PowerUp> powerUps, List<Ball> balls, Boss boss,
                            List<Laser> lasers, List<LaserShooterBrick> laserShooters, Image background, List<Shard> shards) {

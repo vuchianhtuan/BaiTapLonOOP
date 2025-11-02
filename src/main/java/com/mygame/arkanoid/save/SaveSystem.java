@@ -8,16 +8,29 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+// HỆ THỐNG QUẢN LÝ LƯU TRẠNG THÁI GAME
 public final class SaveSystem {
     private SaveSystem() {}
 
+    /**
+     * LẤY THƯ MỤC LƯU TRỮ TRONG THƯ MỤC NGƯỜI DÙNG
+     * @return
+     */
     public static Path getSaveDir() {
         String home = System.getProperty("user.home");
         return Paths.get(home, ".arkanoid");
     }
 
+    /**
+     * LẤY ĐƯỜNG DẪN TẬP TIN LƯU TRẠNG THÁI GAME
+     * @return
+     */
     public static Path getSaveFile() { return getSaveDir().resolve("savegame.bin"); }
 
+    /**
+     * LƯU TRẠNG THÁI GAME VÀO TẬP TIN
+     * @param data DỮ LIỆU LƯU TRẠNG THÁI GAME
+     */
     public static void save(SaveData data) {
         try {
             Files.createDirectories(getSaveDir());
@@ -29,6 +42,10 @@ public final class SaveSystem {
         }
     }
 
+    /**
+     * TẢI TRẠNG THÁI GAME TỪ TẬP TIN
+     * @return DỮ LIỆU LƯU TRẠNG THÁI GAME HOẶC NULL NẾU KHÔNG TÌM THẤY
+     */
     public static SaveData load() {
         Path f = getSaveFile();
         if (!Files.exists(f)) return null;
@@ -41,12 +58,19 @@ public final class SaveSystem {
         }
     }
 
+    /**
+     * XÓA TẬP TIN LƯU TRẠNG THÁI GAME NẾU TỒN TẠI TRÁNH LỖI KHI TẢI
+     */
     public static void deleteSave() {
         try { Files.deleteIfExists(getSaveFile()); }
         catch (IOException e) { e.printStackTrace(); }
     }
 
-    // NEW: capture cả danh sách ID gạch còn sống
+    /**
+     * CHỤP ẢNH TRẠNG THÁI HIỆN TẠI CỦA GAME
+     * @param gm
+     * @return
+     */
     public static SaveData capture(GameManager gm) {
         SaveData d = new SaveData();
         d.setLevelIndex(gm.getLevelManager() != null ? gm.getLevelManager().getCurrentLevelIndex() : 0);

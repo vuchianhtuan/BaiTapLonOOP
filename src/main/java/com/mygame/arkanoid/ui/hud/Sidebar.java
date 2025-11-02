@@ -9,6 +9,7 @@ import java.awt.*;
 
 import static com.mygame.arkanoid.core.GameManager.GAMESTATE_PAUSED;
 
+// THANH BÊN (SIDEBAR) HIỂN THỊ THÔNG TIN TRONG GAME
 public class Sidebar {
     private GameManager gameManager;
     private InputHandler inputHandler;

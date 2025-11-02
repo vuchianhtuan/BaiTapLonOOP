@@ -6,11 +6,12 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+// POWER-UP GIẢM TỐC ĐỘ BÓNG
 public class SlowBallPowerUp extends PowerUp {
     @Override public void update() {
         this.y += fallSpeed;
     }
-
+    
     private String imageName = "slowBallPowerUp";
     private static final double SLOW_SPEED_FACTOR = 0.5; // Giảm 50% tốc độ
 
@@ -18,6 +19,10 @@ public class SlowBallPowerUp extends PowerUp {
         super(x, y, width, height, "slow_ball", 300);
     }
 
+    /**
+     * ÁP DỤNG HIỆU ỨNG: Giảm tốc độ bóng.
+     * @param gameManager
+     */
     @Override
     public void applyEffect(GameManager gameManager) {
         double originalSpeed = gameManager.getBall().getOriginalSpeed();

@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.objects.powerups;
 
+// CÁC LOẠI POWER-UP
 public enum PowerUpType {
     EXPAND,
     EXTRA_LIFE,

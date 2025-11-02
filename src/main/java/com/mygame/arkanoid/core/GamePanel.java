@@ -11,7 +11,12 @@ import static com.mygame.arkanoid.core.GameManager.GAMESTATE_PAUSED;
 import javax.swing.JPanel;
 import java.awt.*;
 
+// Bảng điều khiển chính của trò chơi, nơi tất cả việc vẽ diễn ra.
 public class GamePanel extends JPanel {
+
+    /**
+     * Kích thước gốc của bảng điều khiển trò chơi.
+     */
     public static final int WIDTH = 1120;
     public static final int HEIGHT = 720;
 

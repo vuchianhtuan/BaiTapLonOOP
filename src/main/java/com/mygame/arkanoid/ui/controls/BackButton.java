@@ -6,6 +6,7 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+// NÚT QUAY LẠI
 public class BackButton {
     private Rectangle bounds;
     private String imageName = "Back";
@@ -27,6 +28,12 @@ public class BackButton {
         }
     }
 
+    /**
+     * KIỂM TRA NÚT CÓ ĐƯỢC NHẤN HAY KHÔNG.
+     * @param mx
+     * @param my
+     * @return
+     */
     public boolean contains(int mx, int my) {
         return bounds.contains(mx, my);
     }

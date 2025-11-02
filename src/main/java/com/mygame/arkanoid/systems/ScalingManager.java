@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.systems;
 
+// HỆ THỐNG QUẢN LÝ LOGIC CO GIÃN (SCALING) CỬA SỔ
 public class ScalingManager {
     private static ScalingManager instance;
 
@@ -17,6 +18,9 @@ public class ScalingManager {
     private ScalingManager() {
     }
 
+    /**
+     * Lấy thể hiện đơn (singleton) của ScalingManager.
+     */
     public static synchronized ScalingManager getInstance() {
         if (instance == null) {
             instance = new ScalingManager();

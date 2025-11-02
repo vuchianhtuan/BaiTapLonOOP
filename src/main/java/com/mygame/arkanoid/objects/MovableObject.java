@@ -1,5 +1,6 @@
 package com.mygame.arkanoid.objects;
 
+// LỚP TRỪU TƯỢNG CHO CÁC ĐỐI TƯỢNG CÓ THỂ DI CHUYỂN TRONG GAME
 public abstract class MovableObject extends GameObject {
     protected double dx, dy;
     public abstract void move();

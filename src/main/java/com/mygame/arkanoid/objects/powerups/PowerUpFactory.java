@@ -1,8 +1,16 @@
 package com.mygame.arkanoid.objects.powerups;
 
+// NHÀ MÁY TẠO POWER-UP
 public final class PowerUpFactory {
     private PowerUpFactory() {}
 
+    /**
+     * Tạo power-up dựa trên loại.
+     * @param type
+     * @param x
+     * @param y
+     * @return
+     */
     public static PowerUp create(PowerUpType type, int x, int y) {
         switch (type) {
             case EXPAND: return new ExpandPaddlePowerUp(x, y, 63, 30);

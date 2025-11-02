@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D; // Import để vẽ hình chữ nhật bo tròn đẹp hơn
 import java.awt.image.BufferedImage;
 
+// QUẢN LÝ MENU CHÍNH
 public class MenuManager {
     private final GameManager gameManager;
     private final InputHandler inputHandler;
@@ -37,10 +38,17 @@ public class MenuManager {
         this.backgroundImage = am.getImage("menuBackground");
     }
 
+    /**
+     * Cập nhật trạng thái có thể tiếp tục trò chơi hay không.
+     * @param continueAvailable
+     */
     public void setContinueAvailable(boolean continueAvailable) {
         this.continueAvailable = continueAvailable;
     }
 
+    /**
+     * Xử lý khi nút Bắt đầu/ Tiếp tục được nhấn.
+     */
     public void onStartButtonClicked() {
         if (continueAvailable) {
             gameManager.continueGame();
@@ -49,6 +57,9 @@ public class MenuManager {
         }
     }
 
+    /**
+     * Hàm này sẽ được gọi BÊN TRONG GameManager.updateGame() khi ở state "MENU".
+     */
     public void update() {
         int virtualMouseX = inputHandler.getVirtualMouseX();
         int virtualMouseY = inputHandler.getVirtualMouseY();
@@ -68,6 +79,9 @@ public class MenuManager {
         }
     }
 
+    /**
+     * Xử lý lựa chọn khi nút được nhấn.
+     */
     private void selectOption() {
         switch (selectedOption) {
             case 0: onStartButtonClicked(); break;
@@ -78,10 +92,13 @@ public class MenuManager {
         }
     }
 
-    // --- HÀM RENDER ĐƯỢC THIẾT KẾ LẠI ---
+    /**
+     * Vẽ menu chính.
+     * @param g
+     */
     public void render(Graphics g) {
         ScalingManager sm = ScalingManager.getInstance();
-        Graphics2D g2d = (Graphics2D) g; // Dùng Graphics2D
+        Graphics2D g2d = (Graphics2D) g;
 
         // Bật khử răng cưa
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

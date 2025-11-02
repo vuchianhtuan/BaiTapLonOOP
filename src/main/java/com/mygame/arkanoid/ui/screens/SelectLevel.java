@@ -9,6 +9,7 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.Image;
 
+// MÀN CHỌN LEVEL
 public class SelectLevel {
     private InputHandler inputHandler;
     private Image BackgroundImage;
@@ -51,6 +52,9 @@ public class SelectLevel {
         this.levelPreviews[2] = am.getImage("level3_preview");
     }
 
+    /**
+     * Cập nhật logic chọn level và nút Back
+     */
     public void update() {
         int virtualMouseX = inputHandler.getVirtualMouseX();
         int virtualMouseY = inputHandler.getVirtualMouseY();

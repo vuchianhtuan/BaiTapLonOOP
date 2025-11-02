@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import com.mygame.arkanoid.systems.ScalingManager;
 
+// POWER-UP THÊM MẠNG
 public class ExtraLifePowerUp extends PowerUp {
     private String imageName = "extraLifePowerUp";
 
@@ -13,6 +14,10 @@ public class ExtraLifePowerUp extends PowerUp {
         super(x, y, width, height, "extra_life", 300);
     }
 
+    /**
+     * ÁP DỤNG HIỆU ỨNG: Thêm 1 mạng cho người chơi.
+     * @param gameManager
+     */
     @Override public void applyEffect(GameManager gameManager) {
         int pre_lives = gameManager.getLives();
         gameManager.setLives(pre_lives + 1);

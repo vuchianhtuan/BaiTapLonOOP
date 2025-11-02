@@ -2,8 +2,10 @@ package com.mygame.arkanoid.systems;
 
 import com.mygame.arkanoid.util.config.GameConstants;
 
+// HỆ THỐNG QUẢN LÝ THỐNG KÊ NGƯỜI CHƠI
 public class PlayerStats {
 
+    // --- Chỉ số người chơi ---
     private int score;
     private int lives;
     private long playtimeMillis;

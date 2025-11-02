@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+// GẠCH NỔ
 public class ExplosiveBrick extends Brick {
 
     // 1. THÊM TRẠNG THÁI 'IGNITED'
@@ -46,6 +47,10 @@ public class ExplosiveBrick extends Brick {
     }
 
     // 2. TẠO HÀM HELPER ĐỂ TRÁNH TRÙNG LẶP CODE
+
+    /**
+     * Bắt đầu vụ nổ ngay lập tức.
+     */
     private void startExplosion() {
         this.currentState = State.EXPLODING;
         int centerX = this.x + this.width / 2;
@@ -90,6 +95,11 @@ public class ExplosiveBrick extends Brick {
         // Nếu đã EXPLODING hoặc FINISHED thì không làm gì
     }
 
+    /**
+     * Kích hoạt vụ nổ ngay khi bị đánh trúng.
+     * @param activeShards
+     * @return
+     */
     public boolean detonateOnHit(List<Shard> activeShards) {
         if (this.currentState == State.IGNITED) {
 
@@ -173,6 +183,10 @@ public class ExplosiveBrick extends Brick {
     // ==================================================================
     // 5. CLASS NỘI BỘ (KHÔNG THAY ĐỔI)
     // ==================================================================
+
+    /**
+     * Lớp nội bộ để quản lý hiệu ứng nổ.
+     */
     private static class ExplosionEffect {
         private int x, y;
         private int currentFrameIndex;

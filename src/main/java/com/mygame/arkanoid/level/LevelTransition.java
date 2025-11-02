@@ -8,7 +8,7 @@ import com.mygame.arkanoid.util.config.GameConstants;
 
 import java.awt.*;
 
-
+// Lớp quản lý hiệu ứng chuyển cảnh giữa các level
 public class LevelTransition {
     public enum State {
         IDLE,
@@ -44,6 +44,9 @@ public class LevelTransition {
         this.countdownFont = new java.awt.Font("SansSerif", Font.BOLD, 72);
     }
 
+    /**
+     * Bắt đầu hiệu ứng chuyển cảnh với paddle cũ bay lên.
+     */
     public void startTransition(Paddle oldPaddle) {
         this.flyingPaddle = oldPaddle; // Lưu paddle cũ
         currentState = State.PADDLE_FLY_UP;
@@ -273,6 +276,9 @@ public class LevelTransition {
         }
     }
 
+    /**
+     * Bắt đầu hiệu ứng chuyển cảnh tức thì (không có paddle bay lên).
+     */
     public void startInstantFade() {
         this.flyingPaddle = null;
 
