@@ -26,18 +26,22 @@ import com.mygame.arkanoid.ui.screens.MenuManager;
 import com.mygame.arkanoid.ui.screens.SettingManager;
 import com.mygame.arkanoid.save.SaveData;
 import com.mygame.arkanoid.save.SaveSystem;
-import com.mygame.arkanoid.util.config.GameConstants;
+import com.mygame.arkanoid.config.GameConstants;
 
 import java.awt.*;
 import java.util.*;
 import java.util.List;
 
 /**
- * Lớp quản lý trò chơi chính, chịu trách nhiệm về trạng thái trò chơi,
+ * Lớp quản lý trò chơi chính (Singleton), đóng vai trò là "bộ não" trung tâm.
+ * Chịu trách nhiệm quản lý máy trạng thái (state machine) của game
+ * (ví dụ: MENU, PLAYING, PAUSED, TRANSITION) và điều phối tất cả
+ * các hệ thống con (EntityManager, CollisionSystem, LevelManager, v.v.).
  */
 public class GameManager {
     /**
-     * Các biến và đối tượng quản lý trò chơi chính
+     * Cờ cho phép người chơi "Tiếp tục" (Continue)
+     * từ menu chính hay không.
      */
     private boolean canContinue = false;
     private PlayerStats playerStats;
@@ -61,15 +65,19 @@ public class GameManager {
 
     public SoundManager getSoundManager() { return soundManager; }
 
+    /**
+     * Constructor private để thực thi Singleton.
+     * Khởi tạo một lần tất cả các hệ thống quản lý chính.
+     */
     private GameManager() {
         inputHandler = new InputHandler();
         entityManager = new EntityManager();
         this.soundManager = new SoundManager();
         playerStats = new PlayerStats();
         this.sidebar = new Sidebar(this, inputHandler);
-        AssetManager.getInstance().loadGlobalAssets();
+        AssetManager.getInstance().loadGlobalAssets(); // Tải các tài sản chung
         levelManager = new LevelManager();
-        levelManager.loadLevels();
+        levelManager.loadLevels(); // Tải thông tin tất cả các level
         this.levelTransition = new LevelTransition(this);
         menuManager = new MenuManager(this, inputHandler);
         this.gameSummaryPanel = new GameSummaryPanel();
@@ -78,13 +86,14 @@ public class GameManager {
         scoreManager = new ScoreManager(this, inputHandler);
         settingManager = new SettingManager(inputHandler, this, soundManager);
         selectLevel = new SelectLevel(inputHandler, this);
-        this.gameState = "MENU";
+        this.gameState = "MENU"; // Trạng thái bắt đầu game
         canContinue = false;
         soundManager.playBackgroundMusic("Menu.wav");
     }
 
     /**
-     * Singleton Holder pattern để đảm bảo chỉ có một instance của GameManager.
+     * Singleton Holder pattern (Initialization-on-demand holder idiom).
+     * Đảm bảo khởi tạo an toàn, lười biếng (lazy) và thread-safe.
      */
     private static class Holder {
         private static final GameManager INSTANCE = new GameManager();
@@ -96,44 +105,55 @@ public class GameManager {
      */
     public static GameManager getInstance() { return Holder.INSTANCE; }
 
+    /** Tải các tài sản (assets) dành riêng cho một chủ đề (theme). */
     private void loadThemeAssets(String prefix) { AssetManager.getInstance().loadTheme(prefix); }
 
     /**
-     * Bắt đầu trò chơi từ đầu với level đầu tiên.
+     * Bắt đầu một lượt chơi mới hoàn toàn (từ level 1).
      */
     public void startGame() {
-        playerStats.resetForNewGame();
-        setupLevelObjects();
+        playerStats.resetForNewGame(); // Đặt lại điểm, mạng, thời gian
+        setupLevelObjects(); // Dọn dẹp paddle/ball cũ (nếu có)
         canContinue = false;
-        levelManager.reset();
+        levelManager.reset(); // Đặt LevelManager về level đầu tiên
         loadNextLevel();
     }
+
+    /**
+     * Bắt đầu chơi từ một level được chỉ định (thường từ màn hình chọn level).
+     * @param levelIndex Index của level muốn bắt đầu.
+     */
     public void startGameAtLevel(int levelIndex) {
-        // Bắt đầu trò chơi từ level cụ thể
         playerStats.resetForNewGame();
         canContinue = false;
 
-        // Thử tải level cụ thể nếu không được thì quay về menu
         if (levelManager.loadSpecificLevel(levelIndex)) {
             setupLevelObjects();
-            levelTransition.startInstantFade();
+            levelTransition.startInstantFade(); // Chuyển cảnh tức thì
             setGameState("TRANSITION");
         } else {
+            // Lỗi không mong muốn, quay về menu
             System.err.println("Lỗi: Không thể tải level tại index " + levelIndex);
             setGameState("MENU");
         }
     }
 
     /**
-     * Tiếp tục trò chơi từ trạng thái tạm dừng hoặc menu khi có thể tiếp tục.
+     * Tiếp tục trò chơi từ trạng thái đã tạm dừng (khi ở trong menu).
      */
     public void continueGame() {
-        playerStats.setLastUpdateTime(System.nanoTime()); // Cập nhật thời gian lần cuối chơi
-        if (!canContinue) return; // Không thể tiếp tục nếu không có quyền
-        ensureLevelHydrated(); // Đảm bảo level đã được nạp
-        ensurePaddleAndBallReadyForPlay(); // Đảm bảo paddle và ball sẵn sàng
-        setGameState("PLAYING"); // Chuyển sang trạng thái chơi
-        var currentLevel = levelManager.getCurrentLevel(); // Lấy level hiện tại
+        playerStats.setLastUpdateTime(System.nanoTime()); // Đặt lại đồng hồ delta time
+        if (!canContinue) return; // Kiểm tra an toàn
+
+        // Đảm bảo level được "nạp" (hydrate) lại các thực thể (gạch, boss)
+        // phòng trường hợp trạng thái bị mất hoặc là game được load từ save.
+        ensureLevelHydrated();
+        // Đảm bảo paddle và ball ở trạng thái sẵn sàng chơi.
+        ensurePaddleAndBallReadyForPlay();
+        setGameState("PLAYING");
+
+        // Phát lại nhạc nền của level
+        var currentLevel = levelManager.getCurrentLevel();
         String music = (currentLevel != null) ? currentLevel.getThemeMusic() : null;
         if (music != null && !music.isEmpty()) {
             soundManager.playBackgroundMusic(music);
@@ -143,183 +163,199 @@ public class GameManager {
     }
 
     /**
-     * Quay về menu và cho phép tiếp tục trò chơi.
-     * Lưu trạng thái trò chơi hiện tại.
+     * Quay về menu chính và kích hoạt cờ 'canContinue'.
+     * Tự động lưu trạng thái game hiện tại.
      */
     public void goToMenuAndEnableContinue() {
         canContinue = true;
-        if (menuManager != null) menuManager.setContinueAvailable(true); // Cập nhật menu
-        setGameState("MENU"); // Chuyển sang trạng thái menu
-        SaveSystem.save(SaveSystem.capture(this)); // Lưu trạng thái trò chơi
+        if (menuManager != null) menuManager.setContinueAvailable(true);
+        setGameState("MENU");
+        // Lưu trạng thái game để có thể "Continue" hoặc "Restore" sau này
+        SaveSystem.save(SaveSystem.capture(this));
     }
 
     /**
-     * Tải level tiếp theo trong trò chơi.
-     * Nếu không còn level nào, chuyển sang trạng thái chiến thắng.
+     * Tải level tiếp theo.
+     * Nếu không còn level, chuyển sang trạng thái "GAME_WIN".
      */
     private void loadNextLevel() {
-        playerStats.resetForNextLevel(); // Đặt lại các chỉ số cho level mới
+        playerStats.resetForNextLevel(); // Đặt lại điểm/thời gian của level
 
-        // Thử tải level tiếp theo nếu có không thì chuyển sang trạng thái chiến thắng
         if (levelManager.loadNextLevel()) {
+            // Nếu là level đầu tiên (index 0), chuyển cảnh tức thì.
             if (levelManager.getCurrentLevelIndex() == 0) {
-                levelTransition.startInstantFade(); // Bắt đầu chuyển cảnh ngay lập tức cho level đầu tiên
-                setGameState("TRANSITION");
+                levelTransition.startInstantFade();
             } else {
+                // Các level sau sẽ có hiệu ứng paddle bay đi
                 levelTransition.startTransition(entityManager.getPaddle());
-                setGameState("TRANSITION");
             }
+            setGameState("TRANSITION");
         } else {
+            // Đã hoàn thành tất cả các level
             setGameState("GAME_WIN");
         }
     }
 
     /**
-     * Thiết lập các đối tượng cần thiết cho level mới.
+     * Dọn dẹp và thiết lập lại các đối tượng của người chơi (paddle, ball)
+     * và các hiệu ứng power-up đang hoạt động.
      */
     private void setupLevelObjects() {
-        // Đặt lại thực thể và xóa các hiệu ứng PowerUp
+        // Reset paddle/ball về skin đã chọn và vị trí ban đầu
         entityManager.resetForNewLevel(settingManager.getSelectedPaddleSkinKey(), settingManager.getSelectedBallSkinKey());
+
+        // Gỡ bỏ hiệu ứng của tất cả các power-up đang hoạt động từ level trước
         for (PowerUp p : entityManager.getActivePowerUps()) {
             p.removeEffect(this);
         }
-        entityManager.getActivePowerUps().clear(); // Xóa danh sách PowerUp đang hoạt động
+        entityManager.getActivePowerUps().clear(); // Xóa sạch danh sách
     }
 
     /**
-     * Tải các tài nguyên (assets) cần thiết cho level hiện tại.
+     * Tải các tài nguyên (assets) dành riêng cho level hiện tại.
      * @param currentLevel Level hiện tại.
      */
     private void loadLevelAssets(Level currentLevel) {
+        // 1. Tải các tài sản theo chủ đề (ví dụ: gạch, background)
         String prefix = currentLevel.getThemeAssetPrefix();
-        loadThemeAssets(prefix); // Tải tài nguyên theo tiền tố của theme
+        loadThemeAssets(prefix);
 
+        // 2. Tải nhạc nền
         String music = currentLevel.getThemeMusic();
-        // Phát nhạc nền phù hợp với level
         if (music != null && !music.isEmpty()) {
             soundManager.playBackgroundMusic(music);
         } else {
+            // Nhạc nền dự phòng
             soundManager.playBackgroundMusic("ExoticBaryon_PhaseXX.wav");
         }
 
-        // Tải hình nền phù hợp với level
+        // 3. Tải hình nền
         String bgName = currentLevel.getThemeBackground();
         this.currentBackground = AssetManager.getInstance().getBackgroundImage(bgName);
     }
 
     /**
-     * Tải thiết lập level bao gồm dọn dẹp đối tượng, tải assets và nạp thực thể.
+     * Thực hiện chuỗi hành động cần thiết để thiết lập một level mới.
+     * Thứ tự rất quan trọng.
      */
     private void loadLevelSetup() {
-        // Lấy level hiện tại
         Level currentLevel = levelManager.getCurrentLevel();
         if (currentLevel == null) return;
 
-        // Thực hiện các bước thiết lập level
-        setupLevelObjects();            // 1. Dọn dẹp Player
-        loadLevelAssets(currentLevel);       // 2. Tải Assets (Nhạc/Nền)
-        entityManager.hydrateLevel(currentLevel); // 3. NẠP THỰC THỂ (Gạch/Boss)
+        // 1. Dọn dẹp trạng thái người chơi (paddle, ball, powerups)
+        setupLevelObjects();
+        // 2. Tải assets (âm nhạc, hình ảnh, skin gạch) cho level
+        loadLevelAssets(currentLevel);
+        // 3. Nạp (Hydrate) các thực thể (gạch, boss) từ định nghĩa level
+        entityManager.hydrateLevel(currentLevel);
     }
 
 
     /**
-     * Cập nhật trạng thái trò chơi dựa trên gameState hiện tại.
+     * Phương thức update chính, được gọi liên tục bởi GameLoop.
+     * Hoạt động như một máy trạng thái (State Machine).
      */
     public void updateGame() {
-        // Tính toán delta time kể từ lần cập nhật cuối cùng
+        // Tính toán Delta Time (thời gian trôi qua giữa các frame)
         long now = System.nanoTime();
         long deltaNanos = (playerStats.getLastUpdateTime() > 0) ? (now - playerStats.getLastUpdateTime()) : 0;
         long deltaMillis = deltaNanos / 1_000_000;
         playerStats.setLastUpdateTime(now);
 
-        // Cập nhật trạng thái trò chơi dựa trên gameState hiện tại
-        if ("PLAYING".equals(gameState)) {
-            playerStats.updatePlaytime(deltaMillis); // Cập nhật thời gian chơi
-            entityManager.updateAll(inputHandler); // Cập nhật tất cả thực thể
-            sidebar.update(); // Cập nhật sidebar
+        // --- Cập nhật dựa trên trạng thái (GameState) ---
 
-            // Cập nhật PowerUps đang hoạt động
+        if ("PLAYING".equals(gameState)) {
+            playerStats.updatePlaytime(deltaMillis); // Cập nhật tổng thời gian chơi
+            entityManager.updateAll(inputHandler); // Cập nhật paddle, ball, boss, power-ups
+            sidebar.update(); // Cập nhật UI (điểm, mạng)
+
+            // Cập nhật các PowerUp đang hoạt động và xóa nếu hết hạn
             Iterator<PowerUp> activePowerUpIterator = entityManager.getActivePowerUps().iterator();
             while (activePowerUpIterator.hasNext()) {
-                PowerUp p = activePowerUpIterator.next(); // Lấy PowerUp tiếp theo
-                p.tick(); // Cập nhật trạng thái PowerUp
+                PowerUp p = activePowerUpIterator.next();
+                p.tick(); // Đếm ngược thời gian
                 if (p.isExpired()) {
-                    p.removeEffect(this); // Loại bỏ hiệu ứng PowerUp
-                    activePowerUpIterator.remove(); // Xóa PowerUp khỏi danh sách
+                    p.removeEffect(this); // Gỡ bỏ hiệu ứng
+                    activePowerUpIterator.remove(); // Xóa khỏi danh sách
                 }
             }
 
-            collisionSystem.checkAllCollisions(this); // Kiểm tra va chạm giữa các thực thể
+            // Kiểm tra va chạm
+            collisionSystem.checkAllCollisions(this);
 
-            // Xử lý các vụ nổ từ ExplosiveBricks đã hoàn thành
+            // Xử lý các gạch nổ (ExplosiveBrick) đã nổ xong
+            // (Sử dụng 2 vòng lặp để tránh ConcurrentModificationException)
             List<Brick> newlyFinishedExplosions = new ArrayList<>();
             for (Brick brick : entityManager.getBricks()) {
-                // Kiểm tra nếu brick là ExplosiveBrick và đã hoàn thành vụ nổ
                 if (brick instanceof ExplosiveBrick && ((ExplosiveBrick) brick).isFinished()) {
-                    newlyFinishedExplosions.add(brick); // Thêm vào danh sách để xử lý sau
+                    newlyFinishedExplosions.add(brick);
                 }
             }
 
-            // Xử lý vụ nổ và tạo mảnh vỡ
+            // Kích hoạt vụ nổ (gây sát thương lan) và tạo mảnh vỡ
             for (Brick sourceBrick : newlyFinishedExplosions) {
                 if (sourceBrick instanceof ExplosiveBrick) {
-                    getActiveShards().addAll(sourceBrick.shatter()); // Tạo mảnh vỡ từ gạch
+                    getActiveShards().addAll(sourceBrick.shatter()); // Tạo mảnh vỡ
                 }
                 soundManager.playSound(SoundManager.SFX_EXPLOSION);
-                explosionSystem.explode(sourceBrick, 50.0, this); // Thực hiện vụ nổ
+                explosionSystem.explode(sourceBrick, 50.0, this); // Gây sát thương
             }
 
-            // Dọn dẹp các đối tượng đã bị phá hủy khỏi trò chơi
+            // Dọn dẹp các thực thể đã bị đánh dấu "destroyed"
             entityManager.cleanupDestroyedObjects(getScreenHeight());
 
-            // Kiểm tra điều kiện thắng/thua
+            // --- Kiểm tra điều kiện Thắng / Thua ---
             if (entityManager.isLevelWon()) {
-                // Ghi nhận kết quả level hiện tại vào ScoreManager và chuyển sang level tiếp theo
+                // Ghi lại kết quả level
                 scoreManager.submitLevelResult(
                         levelManager.getCurrentLevelIndex(),
                         playerStats.getCurrentLevelScore(),
                         playerStats.getCurrentLevelPlaytimeMillis()
                 );
-                loadNextLevel();
-                return;
+                loadNextLevel(); // Tải level tiếp theo
+                return; // Thoát khỏi hàm update ngay lập tức
             }
 
-            // Kiểm tra nếu không còn bóng nào trên màn hình
             if (entityManager.areBallsEmpty()) {
-                playerStats.loseLife(); // Giảm số mạng sống
-
-                // Kiểm tra còn mạng sống không để quyết định tiếp tục hay kết thúc trò chơi
+                // Người chơi mất bóng
+                playerStats.loseLife();
                 if (playerStats.getLives() > 0) {
+                    // Còn mạng, hồi sinh bóng
                     soundManager.playSound(SoundManager.SFX_BALL_LOSS);
                     entityManager.respawnBall(settingManager.getSelectedBallSkinKey());
                 } else {
+                    // Hết mạng
                     setGameState("GAME_OVER");
                     gameOverTimer = GameConstants.GAME_OVER_TIMER_FRAMES;
                 }
             }
 
         } else if (GAMESTATE_PAUSED.equals(gameState)) {
-            sidebar.update(); // Cập nhật sidebar khi trò chơi bị tạm dừng
+            sidebar.update(); // Chỉ cập nhật sidebar
 
         } else if ("TRANSITION".equals(gameState)) {
-            // Cập nhật quá trình chuyển cảnh
+            // --- Xử lý logic chuyển cảnh (rất phức tạp) ---
             levelTransition.update();
-            // Xử lý các giai đoạn chuyển cảnh khác nhau
+
+            // Giai đoạn 1: Màn hình mờ dần (FADE_FROM_BLACK)
             if (levelTransition.getCurrentState() == LevelTransition.State.FADE_FROM_BLACK) {
+                // Cờ 'brickSpawnCount == 0' đảm bảo logic này chỉ chạy 1 lần
                 if (levelTransition.getBrickSpawnCount() == 0) {
+                    // Tải tất cả assets và thực thể của level
                     loadLevelSetup();
 
-                    // Cập nhật boss 1 lần
+                    // Cập nhật boss 1 lần để đảm bảo vị trí/trạng thái (nếu có)
                     if (entityManager.getBoss() != null) {
                         entityManager.getBoss().update();
                     }
 
-                    // Dọn dẹp danh sách sẽ hiển thị
+                    // Dọn dẹp danh sách hiển thị
                     entityManager.getBricks().clear();
                     entityManager.getLaserShooters().clear();
                     entityManager.getStagingBricks().clear();
 
                     // Nạp gạch (thường + boss) vào "cánh gà" (staging)
+                    // Chúng chưa được hiển thị, chỉ chờ để "spawn"
                     Level currentLevel = levelManager.getCurrentLevel();
                     if (currentLevel != null) {
                         entityManager.getStagingBricks().addAll(currentLevel.getBricks());
@@ -328,35 +364,34 @@ public class GameManager {
                         entityManager.getStagingBricks().addAll(entityManager.getBoss().getBricks());
                     }
 
-                    levelTransition.setBrickSpawnCount(1);
+                    levelTransition.setBrickSpawnCount(1); // Đặt cờ
                 }
 
             }
 
-            // Xử lý giai đoạn spawn gạch từng phần một
+            // Giai đoạn 2: Gạch rơi xuống (BRICK_SPAWN)
             if (levelTransition.getCurrentState() == LevelTransition.State.BRICK_SPAWN) {
-                // Kiểm tra nếu không còn gạch để spawn
                 if (entityManager.getStagingBricks().isEmpty()) {
-                    levelTransition.finishTransition(); // Hoàn tất chuyển cảnh khi hết gạch để spawn
+                    // Không còn gạch trong "cánh gà"
+                    levelTransition.finishTransition(); // Hoàn tất chuyển cảnh
                 } else {
-                    // Spawn một số gạch mỗi khung hình
+                    // Spawn từng cụm gạch mỗi frame
                     final int BRICKS_PER_FRAME = 2;
                     int bricksToSpawnThisFrame = Math.min(BRICKS_PER_FRAME, entityManager.getStagingBricks().size());
 
-                    // Thêm gạch từ "cánh gà" vào trò chơi
+                    // Chuyển gạch từ "cánh gà" (staging) sang danh sách (active)
                     for (int i = 0; i < bricksToSpawnThisFrame; i++) {
                         Brick brickToSpawn = entityManager.getStagingBricks().remove(0);
                         if (brickToSpawn instanceof LaserShooterBrick) {
-                            // Thêm gạch bắn laser vào danh sách riêng
                             entityManager.addLaserShooter((LaserShooterBrick) brickToSpawn);
                         } else {
-                            // Thêm gạch thông thường vào danh sách gạch
                             entityManager.getBricks().add(brickToSpawn);
                         }
                     }
                 }
             }
-            // Kiểm tra nếu quá trình chuyển cảnh đã hoàn tất
+
+            // Khi Transition báo đã kết thúc, chuyển sang PLAYING
             if (!levelTransition.isTransitioning()) {
                 setGameState("PLAYING");
             }
@@ -379,89 +414,117 @@ public class GameManager {
     }
 
     /**
-     * Cập nhật trạng thái trò chơi và xử lý các hành động liên quan.
-     * @param state Trạng thái mới của trò chơi.
+     * Đặt trạng thái mới cho game. Đây là nơi trung tâm để xử lý
+     * logic khi "vào" (enter) và "thoát" (exit) một trạng thái.
+     * @param state Trạng thái mới (ví dụ: "PLAYING", "MENU").
      */
     public void setGameState(String state) {
+        // Guard clause: Không chạy lại logic nếu trạng thái không đổi
         if (this.gameState != null && this.gameState.equals(state)) return;
+
         String oldState = this.gameState;
-        // Xử lý các hành động dựa trên trạng thái mới của trò chơi
+
+        // Xử lý logic khi THOÁT trạng thái cũ hoặc VÀO trạng thái mới
         if (GAMESTATE_PAUSED.equals(state)) {
-            soundManager.pauseBackgroundMusic();
+            soundManager.pauseBackgroundMusic(); // Vào PAUSED
         } else if ("PLAYING".equals(state) && GAMESTATE_PAUSED.equals(oldState)) {
-            soundManager.resumeBackgroundMusic();
+            soundManager.resumeBackgroundMusic(); // Thoát PAUSED để vào PLAYING
         }
+
         this.gameState = state;
+
         if ("MENU".equals(state)) {
+            // Logic phức tạp để không phát lại nhạc Menu
+            // nếu chỉ chuyển đổi giữa các màn hình trong Menu (Setting, Score...)
             boolean wasInMenuScreens = "MENU".equals(oldState) || "SETTING".equals(oldState) || "HIGH_SCORES".equals(oldState) || "LEVEL_SELECT".equals(oldState);
             if (!wasInMenuScreens) {
+                // Chỉ phát nhạc Menu nếu thoát ra từ PLAYING, PAUSED, GAME_OVER
                 soundManager.playBackgroundMusic("Menu.wav");
             }
             if (menuManager != null) menuManager.setContinueAvailable(canContinue);
+
         } else if ("GAME_OVER".equals(state) || "GAME_WIN".equals(state)) {
             soundManager.stopBackgroundMusic();
-            canContinue = false;
+            canContinue = false; // Không thể "Continue" sau khi game kết thúc
             if (menuManager != null) menuManager.setContinueAvailable(false);
-            this.gameOverTimer = 480;
-            playerStats.captureFinalStats();
+
+            this.gameOverTimer = 480; // Tăng thời gian hiển thị màn hình kết quả
+            playerStats.captureFinalStats(); // Chốt điểm số và thời gian
+
+            // Nộp kết quả cuối cùng
             if (scoreManager != null) {
                 boolean didWin = "GAME_WIN".equals(state);
                 scoreManager.submitSessionResult(playerStats.getFinalScore(), playerStats.getFinalPlaytimeMillis(), didWin);
             }
-            SaveSystem.deleteSave(); // Xóa dữ liệu lưu khi kết thúc trò chơi
+            // Xóa file save vì lượt chơi đã kết thúc
+            SaveSystem.deleteSave();
         }
     }
 
     /**
-     * Kích hoạt một PowerUp mới, xử lý xung đột với các PowerUp hiện có.
-     * @param newPowerUp PowerUp mới cần kích hoạt.
+     * Kích hoạt một PowerUp. Xử lý logic xung đột
+     * (ví dụ: Slow Ball và Fast Ball không thể cùng tồn tại).
+     * @param newPowerUp PowerUp vừa được nhặt.
      */
     public void activatePowerUp(PowerUp newPowerUp) {
         String newType = newPowerUp.getType();
-        // Loại bỏ các PowerUp xung đột
+
+        // Duyệt qua các power-up đang hoạt động để gỡ bỏ các power-up xung đột
         Iterator<PowerUp> iterator = entityManager.getActivePowerUps().iterator();
         while (iterator.hasNext()) {
             PowerUp existingPowerUp = iterator.next();
             String existingType = existingPowerUp.getType();
-            if (existingPowerUp.getType().equals(newType)) {
-                // Xử lý xung đột cùng loại PowerUp
-                existingPowerUp.removeEffect(this); // Loại bỏ hiệu ứng của PowerUp hiện có
-                iterator.remove(); // Xóa PowerUp khỏi danh sách
-            } else if ( (existingType.equals("fast_ball") && newType.equals("slow_ball")) || (existingType.equals("slow_ball") && newType.equals("fast_ball")) ) {
-                // Xử lý xung đột giữa fast_ball và slow_ball
-                existingPowerUp.removeEffect(this); // Loại bỏ hiệu ứng của PowerUp hiện có
-                iterator.remove(); // Xóa PowerUp khỏi danh sách
+
+            // 1. Xung đột cùng loại (ví dụ: nhặt Expand khi đang có Expand)
+            // -> Gỡ bỏ cái cũ, áp dụng cái mới (làm mới thời gian)
+            if (existingType.equals(newType)) {
+                existingPowerUp.removeEffect(this);
+                iterator.remove();
+            }
+            // 2. Xung đột khác loại (ví dụ: Fast vs Slow)
+            else if ( (existingType.equals("fast_ball") && newType.equals("slow_ball")) ||
+                    (existingType.equals("slow_ball") && newType.equals("fast_ball")) )
+            {
+                existingPowerUp.removeEffect(this);
+                iterator.remove();
             }
         }
         soundManager.playSound(SoundManager.SFX_POWERUP);
-        entityManager.addActivePowerUp(newPowerUp); // Thêm PowerUp mới vào danh sách
-        newPowerUp.applyEffect(this);
+        entityManager.addActivePowerUp(newPowerUp); // Thêm power-up mới
+        newPowerUp.applyEffect(this); // Kích hoạt hiệu ứng
     }
 
     /**
-     * Đảm bảo rằng paddle và ball đã sẵn sàng để chơi.
-     * Nếu không, tạo mới chúng và đặt vào vị trí thích hợp.
+     * Đảm bảo paddle và ball tồn tại và ở đúng vị trí khi
+     * người chơi chọn "Continue Game".
      */
     private void ensurePaddleAndBallReadyForPlay() {
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
         int nativeHeight = ScalingManager.getInstance().NATIVE_HEIGHT;
         int currentBallSize = (entityManager.getBallSize() > 0) ? entityManager.getBallSize() : 18;
-        boolean needRecreate = (entityManager.getPaddle() == null || entityManager.getBall() == null); // Kiểm tra nếu paddle hoặc ball bị null
+
+        // Kiểm tra xem có cần tạo lại paddle/ball không
+        boolean needRecreate = (entityManager.getPaddle() == null || entityManager.getBall() == null);
         if (!needRecreate) {
-            needRecreate = entityManager.getPaddle().getY() > nativeHeight; // Kiểm tra nếu paddle nằm ngoài màn hình
+            // Nếu paddle bị "lọt" ra ngoài màn hình (do lỗi hoặc chuyển cảnh)
+            needRecreate = entityManager.getPaddle().getY() > nativeHeight;
         }
+
         if (needRecreate) {
-            // Tạo mới paddle và ball nếu cần
+            // Tạo lại paddle và ball ở vị trí mặc định
             int paddleWidth = 120;
             int px = (gameAreaWidth - paddleWidth) / 2;
             int py = nativeHeight - 80;
             Paddle newPaddle = new Paddle(px, py, paddleWidth, 30, settingManager.getSelectedPaddleSkinKey());
             Ball newBall = new Ball(px + (paddleWidth / 2) - (currentBallSize / 2), py - currentBallSize - 1, currentBallSize, currentBallSize, settingManager.getSelectedBallSkinKey());
-            newBall.resetBallPosition(newPaddle);
+
+            newBall.resetBallPosition(newPaddle); // Gắn bóng lên paddle
             entityManager.setPaddle(newPaddle);
             entityManager.getBalls().clear();
             entityManager.addBall(newBall);
             entityManager.setBall(newBall);
+
+            // Xóa tất cả power-up đang hoạt động khi phải tạo lại paddle
             for (PowerUp p : entityManager.getActivePowerUps()) {
                 p.removeEffect(this);
             }
@@ -470,50 +533,56 @@ public class GameManager {
     }
 
     /**
-     * Đảm bảo rằng level hiện tại đã được nạp đầy đủ các thực thể.
-     * Nếu chưa, tiến hành nạp lại các thực thể từ dữ liệu level.
+     * Đảm bảo level hiện tại đã được "nạp" (hydrated) các thực thể (gạch, boss).
+     * Cần thiết khi "Continue Game" hoặc khôi phục từ save.
      */
     private void ensureLevelHydrated() {
-        // Lấy level hiện tại
         Level currentLevel = levelManager.getCurrentLevel();
         if (currentLevel == null) return;
+
+        // Tải lại assets (nhạc, nền) vì có thể chúng đã bị dọn dẹp
         loadLevelAssets(currentLevel);
 
-        // Kiểm tra nếu chưa có gạch và gạch bắn laser thì nạp lại level
+        // Nếu không có gạch (hoặc gạch laser),
+        // nghĩa là level cần được nạp lại từ định nghĩa.
         if (entityManager.getBricks().isEmpty() && entityManager.getLaserShooters().isEmpty()) {
             entityManager.hydrateLevel(currentLevel);
         }
     }
 
     /**
-     * Khôi phục trạng thái trò chơi từ dữ liệu lưu trữ.
-     * @param data Dữ liệu lưu trữ để khôi phục.
+     * Khôi phục trạng thái trò chơi từ một đối tượng SaveData.
+     * @param data Dữ liệu đã lưu.
      */
     public void restoreFromSave(SaveData data) {
-        if (data == null) return; // Kiểm tra dữ liệu lưu trữ hợp lệ
+        if (data == null) return;
 
-        // Tải level cụ thể từ dữ liệu lưu trữ
+        // 1. Tải level cụ thể
         if (getLevelManager() != null) {
             getLevelManager().loadSpecificLevel(data.getLevelIndex());
         }
         Level currentLevel = getLevelManager().getCurrentLevel();
-        if (currentLevel == null) return;
+        if (currentLevel == null) return; // Không thể khôi phục nếu level không hợp lệ
 
-        loadLevelAssets(currentLevel); // 1. Tải Assets
-        entityManager.hydrateLevel(currentLevel); // 2. Tải Entities (để tạo Boss, gán ID)
+        // 2. Tải Assets (nhạc, nền, theme gạch)
+        loadLevelAssets(currentLevel);
 
-        // 3. Lọc lại Entities dựa trên SaveData
+        // 3. Nạp TẤT CẢ thực thể (gạch, boss) từ định nghĩa level
+        // (Đây là trạng thái "sạch" của level)
+        entityManager.hydrateLevel(currentLevel);
+
+        // 4. Lọc lại thực thể dựa trên ID đã lưu
         List<Integer> aliveList = (data.getAliveBrickIds() != null)
                 ? data.getAliveBrickIds()
                 : java.util.Collections.emptyList();
 
-        // Hydrate lại trạng thái thực thể từ dữ liệu lưu trữ
+        // Hydrate lại trạng thái (xóa các gạch đã bị phá)
         entityManager.hydrateFromSave(
                 currentLevel,
                 new java.util.HashSet<>(aliveList)
         );
 
-        // 4. Khôi phục trạng thái paddle và ball
+        // 5. Khôi phục trạng thái người chơi
         playerStats.setSessionStats(
                 data.getScore(),
                 data.getLives(),
@@ -521,12 +590,12 @@ public class GameManager {
                 data.getCurrentLevelPlaytimeMillis()
         );
 
-        // Đặt lại vị trí paddle và ball theo dữ liệu lưu trữ
+        // 6. Đặt cờ "Continue" và chuyển về MENU
         this.canContinue = data.isCanContinue();
         if (menuManager != null) {
             menuManager.setContinueAvailable(this.canContinue);
         }
-        setGameState("MENU");
+        setGameState("MENU"); // Luôn đưa người chơi về Menu sau khi load
     }
 
     public PlayerStats getPlayerStats() { return playerStats; }
@@ -550,8 +619,6 @@ public class GameManager {
     public SelectLevel getSelectLevel() { return selectLevel; }
     public String getGameState() { return gameState; }
     public Image getCurrentBackground() { return this.currentBackground; }
-
-
     public List<Laser> getLasers() { return entityManager.getLasers(); }
     public List<LaserShooterBrick> getLaserShooters() { return entityManager.getLaserShooters(); }
     public Boss getBoss() { return entityManager.getBoss(); }
@@ -576,5 +643,4 @@ public class GameManager {
     public void addScore(int points) {
         playerStats.addScore(points);
     }
-
 }

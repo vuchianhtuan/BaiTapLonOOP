@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Import lớp chúng ta muốn test
-import com.mygame.arkanoid.util.config.GameConstants;
+import com.mygame.arkanoid.config.GameConstants;
 
 @DisplayName("Kiểm tra logic của PlayerStats")
 class PlayerStatsTest {
