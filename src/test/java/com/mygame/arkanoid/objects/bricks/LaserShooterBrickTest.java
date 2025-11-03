@@ -7,24 +7,46 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Lớp kiểm thử (test class) JUnit 5 dành cho {@link LaserShooterBrick}.
+ * <p>
+ * Tập trung vào việc xác minh logic bắn (shooting)
+ * và cơ chế hồi chiêu (cooldown) của gạch.
+ */
 @DisplayName("Kiểm tra logic Gạch Bắn Laze")
 class LaserShooterBrickTest {
 
+    /** Đối tượng gạch bắn laze (SUT - System Under Test) cho mỗi kiểm thử. */
     private LaserShooterBrick brick;
-    // Lấy hằng số thời gian hồi chiêu từ code game (180 frames)
+    /**
+     * Bản sao (local copy) của hằng số thời gian hồi chiêu
+     * (từ code game) để sử dụng trong logic kiểm thử.
+     */
     private static final int SHOOT_INTERVAL = 180;
 
+    /**
+     * Thiết lập (setup) chạy trước *mỗi* phương thức {@code @Test}.
+     * <p>
+     * Khởi tạo một đối tượng {@code LaserShooterBrick} mới
+     * để đảm bảo mỗi kiểm thử là độc lập (isolated).
+     */
     @BeforeEach
     void setUp() {
         // Tạo gạch, máu 3
         brick = new LaserShooterBrick(100, 100, 45, 20, 3);
-        // Giả lập gạch đã sẵn sàng bắn ngay (cooldown = 0)
-        // (Code gốc của bạn là ngẫu nhiên, chúng ta cần ép nó về 0)
-        // Chúng ta sẽ cần thêm 1 hàm setter, hoặc sửa lại test.
-
-        // Tạm thời, chúng ta sẽ test bằng cách gọi update() 180 lần.
+        // (Code gốc của gạch có cooldown ngẫu nhiên khi khởi tạo)
+        // Các bài test sẽ mô phỏng (simulate) thời gian trôi qua
+        // bằng cách gọi update() nhiều lần.
     }
 
+    /**
+     * Kiểm tra rằng gạch KHÔNG bắn khi đang trong thời gian hồi chiêu
+     * (cooldown).
+     * <p>
+     * Do gạch mới tạo có thời gian hồi chiêu ngẫu nhiên (lớn hơn 0),
+     * việc gọi `tryToShoot` ngay lập tức (sau 1 update)
+     * phải luôn trả về `null`.
+     */
     @Test
     @DisplayName("Gạch KHÔNG bắn khi đang hồi chiêu")
     void testDoesNotShootOnCooldown() {
@@ -40,6 +62,18 @@ class LaserShooterBrickTest {
         assertNull(laser, "Gạch không được bắn khi đang trong thời gian hồi chiêu");
     }
 
+    /**
+     * Kiểm tra rằng gạch BẮN ra laze sau khi thời gian hồi chiêu kết thúc.
+     * <p>
+     * <b>Logic:</b>
+     * <ol>
+     * <li>Mô phỏng (simulate) thời gian trôi qua bằng cách gọi
+     * `update()` (SHOOT_INTERVAL + 1) lần để đảm bảo cooldown về 0.</li>
+     * <li>Kiểm tra rằng `tryToShoot()` trả về một đối tượng {@link Laser}.</li>
+     * <li>Kiểm tra rằng `tryToShoot()` lần thứ hai ngay lập tức
+     * trả về `null` (xác nhận cooldown đã được reset).</li>
+     * </ol>
+     */
     @Test
     @DisplayName("Gạch BẮN ra laze khi hết hồi chiêu")
     void testShootsWhenCooldownFinishes() {

@@ -62,7 +62,7 @@ public final class BrickFactory {
             // --- Ký tự rỗng (Empty space) ---
             case '_': // Dùng cho dễ nhìn trong file level
             case '0': // Dùng cho dễ nhìn
-            default: throw new IllegalArgumentException("Không hỗ trợ BrickType: " + type);
+            default: return null; // Không tạo gạch nào
         }
     }
 }
