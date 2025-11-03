@@ -4,7 +4,9 @@ import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 
-// GIAO DIỆN HIỂN THỊ ĐIỂM SỐ
+/**
+ * Lớp ScoreUI quản lý hiển thị điểm số trong giao diện người dùng.
+ */
 public class ScoreUI {
     GameManager gameManager;
     public ScoreUI(GameManager gm) {
@@ -15,6 +17,9 @@ public class ScoreUI {
         // Hiện chưa có logic gì để update
     }
 
+    /**
+     * Vẽ điểm số lên màn hình.
+     */
     public void draw(Graphics g) {
         ScalingManager sm = ScalingManager.getInstance();
 
@@ -27,7 +32,7 @@ public class ScoreUI {
         Font baseFont = new Font("Arial", Font.BOLD, 24);
         Font scaledFont = baseFont.deriveFont((float)(baseFont.getSize() * sm.getScale()));
 
-        g.setFont(scaledFont); // <-- Dùng font đã scale
+        g.setFont(scaledFont);
         g.setColor(Color.WHITE);
         g.drawString(scoreText, sm.scaleX(logicX), sm.scaleY(logicY_title));
 
@@ -35,7 +40,7 @@ public class ScoreUI {
         baseFont = new Font("Arial", Font.PLAIN, 22);
         scaledFont = baseFont.deriveFont((float)(baseFont.getSize() * sm.getScale()));
 
-        g.setFont(scaledFont); // <-- Dùng font đã scale
+        g.setFont(scaledFont);
         g.drawString(scoreValue, sm.scaleX(logicX), sm.scaleY(logicY_value));
     }
 }

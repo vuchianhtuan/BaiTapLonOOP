@@ -7,10 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// QUẢN LÝ BOSS VỚI NHIỀU KHỐI GẠCH
+/**
+ * Lớp Boss đại diện cho một con trùm trong game, bao gồm nhiều khối gạch di chuyển cùng nhau.
+ */
 public class Boss {
 
-    // VỊ TRÍ HIỆN TẠI CỦA BOSS, VẬN TỐC THEO TRỤC X, DANH SÁCH GẠCH VÀ BẢN ĐỒ VỊ TRÍ TƯƠNG ĐỐI
+    // Vị trí hiện tại của Boss, vận tốc di chuyển và danh sách các khối gạch bên trong nó.
     private float x, y;
     private float dx;
     private final List<Brick> bricks;
@@ -34,7 +36,7 @@ public class Boss {
     }
 
     /**
-     * CẬP NHẬT VỊ TRÍ CỦA BOSS VÀ CÁC KHỐI GẠCH BÊN TRONG NÓ.
+     * Cập nhật vị trí của Boss và các khối gạch bên trong nó.
      */
     public void update() {
         x += dx;
@@ -72,7 +74,7 @@ public class Boss {
     }
 
     /**
-     * XÓA CÁC KHỐI GẠCH ĐÃ BỊ PHÁ HỦY KHỎI DANH SÁCH VÀ BẢN ĐỒ VỊ TRÍ TƯƠNG ĐỐI.
+     * Xóa các khối gạch đã bị phá hủy khỏi danh sách.
      */
     public void removeDestroyedBricks() {
         bricks.removeIf(brick -> {
@@ -85,8 +87,7 @@ public class Boss {
     }
 
     /**
-     * KIỂM TRA NẾU BOSS ĐÃ BỊ ĐÁNH BẠI (KHÔNG CÒN GẠCH NÀO).
-     * @return true NẾU BOSS ĐÃ BỊ ĐÁNH BẠI, NGƯỢC LẠI LÀ false.
+     * Kiểm tra xem Boss đã bị đánh bại chưa.
      */
     public boolean isDefeated() {
         return bricks.isEmpty();

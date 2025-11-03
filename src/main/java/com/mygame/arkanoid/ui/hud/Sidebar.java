@@ -9,7 +9,9 @@ import java.awt.*;
 
 import static com.mygame.arkanoid.core.GameManager.GAMESTATE_PAUSED;
 
-// THANH BÊN (SIDEBAR) HIỂN THỊ THÔNG TIN TRONG GAME
+/**
+ * Lớp Sidebar quản lý thanh bên trong giao diện người dùng của trò chơi.
+ */
 public class Sidebar {
     private GameManager gameManager;
     private InputHandler inputHandler;
@@ -41,7 +43,7 @@ public class Sidebar {
     }
 
     /**
-     * Hàm này sẽ được gọi BÊN TRONG GameManager.updateGame()
+     * Hàm này sẽ được gọi bên trong GameManager.updateGame()
      * ở các state "PLAYING" và "PAUSED"
      */
     public void update() {
@@ -118,7 +120,7 @@ public class Sidebar {
         int logicX = 980; // 960 + 20 padding
         int currentY = 320;
 
-        // 1. VẼ LEVEL
+        // 1. Vẽ LEVEL
         Font titleFont = new Font("Arial", Font.BOLD, 24);
         Font scaledTitleFont = titleFont.deriveFont((float)(titleFont.getSize() * sm.getScale()));
 
@@ -160,7 +162,7 @@ public class Sidebar {
         long seconds = totalSeconds % 60;
         g.drawString(String.format("%02d:%02d", minutes, seconds), sm.scaleX(logicX), sm.scaleY(currentY));
 
-        // 3. VẼ NÚT MENU
+        // 3. Vẽ nút MENU
         g.setColor(Color.GRAY);
         g.fillRect(sm.scaleX(menuButtonRect.x), sm.scaleY(menuButtonRect.y),
                 sm.scaleWidth(menuButtonRect.width), sm.scaleHeight(menuButtonRect.height));
@@ -177,7 +179,7 @@ public class Sidebar {
         int textY_screen = sm.scaleY(menuButtonRect.y) + (sm.scaleHeight(menuButtonRect.height) - fm.getHeight()) / 2 + fm.getAscent();
         g.drawString(menuText, textX_screen, textY_screen);
 
-        // 4. VẼ NÚT PAUSE/RESUME
+        // 4. VẼ nút PAUSE/RESUME
         Rectangle buttonRect;
         String buttonText;
         if (GAMESTATE_PAUSED.equals(gameManager.getGameState())) {

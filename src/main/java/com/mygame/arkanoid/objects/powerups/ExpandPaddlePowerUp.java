@@ -10,7 +10,11 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.lang.Math;          // <-- THÊM
 
-// POWER-UP MỞ RỘNG PADDLE
+/**
+ * Lớp đại diện cho vật phẩm tăng sức mạnh mở rộng thanh đỡ (paddle).
+ * Khi người chơi thu thập vật phẩm này, chiều rộng của thanh đỡ sẽ được
+ * mở rộng trong một khoảng thời gian nhất định.
+ */
 public class ExpandPaddlePowerUp extends PowerUp {
     private String imageName;
     private static final int EXPAND_AMOUNT = 50;

@@ -4,7 +4,9 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
-// GẠCH MẠNH
+/**
+ * Lớp StrongBrick đại diện cho một viên gạch cứng trong trò chơi Arkanoid.
+ */
 public class StrongBrick extends Brick {
 
     @Override public void update() {

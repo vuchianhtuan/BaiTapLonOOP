@@ -9,7 +9,9 @@ import java.awt.event.KeyEvent;
 import com.mygame.arkanoid.systems.ScalingManager;
 import com.mygame.arkanoid.util.config.GameConstants;
 
-// LỚP QUẢN LÝ PADDLE
+/**
+ * Lớp Paddle đại diện cho thanh điều khiển trong trò chơi Arkanoid.
+ */
 public class Paddle extends MovableObject {
     private int speed = GameConstants.PADDLE_SPEED;
     private PowerUp currentPowerUp;

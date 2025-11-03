@@ -8,7 +8,9 @@ import com.mygame.arkanoid.objects.bricks.ExplosiveBrick;
 import java.util.ArrayList;
 import java.util.List;
 
-// HỆ THỐNG XỬ LÝ VỤ NỔ
+/**
+ * Hệ thống xử lý vụ nổ từ các viên gạch nổ (ExplosiveBrick).
+ */
 public class ExplosionSystem {
 
     /**

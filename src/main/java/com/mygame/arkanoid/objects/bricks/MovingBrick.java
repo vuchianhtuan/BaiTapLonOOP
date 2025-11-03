@@ -6,7 +6,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
-// GẠCH DI CHUYỂN
+/**
+ * Lớp MovingBrick đại diện cho một viên gạch di chuyển ngang trong trò chơi Arkanoid.
+ */
 public class MovingBrick extends Brick {
     private int speedX;
     private int originalX;

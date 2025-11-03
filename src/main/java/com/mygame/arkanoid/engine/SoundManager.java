@@ -49,7 +49,9 @@ public class SoundManager {
      * @param musicName
      */
     public void playBackgroundMusic(String musicName) {
+        // Dừng nhạc nền hiện tại nếu có
         stopBackgroundMusic();
+        // Bắt đầu phát nhạc nền mới
         try {
             URL url = this.getClass().getResource("/sounds/" + musicName);
             if (url == null) {
@@ -57,9 +59,9 @@ public class SoundManager {
                 return;
             }
 
-            AudioInputStream audioInput = AudioSystem.getAudioInputStream(url);
-            // chuyển về PCM để đảm bảo tương thích
-            AudioFormat baseFormat = audioInput.getFormat();
+            AudioInputStream audioInput = AudioSystem.getAudioInputStream(url); // Mở AudioInputStream gốc
+            AudioFormat baseFormat = audioInput.getFormat(); // Lấy định dạng gốc
+            // Chuyển đổi định dạng sang PCM_SIGNED nếu cần
             AudioFormat decodedFormat = new AudioFormat(
                     AudioFormat.Encoding.PCM_SIGNED,
                     baseFormat.getSampleRate(),
@@ -69,14 +71,15 @@ public class SoundManager {
                     baseFormat.getSampleRate(),
                     false
             );
+            // Tạo AudioInputStream đã giải mã
             AudioInputStream dais = AudioSystem.getAudioInputStream(decodedFormat, audioInput);
 
             backgroundMusicClip = AudioSystem.getClip();
-            backgroundMusicClip.open(dais);
+            backgroundMusicClip.open(dais); // Mở clip với dữ liệu âm thanh đã giải mã
 
-            updateBackgroundMusicVolume();
+            updateBackgroundMusicVolume(); // Cập nhật âm lượng theo thiết lập hiện tại
             backgroundMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
-            backgroundMusicClip.start();
+            backgroundMusicClip.start(); // Bắt đầu phát nhạc nền
 
         } catch (Exception e) {
             System.err.println("Lỗi khi phát nhạc nền: " + e.getMessage());
@@ -132,6 +135,7 @@ public class SoundManager {
             }
 
             try (AudioInputStream ais = AudioSystem.getAudioInputStream(url)) {
+                // Chuyển đổi định dạng sang PCM_SIGNED
                 AudioFormat baseFormat = ais.getFormat();
                 AudioFormat decodedFormat = new AudioFormat(
                         AudioFormat.Encoding.PCM_SIGNED,
@@ -151,8 +155,8 @@ public class SoundManager {
                         baos.write(buffer, 0, read);
                     }
                     byte[] audioBytes = baos.toByteArray();
-                    soundData.put(soundName, audioBytes);
-                    soundFormat.put(soundName, decodedFormat);
+                    soundData.put(soundName, audioBytes); // Lưu dữ liệu âm thanh đã giải mã
+                    soundFormat.put(soundName, decodedFormat); // Lưu định dạng âm thanh
                 }
             }
         } catch (Exception e) {
@@ -175,6 +179,7 @@ public class SoundManager {
         byte[] audioBytes = soundData.get(soundName);
         AudioFormat format = soundFormat.get(soundName);
 
+        // Nếu chưa preload, thử preload ngay lúc này
         if (audioBytes == null || format == null) {
             // Fallback: preload on demand (chậm lần đầu)
             try {
@@ -187,12 +192,13 @@ public class SoundManager {
                 return;
             }
         }
-
+        // Tạo AudioInputStream từ byte array
         AudioInputStream ais = new AudioInputStream(
                 new ByteArrayInputStream(audioBytes),
                 format,
                 audioBytes.length / format.getFrameSize());
 
+        // Phát âm thanh nhanh
         try {
             Clip clip = AudioSystem.getClip();
             clip.open(ais);
@@ -228,7 +234,7 @@ public class SoundManager {
     private void updateBackgroundMusicVolume() {
         if (backgroundMusicClip != null) {
             float effectiveMusicVolume = muted ? 0.0f : masterVolume * musicVolume;
-            setClipVolume(backgroundMusicClip, effectiveMusicVolume);
+            setClipVolume(backgroundMusicClip, effectiveMusicVolume); // Cập nhật âm lượng nhạc nền
         }
     }
 
@@ -241,7 +247,9 @@ public class SoundManager {
         if (volume < 0f) volume = 0f;
         if (volume > 1f) volume = 1f;
 
+        // Chuyển đổi âm lượng tuyến tính (0.0 - 1.0) sang dB
         try {
+            // Lấy điều khiển âm lượng MASTER_GAIN
             if (clip != null && clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                 FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
                 float min = gainControl.getMinimum();

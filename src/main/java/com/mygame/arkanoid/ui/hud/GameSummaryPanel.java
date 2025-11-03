@@ -11,7 +11,9 @@ import java.awt.Graphics2D;    // Để sử dụng GradientPaint và setRenderi
 import java.awt.RenderingHints; // Để làm mịn các đường vẽ (anti-aliasing)
 import java.awt.geom.RoundRectangle2D; // Để vẽ hình chữ nhật bo góc
 
-// BẢNG TỔNG KẾT TRÒ CHƠI (GAME OVER / YOU WIN)
+/**
+ * Lớp GameSummaryPanel hiển thị hộp thống kê điểm và thời gian chơi cuối cùng.
+ */
 public class GameSummaryPanel {
 
     // Kích thước và vị trí hộp thống kê (logic coordinates)
@@ -108,7 +110,7 @@ public class GameSummaryPanel {
         Font scaledStatValueFont = statValueFont.deriveFont((float)(statValueFont.getSize() * sm.getScale()));
 
         // Vị trí cố định cho nhãn (căn trái)
-        int labelDrawX = screenX + sm.scaleWidth(50); // <-- SỬA LỖI: Dùng scaleWidth
+        int labelDrawX = screenX + sm.scaleWidth(50);
 
         // Vị trí cho giá trị (căn phải so với một điểm tham chiếu)
         int valueRefX = screenX + screenWidth - sm.scaleWidth(50);

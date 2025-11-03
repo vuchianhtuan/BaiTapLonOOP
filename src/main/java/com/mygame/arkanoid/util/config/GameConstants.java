@@ -1,6 +1,8 @@
 package com.mygame.arkanoid.util.config;
 
-// LỚP CHỨA CÁC HẰNG SỐ CỐ ĐỊNH CỦA TRÒ CHƠI
+/**
+ * Chứa các hằng số (constants) cấu hình của game.
+ */
 public final class GameConstants {
 
     private GameConstants() {}

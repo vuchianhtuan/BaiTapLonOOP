@@ -9,7 +9,9 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.Image;
 
-// MÀN CHỌN LEVEL
+/**
+ * Lớp SelectLevel quản lý màn hình chọn level trong trò chơi Arkanoid.
+ */
 public class SelectLevel {
     private InputHandler inputHandler;
     private Image BackgroundImage;
@@ -24,8 +26,6 @@ public class SelectLevel {
         this.BackgroundImage = AssetManager.getInstance().getImage("selectLevelBackground");
         this.gameManager = gameManager;
         this.backButton = new BackButton(10, 10, 40, 40);
-
-        // --- BẮT ĐẦU THIẾT KẾ LAYOUT MỚI ---
 
         int boxWidth = 300;  // Chiều rộng logic của mỗi hộp
         int boxHeight = 400; // Chiều cao logic của mỗi hộp
@@ -42,10 +42,7 @@ public class SelectLevel {
         this.levelButtons[1] = new Rectangle(padding * 2 + boxWidth, yPos, boxWidth, boxHeight);
         this.levelButtons[2] = new Rectangle(padding * 3 + (boxWidth * 2), yPos, boxWidth, boxHeight);
 
-        // --- KẾT THÚC LAYOUT MỚI ---
-
-        // (Tùy chọn) Load ảnh preview
-        // Để dùng, bạn cần thêm 3 ảnh này vào hàm loadAssets() của GameManager
+        // (Tùy chọn) Load ảnh preview cho mỗi level
         AssetManager am = AssetManager.getInstance();
         this.levelPreviews[0] = am.getImage("level1_preview");
         this.levelPreviews[1] = am.getImage("level2_preview");
@@ -81,7 +78,7 @@ public class SelectLevel {
         ScalingManager sm = ScalingManager.getInstance();
         Graphics2D g2d = (Graphics2D) g; // Dùng Graphics2D
 
-        // 1. Vẽ nền (Đã sửa lỗi letterboxing)
+        // 1. Vẽ nền
         if (BackgroundImage != null) {
             g.drawImage(BackgroundImage,
                     sm.scaleX(0), sm.scaleY(0),
@@ -89,7 +86,7 @@ public class SelectLevel {
                     null);
         }
 
-        // 2. Vẽ Tiêu đề (MỚI)
+        // 2. Vẽ Tiêu đề
         Font titleFont = new Font("Arial", Font.BOLD, 48);
         Font scaledTitleFont = titleFont.deriveFont((float)(titleFont.getSize() * sm.getScale()));
         g2d.setFont(scaledTitleFont);
@@ -123,8 +120,7 @@ public class SelectLevel {
             // Vẽ nền nút (ảnh preview hoặc hộp màu)
             if (preview != null && preview.getWidth(null) > 0 && preview.getHeight(null) > 0) {
 
-                // --- BẮT ĐẦU LOGIC CẮT ẢNH (ASPECT FILL) ---
-
+                // Cắt ảnh để vừa khung mà không bị méo
                 double imgWidth = preview.getWidth(null);
                 double imgHeight = preview.getHeight(null);
                 double rectWidth = virtualRect.width;
@@ -155,9 +151,6 @@ public class SelectLevel {
                         x, y, x + width, y + height, // Tọa độ ĐÍCH (trên màn hình)
                         sx1, sy1, sx2, sy2,           // Tọa độ NGUỒN (cắt từ ảnh gốc)
                         null);
-
-                // --- KẾT THÚC LOGIC CẮT ẢNH ---
-
             } else {
                 // Hộp màu tối nếu không có ảnh
                 g.setColor(new Color(30, 30, 30, 200));

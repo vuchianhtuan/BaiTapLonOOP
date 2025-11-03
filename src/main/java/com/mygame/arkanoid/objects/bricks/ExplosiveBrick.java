@@ -7,7 +7,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
-// GẠCH NỔ
+/**
+ * Lớp ExplosiveBrick đại diện cho một viên gạch có thể nổ trong trò chơi Arkanoid.
+ */
 public class ExplosiveBrick extends Brick {
 
     // 1. THÊM TRẠNG THÁI 'IGNITED'

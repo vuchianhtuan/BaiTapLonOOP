@@ -4,7 +4,9 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.Color;
 import java.awt.Graphics;
 
-// Lớp đại diện cho một mảnh vụn nhỏ khi viên gạch bị phá hủy
+/**
+ * Lớp đại diện cho một mảnh vụn trong hiệu ứng phá vỡ.
+ */
 public class Shard {
     /**
      * Vị trí, vận tốc, màu sắc và tuổi thọ của mảnh vụn
@@ -41,7 +43,7 @@ public class Shard {
     }
 
     /**
-     * Cập nhật vị trí và trạng thái của mảnh vụn
+     * Cập nhật vị trí và trạng thái của mảnh vụn cho mỗi frame.
      */
     public void update() {
         // Áp dụng trọng lực

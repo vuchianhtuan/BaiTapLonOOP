@@ -9,7 +9,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.Rectangle; // <-- THÊM IMPORT NÀY
 
-// NÚT THUMB TRÊN THANH TRƯỢT
+/**
+ * Nút Thumb trên thanh trượt để điều chỉnh giá trị.
+ */
 public class Thumb extends GameObject {
 
     private final String imageName;
@@ -27,8 +29,8 @@ public class Thumb extends GameObject {
     public void update() {}
 
     /**
-     * CẬP NHẬT TỌA ĐỘ X VÀ VÙNG CHỨA CỦA THUMB
-     * @param x Tọa độ x mới
+     * Cập nhật tọa độ x của Thumb và vùng chứa.
+     * @param x tọa độ x mới.
      */
     public void setX(int x) {
         this.x = x; // Cập nhật tọa độ x (thừa hưởng từ GameObject)
@@ -40,8 +42,7 @@ public class Thumb extends GameObject {
     }
 
     /**
-     * LẤY VÙNG CHỨA CỦA THUMB
-     * @return
+     * Lấy vùng chứa của Thumb.
      */
     public Rectangle getBounds() {
         return this.bounds; // Giờ đây this.bounds đã tồn tại

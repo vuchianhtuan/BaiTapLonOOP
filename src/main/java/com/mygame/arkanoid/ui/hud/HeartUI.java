@@ -6,7 +6,9 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.Graphics; // CHỈ DÙNG Graphics
 import java.awt.image.BufferedImage;
 
-// GIAO DIỆN HIỂN THỊ TIM MẠNG
+/**
+ * Lớp HeartUI quản lý hiển thị tim mạng trong giao diện người dùng.
+ */
 public class HeartUI {
     private GameManager gameManager;
     private String imageName;
@@ -21,7 +23,7 @@ public class HeartUI {
     }
 
     /**
-     * CẬP NHẬT LOGIC HIỂN THỊ TIM MẠNG VÀ HIỆU ỨNG NHẤP NHÁY KHI MẤT MẠNG.
+     * Cập nhật trạng thái hiển thị tim mạng, bao gồm logic nhấp nháy khi mất mạng.
      */
     public void update() {
         int currentLives = gameManager.getLives();

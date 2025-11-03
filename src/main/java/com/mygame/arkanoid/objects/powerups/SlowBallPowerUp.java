@@ -6,7 +6,9 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-// POWER-UP GIẢM TỐC ĐỘ BÓNG
+/**
+ * Lớp đại diện cho vật phẩm tăng sức mạnh làm chậm tốc độ bóng.
+ */
 public class SlowBallPowerUp extends PowerUp {
     @Override public void update() {
         this.y += fallSpeed;

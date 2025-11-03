@@ -6,7 +6,9 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-// NÚT QUAY LẠI
+/**
+ * Lớp BackButton đại diện cho một nút "Quay lại" trong giao diện người dùng.
+ */
 public class BackButton {
     private Rectangle bounds;
     private String imageName = "Back";
@@ -30,9 +32,9 @@ public class BackButton {
 
     /**
      * KIỂM TRA NÚT CÓ ĐƯỢC NHẤN HAY KHÔNG.
-     * @param mx
-     * @param my
-     * @return
+     * @param mx tọa độ x của con trỏ chuột.
+     * @param my tọa độ x, y của con trỏ chuột.
+     * @return true nếu tọa độ (mx, my) nằm trong vùng nút, ngược lại false.
      */
     public boolean contains(int mx, int my) {
         return bounds.contains(mx, my);

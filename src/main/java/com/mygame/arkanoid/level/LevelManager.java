@@ -3,6 +3,9 @@ package com.mygame.arkanoid.level;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Quản lý việc tải và chuyển đổi giữa các màn chơi (levels) trong game.
+ */
 public class LevelManager {
     private List<String> levelFiles;
     private int currentLevelIndex;
@@ -13,6 +16,9 @@ public class LevelManager {
         currentLevelIndex = -1; // Bắt đầu từ -1
     }
 
+    /**
+     * Tải danh sách các file màn chơi.
+     */
     public void loadLevels() {
         levelFiles.add("/levels/Level1.txt");
         levelFiles.add("/levels/Level2.txt");
@@ -20,7 +26,6 @@ public class LevelManager {
         // Thêm các file level khác nếu có
     }
 
-    // --- THÊM PHƯƠNG THỨC MỚI ---
     /**
      * Tải trực tiếp một màn chơi theo chỉ số (index).
      * @param index Chỉ số của màn (0, 1, 2...)
@@ -31,6 +36,7 @@ public class LevelManager {
             currentLevelIndex = index; // Cập nhật chỉ số hiện tại
             String levelFile = levelFiles.get(currentLevelIndex);
 
+            // Thử tải level từ file
             try {
                 currentLevel = new Level(levelFile);
                 return true;
@@ -48,9 +54,6 @@ public class LevelManager {
         currentLevel = null; // Đặt level hiện tại là null nếu lỗi
         return false; // Chỉ số không hợp lệ
     }
-    // --- KẾT THÚC THÊM MỚI ---
-
-    // --- SỬA PHƯƠNG THỨC NÀY ---
     /**
      * Đặt màn chơi hiện tại và tải nó.
      * @param index Chỉ số của màn muốn đặt (0, 1, 2...)
@@ -59,8 +62,6 @@ public class LevelManager {
         // Không cần trừ 1 nữa, gọi trực tiếp loadSpecificLevel
         loadSpecificLevel(index);
     }
-    // --- KẾT THÚC SỬA ---
-
 
     /**
      * Tải level tiếp theo trong danh sách.

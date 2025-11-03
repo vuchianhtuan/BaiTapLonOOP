@@ -6,7 +6,9 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-// POWER-UP TĂNG TỐC ĐÁNH BÓNG
+/**
+ * Lớp đại diện cho vật phẩm tăng sức mạnh làm tăng tốc độ bóng.
+ */
 public class FastBallPowerUp extends PowerUp {
     private String imageName = "fastBallPowerUp";
     private static final double FAST_SPEED_FACTOR = 1.5; // Tăng 50

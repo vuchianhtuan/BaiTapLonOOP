@@ -9,7 +9,9 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D; // Import để vẽ hình chữ nhật bo tròn đẹp hơn
 import java.awt.image.BufferedImage;
 
-// QUẢN LÝ MENU CHÍNH
+/**
+ * Lớp MenuManager quản lý menu chính của trò chơi Arkanoid.
+ */
 public class MenuManager {
     private final GameManager gameManager;
     private final InputHandler inputHandler;
@@ -58,7 +60,7 @@ public class MenuManager {
     }
 
     /**
-     * Hàm này sẽ được gọi BÊN TRONG GameManager.updateGame() khi ở state "MENU".
+     * Hàm này sẽ được gọi bên trong GameManager.updateGame() khi ở state "MENU".
      */
     public void update() {
         int virtualMouseX = inputHandler.getVirtualMouseX();

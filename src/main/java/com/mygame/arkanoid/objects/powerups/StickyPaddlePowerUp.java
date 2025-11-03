@@ -7,7 +7,9 @@ import java.awt.image.BufferedImage;
 import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.systems.ScalingManager;
 
-// POWER-UP CHO PHÉP PADDLE DÍNH BÓNG
+/**
+ * Lớp đại diện cho vật phẩm tăng sức mạnh làm cho paddle có khả năng dính bóng.
+ */
 public class StickyPaddlePowerUp extends PowerUp {
     private String imageName = "stickyPowerUp";
 

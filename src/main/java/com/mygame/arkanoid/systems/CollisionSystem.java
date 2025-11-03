@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-// HỆ THỐNG KIỂM TRA VA CHẠM GIỮA CÁC ĐỐI TƯỢNG TRONG GAME
+/**
+ * Hệ thống xử lý va chạm giữa các đối tượng trong game.
+ */
 public class CollisionSystem {
 
     // Danh sách tạm để tránh tạo mới mỗi frame
@@ -49,7 +51,8 @@ public class CollisionSystem {
      * @param screenHeight
      */
     private void checkLaserVsPaddle(GameManager gm, Paddle paddle, int screenHeight) {
-        Iterator<Laser> laserIterator = gm.getLasers().iterator();
+        Iterator<Laser> laserIterator = gm.getLasers().iterator(); // Sử dụng iterator để dễ dàng xóa phần tử
+        // Duyệt qua tất cả các laser nhằm kiểm tra va chạm
         while (laserIterator.hasNext()) {
             Laser laser = laserIterator.next();
 

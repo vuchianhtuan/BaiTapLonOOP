@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-// QUẢN LÝ ĐIỂM SỐ VÀ THỜI GIAN CHƠI
+/**
+ * Lớp ScoreManager quản lý điểm số và thời gian chơi trong trò chơi Arkanoid.
+ */
 public class ScoreManager {
     private final GameManager gameManager;
     private InputHandler inputHandler;
@@ -106,7 +108,7 @@ public class ScoreManager {
     public List<Long> getTopTimes() { return new ArrayList<>(topTimes); }
 
     /**
-     * Hàm này sẽ được gọi BÊN TRONG GameManager.updateGame() khi ở state "HIGH_SCORES".
+     * Hàm này sẽ được gọi bên trong GameManager.updateGame() khi ở state "HIGH_SCORES".
      */
     public void update() {
         int virtualMouseX = inputHandler.getVirtualMouseX();
@@ -186,11 +188,10 @@ public class ScoreManager {
                     sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT));
         }
 
-        // --- THÊM: Màu nền cho panel chữ ---
+        // Một số thiết lập chung
         Color panelColor = new Color(50, 50, 50, 200); // Màu xám đậm, bán trong suốt (alpha=200)
         int panelArc = 20; // Độ bo tròn góc panel
         int panelPadding = 15; // Khoảng cách từ chữ đến mép panel (logic)
-        // --- KẾT THÚC THÊM ---
 
         // 2. Chuẩn bị Font
         Font titleFont = new Font("Arial", Font.BOLD, 48);

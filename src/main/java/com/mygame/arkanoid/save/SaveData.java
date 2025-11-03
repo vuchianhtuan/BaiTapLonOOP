@@ -4,7 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-// LỚP DỮ LIỆU LƯU TRẠNG THÁI GAME
+/**
+ * Lớp SaveData đại diện cho cấu trúc dữ liệu lưu trữ tiến trình trò chơi Arkanoid.
+ * Lớp này triển khai Serializable để có thể tuần tự hóa và ghi vào file.
+ */
 public class SaveData implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -20,15 +23,9 @@ public class SaveData implements Serializable {
     private long playtimeMillis;              // Tổng thời gian phiên chơi
     private long currentLevelPlaytimeMillis;  // Thời gian của màn hiện tại
 
-    // Trạng thái có thể Continue
-    private boolean canContinue;
-
-    // Dấu thời gian lưu
-    private long savedAtEpochMillis;
-
-
-    // NEW: danh sách ID gạch còn sống (bao gồm cả LaserShooter và gạch Boss)
-    private List<Integer> aliveBrickIds = new ArrayList<>();
+    private boolean canContinue; // Cho phép tiếp tục từ save này
+    private long savedAtEpochMillis; // Thời gian lưu (epoch millis)
+    private List<Integer> aliveBrickIds = new ArrayList<>(); // IDs của các viên gạch còn sống
 
     public SaveData() {}
 

@@ -8,12 +8,14 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-// HỆ THỐNG QUẢN LÝ LƯU TRẠNG THÁI GAME
+/**
+ * Hệ thống lưu trữ trạng thái game.
+ */
 public final class SaveSystem {
     private SaveSystem() {}
 
     /**
-     * LẤY THƯ MỤC LƯU TRỮ TRONG THƯ MỤC NGƯỜI DÙNG
+     * Lấy đường dẫn thư mục lưu trữ trạng thái game
      * @return
      */
     public static Path getSaveDir() {
@@ -22,18 +24,19 @@ public final class SaveSystem {
     }
 
     /**
-     * LẤY ĐƯỜNG DẪN TẬP TIN LƯU TRẠNG THÁI GAME
+     * Lấy đường dẫn tập tin lưu trữ trạng thái game
      * @return
      */
     public static Path getSaveFile() { return getSaveDir().resolve("savegame.bin"); }
 
     /**
-     * LƯU TRẠNG THÁI GAME VÀO TẬP TIN
+     * Lưu trạng thái game vào tập tin
      * @param data DỮ LIỆU LƯU TRẠNG THÁI GAME
      */
     public static void save(SaveData data) {
         try {
-            Files.createDirectories(getSaveDir());
+            Files.createDirectories(getSaveDir()); // Tạo thư mục nếu chưa tồn tại
+            // Ghi dữ liệu vào tập tin
             try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(getSaveFile()))) {
                 oos.writeObject(data);
             }
@@ -43,8 +46,7 @@ public final class SaveSystem {
     }
 
     /**
-     * TẢI TRẠNG THÁI GAME TỪ TẬP TIN
-     * @return DỮ LIỆU LƯU TRẠNG THÁI GAME HOẶC NULL NẾU KHÔNG TÌM THẤY
+     * Tải trạng thái game từ tập tin
      */
     public static SaveData load() {
         Path f = getSaveFile();
@@ -59,7 +61,7 @@ public final class SaveSystem {
     }
 
     /**
-     * XÓA TẬP TIN LƯU TRẠNG THÁI GAME NẾU TỒN TẠI TRÁNH LỖI KHI TẢI
+     * Xóa tập tin lưu trạng thái game
      */
     public static void deleteSave() {
         try { Files.deleteIfExists(getSaveFile()); }
@@ -67,23 +69,22 @@ public final class SaveSystem {
     }
 
     /**
-     * CHỤP ẢNH TRẠNG THÁI HIỆN TẠI CỦA GAME
-     * @param gm
-     * @return
+     * Chụp trạng thái hiện tại của game để lưu
      */
     public static SaveData capture(GameManager gm) {
         SaveData d = new SaveData();
-        d.setLevelIndex(gm.getLevelManager() != null ? gm.getLevelManager().getCurrentLevelIndex() : 0);
-        d.setScore(gm.getScore());
-        d.setLives(gm.getLives());
-        d.setPlaytimeMillis(gm.getPlaytimeMillis());
-        d.setCurrentLevelPlaytimeMillis(gm.getCurrentLevelPlaytimeMillis());
-        d.setCanContinue(true);
-        d.setSavedAtEpochMillis(System.currentTimeMillis());
+        d.setLevelIndex(gm.getLevelManager() != null ? gm.getLevelManager().getCurrentLevelIndex() : 0); // màn hiện tại
+        d.setScore(gm.getScore()); // điểm hiện tại
+        d.setLives(gm.getLives()); // số mạng hiện tại
+        d.setPlaytimeMillis(gm.getPlaytimeMillis()); // thời gian chơi hiện tại
+        d.setCurrentLevelPlaytimeMillis(gm.getCurrentLevelPlaytimeMillis()); // thời gian
+        d.setCanContinue(true); // cho phép tiếp tục
+        d.setSavedAtEpochMillis(System.currentTimeMillis()); // thời gian lưu
 
+        // danh sách ID các viên gạch còn sống
         Set<Integer> alive = new LinkedHashSet<>();
-        for (Brick b : gm.getBricks()) alive.add(b.getId());
-        for (LaserShooterBrick s : gm.getLaserShooters()) alive.add(s.getId());
+        for (Brick b : gm.getBricks()) alive.add(b.getId()); // thêm gạch thường
+        for (LaserShooterBrick s : gm.getLaserShooters()) alive.add(s.getId()); // thêm gạch bắn laser
         if (gm.getBoss() != null) {
             for (Brick b : gm.getBoss().getBricks()) alive.add(b.getId());
         }

@@ -11,8 +11,12 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
-// Lớp đại diện cho một level trong trò chơi Arkanoid
+/**
+ * Định nghĩa một màn chơi trong game.
+ */
 public class Level {
+
+    // Danh sách gạch và cấu hình màn chơi
     private final List<Brick> bricks;
     private final List<Brick> bossBricks;
     private String levelType = "normal";
@@ -31,6 +35,7 @@ public class Level {
     private static final int START_OFFSET_X = 40;   // Cũ: 50
     private static final int START_OFFSET_Y = 30;
 
+    // Khởi tạo level từ file
     public Level(String filePath) {
         this.bricks = new ArrayList<>();
         this.bossBricks = new ArrayList<>();
@@ -46,6 +51,7 @@ public class Level {
      * - Layout gạch, mỗi ký tự đại diện cho một loại gạch
      */
     private void loadLevelFromFile(String filePath) {
+        // Đọc file từ resources
         try (InputStream is = Level.class.getResourceAsStream(filePath)) {
             if (is == null) {
                 throw new IllegalArgumentException("Không thể tìm thấy file level: " + filePath);
@@ -108,7 +114,7 @@ public class Level {
      * @param line Dòng văn bản từ file level
      */
     private void parseHeaderLine(String line) {
-        String[] parts = line.split(":", 2);
+        String[] parts = line.split(":", 2); // Chia thành 2 phần: key và value
         if (parts.length < 2) return;
 
         String key = parts[0].trim().toLowerCase();
@@ -130,6 +136,7 @@ public class Level {
             this.levelType = value.toLowerCase();
 
         } else if ("powerups".equals(key)) {
+            // Phân tích định dạng "POWERUP_TYPE=rate,POWERUP_TYPE=rate,..."
             String[] powerUpDefs = value.split(",");
             for (String def : powerUpDefs) {
                 String[] pv = def.split("=");
@@ -145,7 +152,8 @@ public class Level {
                     }
                 }
             }
-        } else if ("lasershooter_spawn_rate".equals(key)) { // Dùng else if
+        } else if ("lasershooter_spawn_rate".equals(key)) {
+            // Phân tích tỷ lệ spawn lasershooter
             try {
                 // Bây giờ 'value' chỉ là "0.02" nên sẽ parse thành công
                 this.laserShooterSpawnRate = Double.parseDouble(value);
@@ -157,7 +165,7 @@ public class Level {
             this.themeMusic = value;
         } else if ("theme_assets".equals(key)) {
             this.themeAssetPrefix = value;
-        } else if ("theme_background".equals(key)) { // <-- THÊM LOGIC MỚI NÀY
+        } else if ("theme_background".equals(key)) {
             this.themeBackground = value;
         }
     }
@@ -184,9 +192,10 @@ public class Level {
     public PowerUpType getRandomPowerUpType() {
         if (powerUpConfig.isEmpty()) return null;
 
-        double roll = random.nextDouble();
-        double cumulativeRate = 0.0;
+        double roll = random.nextDouble(); // Giá trị ngẫu nhiên từ 0.0 đến 1.0
+        double cumulativeRate = 0.0; // Tỷ lệ tích lũy
 
+        // Duyệt qua các loại PowerUp và tỷ lệ của chúng
         for (Map.Entry<PowerUpType, Double> entry : powerUpConfig.entrySet()) {
             cumulativeRate += entry.getValue();
             if (roll < cumulativeRate) {

@@ -11,7 +11,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent;
 
-// QUẢ BÓNG
+/**
+ * Lớp Ball đại diện cho quả bóng trong game.
+ */
 public class Ball extends MovableObject {
     private static final double MIN_REFLECT_ANGLE_DEG = 30.0; // góc tối thiểu
     private static final double MAX_REFLECT_ANGLE_DEG = 60.0; // góc tối đa
@@ -296,11 +298,11 @@ public class Ball extends MovableObject {
         }
     }
 
-    public Ball(int x, int y, int width, int height, String skinKey) { // <--- THÊM THAM SỐ
+    public Ball(int x, int y, int width, int height, String skinKey) {
         super(x, y, width, height);
         dx = 1;
         dy = -1;
-        this.imageName = skinKey; // <--- SỬA LẠI DÒNG NÀY
+        this.imageName = skinKey;
         this.originalSpeed = this.speed;
     }
 

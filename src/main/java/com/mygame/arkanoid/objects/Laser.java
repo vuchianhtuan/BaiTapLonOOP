@@ -7,7 +7,9 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
-// LỚP QUẢN LÝ TIA LASER BẮN TỪ BOSS
+/**
+ * Lớp Laser đại diện cho một tia laser trong trò chơi Arkanoid.
+ */
 public class Laser {
     private int x, y;
     private final int width, height;
@@ -37,9 +39,7 @@ public class Laser {
     public void render(Graphics g, ScalingManager sm) {
         BufferedImage laserImage = AssetManager.getInstance().getImage("laser");
 
-        // 2. Kiểm tra xem ảnh có tồn tại không
         if (laserImage != null) {
-            // 3. Nếu có, vẽ ảnh ra màn hình với kích thước đã co giãn
             g.drawImage(laserImage,
                     sm.scaleX(this.x),
                     sm.scaleY(this.y),
@@ -47,7 +47,6 @@ public class Laser {
                     sm.scaleHeight(this.height),
                     null);
         } else {
-            // Phương án dự phòng: Nếu không tìm thấy ảnh, vẽ hình chữ nhật màu đỏ
             g.setColor(Color.RED);
             g.fillRect(sm.scaleX(this.x), sm.scaleY(this.y),
                     sm.scaleWidth(this.width), sm.scaleHeight(this.height));

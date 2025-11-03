@@ -7,7 +7,9 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-// THANH TRACK CỦA THANH TRƯỢT
+/**
+ * Lớp Track đại diện cho đường ray trong trò chơi Arkanoid.
+ */
 public class Track extends GameObject {
     String imageName;
 

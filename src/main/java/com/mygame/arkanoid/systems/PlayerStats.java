@@ -2,7 +2,9 @@ package com.mygame.arkanoid.systems;
 
 import com.mygame.arkanoid.util.config.GameConstants;
 
-// HỆ THỐNG QUẢN LÝ THỐNG KÊ NGƯỜI CHƠI
+/**
+ * Quản lý chỉ số người chơi trong game Arkanoid.
+ */
 public class PlayerStats {
 
     // --- Chỉ số người chơi ---

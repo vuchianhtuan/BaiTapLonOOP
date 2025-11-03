@@ -5,7 +5,9 @@ import com.mygame.arkanoid.systems.ScalingManager;
 
 import java.awt.Graphics;
 
-// LỚP TRỪU TƯỢNG POWER-UP CHUNG
+/**
+ * Lớp trừu tượng đại diện cho vật phẩm tăng sức mạnh (power-up) trong trò chơi.
+ */
 public abstract class PowerUp extends GameObject {
     protected String type;
     protected int duration; // Thời gian hiệu lực (tính bằng tick/frame)

@@ -1,6 +1,8 @@
 package com.mygame.arkanoid.objects.bricks;
 
-// Nhà máy tạo gạch dựa trên loại gạch
+/**
+ * Lớp BrickFactory chịu trách nhiệm tạo các đối tượng gạch dựa trên loại gạch được chỉ định.
+ */
 public final class BrickFactory {
     // Kích thước mặc định cho gạch
     private static final int DEFAULT_WIDTH = 45;

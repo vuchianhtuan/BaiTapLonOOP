@@ -8,8 +8,14 @@ import com.mygame.arkanoid.util.config.GameConstants;
 
 import java.awt.*;
 
-// Lớp quản lý hiệu ứng chuyển cảnh giữa các level
+/**
+ * Quản lý hiệu ứng chuyển cảnh giữa các màn chơi trong game.
+ */
 public class LevelTransition {
+
+    /**
+     * Các trạng thái khác nhau của hiệu ứng chuyển cảnh.
+     */
     public enum State {
         IDLE,
         PADDLE_FLY_UP,
@@ -21,10 +27,12 @@ public class LevelTransition {
         FINISH
     }
 
+    // Biến trạng thái và bộ đếm thời gian
     private State currentState = State.IDLE;
     private int timer = 0;
     private int maxDuration = 0;
 
+    // Biến cho paddle bay lên
     private Paddle flyingPaddle;
     private GameManager gameManager;
 
@@ -62,6 +70,8 @@ public class LevelTransition {
 
         timer++;
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
+
+        // Cập nhật logic dựa trên trạng thái hiện tại
         switch (currentState) {
             case PADDLE_FLY_UP: {
                 if (flyingPaddle == null) {

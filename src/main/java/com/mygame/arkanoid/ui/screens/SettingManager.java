@@ -14,7 +14,9 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.List;
 
-// QUẢN LÝ CÀI ĐẶT TRONG GAME
+/**
+ * Lớp SettingManager quản lý màn hình cài đặt trong trò chơi Arkanoid.
+ */
 public class SettingManager {
     // --- KHAI BÁO BIẾN ---
 
@@ -23,8 +25,8 @@ public class SettingManager {
     private SoundManager soundManager;
     private BackButton backButton;
     private Image BackgroundImage;
-    private String selectedBallSkinKey = "skin_ball_1"; // XÓA DÒNG NÀY
-    private String selectedPaddleSkinKey = "skin_paddle_1"; // XÓA DÒNG NÀY
+    private String selectedBallSkinKey = "skin_ball_1";
+    private String selectedPaddleSkinKey = "skin_paddle_1";
 
 
     // --- Thanh trượt âm lượng (Giữ nguyên) ---
@@ -52,18 +54,17 @@ public class SettingManager {
     private int muteButtonY = 530;
     private int muteButtonSize = 30;
 
-    // --- BỔ SUNG: Vùng bao phủ cho nhóm Volume ---
+    // Vùng bao phủ cho nhóm Volume
     private Rectangle volumeGroupBounds;
 
-    // --- BỔ SUNG: Skin Selector ---
+    // Skin cho Ball và Paddle
     private List<String> ballSkinKeys;
     private List<String> paddleSkinKeys;
 
     private int currentBallSkinIndex = 0;
     private int currentPaddleSkinIndex = 0;
 
-    // THAY ĐỔI: Đẩy X chung sang phải để tạo 2 cột
-    private int selectorX = 650; // X chung mới
+    private int selectorX = 650;
     private int arrowSize = 40;
     private int arrowPadding = 10;
 
@@ -123,7 +124,7 @@ public class SettingManager {
 
         this.muteButtonRect = new Rectangle(muteButtonX, muteButtonY, muteButtonSize, muteButtonSize);
 
-        // --- BỔ SUNG: Tính toán vùng bao phủ cho nhóm Volume ---
+        // Tính toán vùng bao phủ cho nhóm Volume
         int groupPadding = 30;
         volumeGroupBounds = new Rectangle(
                 Math.min(trackMaster.getX(), muteButtonRect.x) - groupPadding,
@@ -133,7 +134,7 @@ public class SettingManager {
         );
 
 
-        // 2. BỔ SUNG: Khởi tạo Skin Selector
+        // 2. Khởi tạo Skin Selector
         ballSkinKeys = Arrays.asList("skin_ball_1", "skin_ball_2", "skin_ball_3", "skin_ball_4", "skin_ball_5", "skin_ball_6");
         paddleSkinKeys = Arrays.asList("skin_paddle_1", "skin_paddle_2", "skin_paddle_3", "skin_paddle_4");
 
@@ -180,7 +181,7 @@ public class SettingManager {
         // Tính X căn giữa cho nhãn Paddle
         paddleLabelCenterX = paddleArrowLeft.x + ( (paddleArrowRight.x + paddleArrowRight.width) - paddleArrowLeft.x) / 2;
 
-        // Tính toán vùng bao phủ cho nhóm Paddle (ĐÃ CHỈNH SỬA bao gồm chữ)
+        // Tính toán vùng bao phủ cho nhóm Paddle
         int paddleGroupTopY = paddleLabelY - 30;
 
         paddleGroupBounds = new Rectangle(
@@ -189,7 +190,7 @@ public class SettingManager {
                 (paddleArrowRight.x + paddleArrowRight.width) - paddleArrowLeft.x,
                 Math.max(paddleArrowLeft.y + paddleArrowLeft.height, paddleDisplayBox.y + paddleDisplayBox.height) - paddleGroupTopY
         );
-        // Thêm padding cho viền bao phủ
+        // padding cho viền bao phủ
         paddleGroupBounds.x -= groupPadding;
         paddleGroupBounds.y -= groupPadding;
         paddleGroupBounds.width += groupPadding * 2;
@@ -222,7 +223,7 @@ public class SettingManager {
             return;
         }
 
-        // 3. Xử lý kéo thả thanh trượt Âm lượng (Giữ nguyên)
+        // 3. Xử lý kéo thả thanh trượt Âm lượng
         if (inputHandler.isMousePressed()) {
             if (draggingThumb == null) {
                 if (thumbMaster.getBounds().contains(virtualMouseX, virtualMouseY) || trackMaster.getBounds().contains(virtualMouseX, virtualMouseY)) {
@@ -257,7 +258,7 @@ public class SettingManager {
             draggingThumb = null;
         }
 
-        // 4. BỔ SUNG: Xử lý Animation trượt (Giữ nguyên)
+        // Cập nhật hiệu ứng trượt Skin Ball và Paddle
         if (ballSlideDirection != 0) {
             ballSlideOffset += SLIDE_SPEED;
             if (ballSlideOffset >= ballDisplayBox.width) {
@@ -273,7 +274,7 @@ public class SettingManager {
             }
         }
 
-        // 5. BỔ SUNG: Xử lý Click nút mũi tên (Giữ nguyên)
+        // 4. Xử lý click chọn Skin Ball và Paddle
         if (isClicked) {
             if (ballSlideDirection == 0) {
                 if (ballArrowLeft.contains(virtualMouseX, virtualMouseY)) {
@@ -308,6 +309,7 @@ public class SettingManager {
         }
     }
 
+    // Phương thức vẽ khung chữ nhật hiện đại
     private void drawModernBox(Graphics g, ScalingManager sm, Rectangle box) {
         Color fillColor = new Color(0, 0, 0, 100);
         Color borderColor = new Color(200, 200, 200, 255);
@@ -331,7 +333,7 @@ public class SettingManager {
         g2d.setStroke(new BasicStroke(1));
     }
 
-    // BỔ SUNG: Phương thức vẽ hình ảnh nút với hiệu ứng hover (SÁNG LÊN)
+    // Phương thức vẽ nút với hiệu ứng hover
     private void drawButtonImageWithHover(Graphics g, ScalingManager sm, Rectangle bounds, String imageKey, int virtualMouseX, int virtualMouseY) {
         Graphics2D g2d = (Graphics2D) g.create(); // Sử dụng g.create() để thao tác trên bản sao
 
@@ -380,7 +382,7 @@ public class SettingManager {
         int virtualMouseX = inputHandler.getVirtualMouseX();
         int virtualMouseY = inputHandler.getVirtualMouseY();
 
-        // 1. Vẽ nền, nút Back, Tiêu đề (Giữ nguyên)
+        // Vẽ nền
         if (BackgroundImage != null) {
             g.drawImage(BackgroundImage, sm.scaleX(0), sm.scaleY(0), sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT), null);
         }
@@ -397,10 +399,10 @@ public class SettingManager {
         g.setFont(scaledLabelFont);
         g.setColor(Color.WHITE);
 
-        // --- 1. VẼ KHUNG CHỮ NHẬT LỚN CHO VOLUME (BÊN TRÁI) ---
+        // Vẽ các thành phần UI
         drawModernBox(g, sm, volumeGroupBounds);
 
-        // 2. Vẽ Âm lượng (Đặt bên trong khung Volume)
+        // Vẽ Thanh trượt âm lượng (Giữ nguyên)
         g.drawString("MASTER VOLUME", sm.scaleX(labelX), sm.scaleY(masterLabelY));
         trackMaster.render(g, sm);
         thumbMaster.render(g, sm);
@@ -420,7 +422,6 @@ public class SettingManager {
             g.drawString("X", sm.scaleX(muteButtonRect.x + 7), sm.scaleY(muteButtonRect.y + 24));
         }
 
-        // --- 2. VẼ KHUNG CHỮ NHẬT LỚN CHO SKIN SELECTOR (BÊN PHẢI) ---
         // Lấy khung từ Ball đến Paddle
         Rectangle skinGroupBounds = new Rectangle(
                 ballGroupBounds.x,
@@ -429,10 +430,7 @@ public class SettingManager {
                 (paddleGroupBounds.y + paddleGroupBounds.height) - ballGroupBounds.y
         );
 
-        drawModernBox(g, sm, skinGroupBounds);
-
-
-        // 3. BỔ SUNG: Vẽ Skin Selector (Bên trong khung Skin)
+        drawModernBox(g, sm, skinGroupBounds); // Vẽ khung bao quanh nhóm Skin Ball và Paddle
 
         // Cụm Ball
         FontMetrics fm = g.getFontMetrics(scaledLabelFont);

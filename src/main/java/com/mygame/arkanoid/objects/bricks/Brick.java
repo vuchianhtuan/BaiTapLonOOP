@@ -10,7 +10,9 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
 
-// LỚP TRỪU TƯỢNG CHO CÁC LOẠI GẠCH
+/**
+ * Lớp trừu tượng đại diện cho một viên gạch trong trò chơi Arkanoid.
+ */
 public abstract class Brick extends GameObject {
 
     // Thuộc tính chung cho tất cả các gạch

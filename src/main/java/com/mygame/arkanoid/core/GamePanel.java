@@ -11,7 +11,9 @@ import static com.mygame.arkanoid.core.GameManager.GAMESTATE_PAUSED;
 import javax.swing.JPanel;
 import java.awt.*;
 
-// Bảng điều khiển chính của trò chơi, nơi tất cả việc vẽ diễn ra.
+/**
+ * Bảng điều khiển trò chơi chính, nơi tất cả việc vẽ diễn ra.
+ */
 public class GamePanel extends JPanel {
 
     /**
@@ -48,13 +50,14 @@ public class GamePanel extends JPanel {
      */
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        super.paintComponent(g); // Xóa nền cũ trước khi vẽ mới
         ScalingManager sm = ScalingManager.getInstance();
         sm.update(getWidth(), getHeight());
         String currentState = gameManager.getGameState();
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
 
+        // Vẽ Nền Game Area và các thành phần trò chơi
         if ("PLAYING".equals(currentState) || GAMESTATE_PAUSED.equals(currentState)
                 || "GAME_OVER".equals(currentState) || "TRANSITION".equals(currentState)
                 || "GAME_WIN".equals(currentState)) {
@@ -72,12 +75,13 @@ public class GamePanel extends JPanel {
                         sm.scaleHeight(sm.NATIVE_HEIGHT));
             }
 
-            // 3. Vẽ Nền Sidebar
+            // Vẽ Nền Sidebar
             g.setColor(new Color(30, 30, 30)); // Màu xám tối
             g.fillRect(sm.scaleX(sm.GAME_AREA_WIDTH), sm.scaleY(0), // <-- Bắt đầu từ 960px
                     sm.scaleWidth(sm.NATIVE_WIDTH - sm.GAME_AREA_WIDTH),
                     sm.scaleHeight(sm.NATIVE_HEIGHT));
 
+            // Vẽ các thành phần trò chơi
             renderer.renderGame(g, gameManager.getPaddle(),
                     gameManager.getBall(),
                     gameManager.getBricks(),
@@ -88,8 +92,10 @@ public class GamePanel extends JPanel {
                     gameManager.getLaserShooters(),
                     gameManager.getCurrentBackground(),
                     gameManager.getActiveShards());
-            sidebar.draw(g);
-            levelTransition.render(g);
+            sidebar.draw(g); // Vẽ Sidebar
+            levelTransition.render(g); // Vẽ hiệu ứng chuyển cảnh
+
+            // Xử lý vẽ các trạng thái đặc biệt
             if ("GAME_WIN".equals(currentState)) {
                 Color overlayColor = new Color(0, 0, 0, 128); // 50% mờ
                 g.setColor(overlayColor);
@@ -97,7 +103,7 @@ public class GamePanel extends JPanel {
                         sm.scaleWidth(sm.NATIVE_WIDTH),
                         sm.scaleHeight(sm.NATIVE_HEIGHT));
 
-                // 2. Vẽ bảng thống kê
+                // Vẽ bảng thống kê
                 gameManager.getGameSummaryPanel().draw(g,
                         "YOU WIN!",
                         gameManager.getFinalScore(),
@@ -112,6 +118,7 @@ public class GamePanel extends JPanel {
                         sm.scaleWidth(sm.NATIVE_WIDTH),
                         sm.scaleHeight(sm.NATIVE_HEIGHT));
 
+                // Vẽ bảng thống kê
                 gameManager.getGameSummaryPanel().draw(g,
                         "GAME OVER",
                         gameManager.getFinalScore(),

@@ -1,13 +1,15 @@
 package com.mygame.arkanoid.systems;
 
-// HỆ THỐNG QUẢN LÝ LOGIC CO GIÃN (SCALING) CỬA SỔ
+/**
+ * Quản lý việc co giãn (scaling) kích thước game để phù hợp với cửa sổ.
+ */
 public class ScalingManager {
     private static ScalingManager instance;
 
-    // Kích thước logic gốc CỦA TOÀN BỘ CỬA SỔ
+    // Kích thước logic gốc của game
     public final int NATIVE_WIDTH = 1120;
     public final int NATIVE_HEIGHT = 720;
-    // Kích thước logic CỦA KHU VỰC CHƠI GAME
+    // Kích thước logic của khu vực chơi game (không tính UI)
     public final int GAME_AREA_WIDTH = 960;
 
     // Biến cho logic co giãn (scaling) mới
@@ -43,8 +45,6 @@ public class ScalingManager {
         this.offsetX = (currentWindowWidth - renderWidth) / 2;
         this.offsetY = (currentWindowHeight - renderHeight) / 2;
     }
-
-    // --- CÁC HÀM CŨ VỚI LOGIC MỚI ---
 
     /**
      * Chuyển tọa độ X logic sang tọa độ X màn hình

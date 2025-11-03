@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-// HỆ THỐNG QUẢN LÝ TẤT CẢ ĐỐI TƯỢNG TRONG GAME
+/**
+ * Quản lý vòng đời của tất cả các đối tượng trong game.
+ */
 public class EntityManager {
 
     // --- Danh sách các đối tượng trong game ---
@@ -89,7 +91,7 @@ public class EntityManager {
             return brick.isDestroyed();
         });
 
-        laserShooters.removeIf(Brick::isDestroyed);
+        laserShooters.removeIf(Brick::isDestroyed); // Xóa gạch bắn laser đã bị hủy
 
         if (boss != null) {
             boss.removeDestroyedBricks();
@@ -121,13 +123,16 @@ public class EntityManager {
         int paddleHeight = GameConstants.PADDLE_HEIGHT;
         this.ballSize = GameConstants.BALL_SIZE;
 
+        // Tính vị trí xuất hiện của paddle và bóng
         int finalPaddleX = (gameAreaWidth / 2) - (paddleWidth / 2);
         int spawnPaddleY = nativeHeight + 20;
 
+        // Tạo paddle và bóng mới
         paddle = new Paddle(finalPaddleX, spawnPaddleY, paddleWidth, paddleHeight, paddleSkinKey);
         ball = new Ball(finalPaddleX + (paddleWidth / 2) - (ballSize / 2), spawnPaddleY - ballSize - 1, ballSize, ballSize, ballSkinKey);
         ball.resetBallPosition(paddle);
 
+        // Xóa tất cả các đối tượng cũ
         balls.clear();
         balls.add(ball);
         powerUps.clear();
@@ -144,6 +149,7 @@ public class EntityManager {
      */
     public void hydrateLevel(Level currentLevel) {
         Boss newBoss = null;
+        // 1. Tạo Boss nếu có
         if (currentLevel.isBossLevel() && !currentLevel.getBossBricks().isEmpty()) {
             java.awt.Rectangle bossBounds = currentLevel.getBossInitialBounds();
             float startX = (ScalingManager.getInstance().GAME_AREA_WIDTH / 2.0f) - (bossBounds.width / 2.0f);
@@ -194,15 +200,15 @@ public class EntityManager {
 
         List<Brick> allBricksInLevel = new ArrayList<>(currentLevel.getBricks());
         if (boss != null) {
-            allBricksInLevel.addAll(boss.getBricks());
+            allBricksInLevel.addAll(boss.getBricks()); // Thêm gạch của boss nếu có
         }
 
         for (Brick b : allBricksInLevel) {
             if (aliveBrickIds.contains(b.getId())) {
                 if (b instanceof LaserShooterBrick) {
-                    laserShooters.add((LaserShooterBrick) b);
+                    laserShooters.add((LaserShooterBrick) b); // Thêm vào danh sách gạch bắn laser
                 } else {
-                    bricks.add(b);
+                    bricks.add(b); // Thêm vào danh sách gạch thường
                 }
             }
         }

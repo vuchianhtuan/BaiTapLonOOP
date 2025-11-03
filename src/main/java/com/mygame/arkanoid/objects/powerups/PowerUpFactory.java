@@ -1,6 +1,8 @@
 package com.mygame.arkanoid.objects.powerups;
 
-// NHÀ MÁY TẠO POWER-UP
+/**
+ * Lớp nhà máy để tạo các đối tượng Power-Up dựa trên loại.
+ */
 public final class PowerUpFactory {
     private PowerUpFactory() {}
 

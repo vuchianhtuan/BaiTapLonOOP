@@ -6,7 +6,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import com.mygame.arkanoid.systems.ScalingManager;
 
-// POWER-UP THÊM MẠNG
+/**
+ * Lớp đại diện cho vật phẩm tăng sức mạnh thêm mạng sống (extra life).
+ */
 public class ExtraLifePowerUp extends PowerUp {
     private String imageName = "extraLifePowerUp";
 

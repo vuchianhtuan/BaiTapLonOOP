@@ -9,7 +9,9 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-// Lớp quản lý hoạt ảnh hiển thị chữ "LEVEL X" khi bắt đầu một level mới
+/**
+ * Quản lý hoạt ảnh chữ "LEVEL X" khi bắt đầu một màn chơi mới.
+ */
 public class LevelTextAnimation {
     // Trạng thái của hoạt ảnh
     private enum AnimState {
@@ -67,10 +69,13 @@ public class LevelTextAnimation {
 
         switch (currentState) {
             case SLIDING_IN:
-                float progress = (float) timer / DURATION_SLIDE_IN;
+                float progress = (float) timer / DURATION_SLIDE_IN; // Tỷ lệ tiến trình từ 0.0 đến 1.0
                 this.alpha = progress; // Mờ dần vào
                 this.yPos = (int) (Y_START + (Y_FINAL - Y_START) * progress); // Trượt xuống
 
+                /**
+                 * Kết thúc pha trượt vào
+                 */
                 if (timer >= DURATION_SLIDE_IN) {
                     this.alpha = 1.0f;
                     this.yPos = Y_FINAL;

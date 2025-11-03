@@ -1,6 +1,9 @@
 package com.mygame.arkanoid.util.config;
 
-// ĐỊNH NGHĨA TÀI SẢN ẢNH TOÀN CỤC VÀ THEMED
+/**
+ * Định nghĩa các tài sản (assets) của game.
+ * Mỗi tài sản bao gồm một khóa (key) duy nhất và tên tệp (file name).
+ */
 public enum AssetDefinition {
 
     // --- UI, Menu, Backgrounds ---

@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.io.InputStream;
 
-// Quản lý tài sản (ảnh) của trò chơi với hỗ trợ theme và animation
+/**
+ * Quản lý tài sản (assets) trong game, bao gồm tải ảnh toàn cục và theo chủ đề.
+ */
 public class AssetManager {
     private static final AssetManager instance = new AssetManager();
     private final Map<String, BufferedImage> images = new HashMap<>();
@@ -65,12 +67,11 @@ public class AssetManager {
      * @param baseFileName Tên file gốc (ví dụ: "normalBrick.png")
      */
     public void loadThemedImage(String name, String themePrefix, String baseFileName) {
-        // Không cần kiểm tra containsKey, vì chúng ta có thể đang tải
-        // một theme mới đè lên theme cũ (dùng chung key "normalBrick")
-
+        // Các đường dẫn để thử tải
         String themedPath = IMAGE_PATH_PREFIX + themePrefix + baseFileName;
         String defaultPath = IMAGE_PATH_PREFIX + baseFileName;
 
+        // Nếu đã tải rồi thì không làm gì, nếu không thì thử tải
         try {
             BufferedImage image = internalLoadImage(themedPath);
             images.put(name, image);
@@ -96,7 +97,7 @@ public class AssetManager {
         for (int i = 1; i <= frameCount; i++) {
             String name = namePrefix + i;
             String path = IMAGE_PATH_PREFIX + fileNamePrefix + i + fileExtension;
-            loadImage(name, path); // Dùng lại hàm loadImage toàn cục
+            loadImage(name, path); // Tải từng frame
         }
     }
 
@@ -104,7 +105,7 @@ public class AssetManager {
      * Tải tất cả tài sản toàn cục (global assets) không theo theme.
      */
     public void loadGlobalAssets() {
-        // 1. Tải tất cả tài sản từ bản kê khai
+        // Tải các asset không theo theme
         for (AssetDefinition asset : AssetDefinition.values()) {
             if (!asset.isThemed()) {
                 // Tải tất cả asset global (UI, Powerups, Skins, Misc)
@@ -112,7 +113,7 @@ public class AssetManager {
             }
         }
 
-        // 2. Tải các animation đặc biệt
+        // Tải các animation đặc biệt
         loadAnimation("explosion_render", "explosion_render", 8, ".png");
     }
 

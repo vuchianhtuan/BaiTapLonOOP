@@ -7,7 +7,9 @@ import java.awt.image.BufferedImage;
 
 import java.awt.*;
 
-// GẠCH BẮN TIA LAZE
+/**
+ * Lớp LaserShooterBrick đại diện cho một viên gạch có khả năng bắn tia laser trong trò chơi Arkanoid.
+ */
 public class LaserShooterBrick extends StrongBrick {
     private BufferedImage laserShooterImage;
 

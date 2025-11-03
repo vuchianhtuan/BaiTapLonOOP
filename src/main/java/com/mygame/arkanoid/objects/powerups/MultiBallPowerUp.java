@@ -8,7 +8,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import com.mygame.arkanoid.systems.ScalingManager;
 
-// POWER-UP NHIỀU BÓNG
+/**
+ * Lớp đại diện cho vật phẩm tăng sức mạnh tạo thêm nhiều bóng.
+ */
 public class MultiBallPowerUp extends PowerUp {
     private String imageName = "multiBallPowerUp";
     public static final int BALL_COUNT = 3;

@@ -1,6 +1,8 @@
 package com.mygame.arkanoid.objects;
 
-// LỚP TRỪU TƯỢNG CHO CÁC ĐỐI TƯỢNG CÓ THỂ DI CHUYỂN TRONG GAME
+/**
+ * Lớp trừu tượng đại diện cho một đối tượng có thể di chuyển trong game.
+ */
 public abstract class MovableObject extends GameObject {
     protected double dx, dy;
     public abstract void move();
