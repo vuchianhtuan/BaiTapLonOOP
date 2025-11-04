@@ -15,8 +15,7 @@ public final class SaveSystem {
     private SaveSystem() {}
 
     /**
-     * Lấy đường dẫn thư mục lưu trữ trạng thái game
-     * @return
+     * Lấy đường dẫn thư mục lưu trữ trạng thái game.
      */
     public static Path getSaveDir() {
         String home = System.getProperty("user.home");
@@ -24,14 +23,12 @@ public final class SaveSystem {
     }
 
     /**
-     * Lấy đường dẫn tập tin lưu trữ trạng thái game
-     * @return
+     * Lấy đường dẫn tập tin lưu trữ trạng thái game.
      */
     public static Path getSaveFile() { return getSaveDir().resolve("savegame.bin"); }
 
     /**
-     * Lưu trạng thái game vào tập tin
-     * @param data DỮ LIỆU LƯU TRẠNG THÁI GAME
+     * Lưu trạng thái game vào tập tin.
      */
     public static void save(SaveData data) {
         try {
@@ -46,7 +43,7 @@ public final class SaveSystem {
     }
 
     /**
-     * Tải trạng thái game từ tập tin
+     * Tải trạng thái game từ tập tin.
      */
     public static SaveData load() {
         Path f = getSaveFile();
@@ -61,7 +58,7 @@ public final class SaveSystem {
     }
 
     /**
-     * Xóa tập tin lưu trạng thái game
+     * Xóa tập tin lưu trạng thái game.
      */
     public static void deleteSave() {
         try { Files.deleteIfExists(getSaveFile()); }
@@ -69,7 +66,7 @@ public final class SaveSystem {
     }
 
     /**
-     * Chụp trạng thái hiện tại của game để lưu
+     * Chụp trạng thái hiện tại của game để lưu.
      */
     public static SaveData capture(GameManager gm) {
         SaveData d = new SaveData();

@@ -26,7 +26,7 @@ import com.mygame.arkanoid.ui.screens.MenuManager;
 import com.mygame.arkanoid.ui.screens.SettingManager;
 import com.mygame.arkanoid.save.SaveData;
 import com.mygame.arkanoid.save.SaveSystem;
-import com.mygame.arkanoid.util.config.GameConstants;
+import com.mygame.arkanoid.config.GameConstants;
 
 import java.awt.*;
 import java.util.*;
@@ -61,6 +61,9 @@ public class GameManager {
 
     public SoundManager getSoundManager() { return soundManager; }
 
+    /**
+     * Khởi tạo GameManager và các thành phần liên quan.
+     */
     private GameManager() {
         inputHandler = new InputHandler();
         entityManager = new EntityManager();
@@ -108,6 +111,10 @@ public class GameManager {
         levelManager.reset();
         loadNextLevel();
     }
+
+    /**
+     * Bắt đầu trò chơi từ một level cụ thể.
+     */
     public void startGameAtLevel(int levelIndex) {
         // Bắt đầu trò chơi từ level cụ thể
         playerStats.resetForNewGame();
@@ -188,7 +195,6 @@ public class GameManager {
 
     /**
      * Tải các tài nguyên (assets) cần thiết cho level hiện tại.
-     * @param currentLevel Level hiện tại.
      */
     private void loadLevelAssets(Level currentLevel) {
         String prefix = currentLevel.getThemeAssetPrefix();

@@ -8,10 +8,6 @@ public final class PowerUpFactory {
 
     /**
      * Tạo power-up dựa trên loại.
-     * @param type
-     * @param x
-     * @param y
-     * @return
      */
     public static PowerUp create(PowerUpType type, int x, int y) {
         switch (type) {

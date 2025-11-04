@@ -4,7 +4,7 @@ import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.SoundManager;
 import com.mygame.arkanoid.systems.ScalingManager;
-import com.mygame.arkanoid.util.config.GameConstants;
+import com.mygame.arkanoid.config.GameConstants;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -15,15 +15,15 @@ import java.awt.event.KeyEvent;
  * Lớp Ball đại diện cho quả bóng trong game.
  */
 public class Ball extends MovableObject {
-    private static final double MIN_REFLECT_ANGLE_DEG = 30.0; // góc tối thiểu
-    private static final double MAX_REFLECT_ANGLE_DEG = 60.0; // góc tối đa
-    private static final double CENTER_EPS = 0.02; // vùng chết ở giữa paddle
+    private static final double MIN_REFLECT_ANGLE_DEG = 30.0;
+    private static final double MAX_REFLECT_ANGLE_DEG = 60.0;
+    private static final double CENTER_EPS = 0.02;
 
-    private double speed = GameConstants.BALL_SPEED;
-    private final double originalSpeed;
-    private boolean stuckToPaddle = true;
-    private String imageName;
-    private int paddleOffsetX;
+    private double speed = GameConstants.BALL_SPEED; // tốc độ di chuyển của bóng
+    private final double originalSpeed; // tốc độ gốc của bóng
+    private boolean stuckToPaddle = true; // trạng thái dính vào paddle
+    private String imageName; // tên hình ảnh của quả bóng
+    private int paddleOffsetX; // khoảng cách từ quả bóng đến paddle khi dính
 
     // Thuộc tính lửa.
     private boolean isBurning = false;
@@ -32,19 +32,20 @@ public class Ball extends MovableObject {
     private static final long FIRE_FRAME_DURATION = 60; // Tốc độ hoạt ảnh (ms)
     private static final int FIRE_FRAME_COUNT = 6;      // Số khung hình lửa
     private static final int FRAMES_PER_ROW = 3;
-    private static final int NUM_ROWS = 2;             // <--- Hằng số mới
+    private static final int NUM_ROWS = 2;
 
     private double rotationAngle = 0;
     private double rotationSpeed = 0.15; // radian mỗi frame (có thể chỉnh để xoay nhanh/chậm hơn)
 
-    // Phương thức tính toán góc quay của bóng
+    /**
+     * Lấy góc quay hiện tại của quả bóng dựa trên hướng di chuyển.
+     */
     private double getRotationAngle() {
         return Math.atan2(this.dy, this.dx);
     }
 
     /**
      * Đặt trạng thái cháy của quả bóng.
-     * @param burning
      */
     public void setBurning(boolean burning) {
         this.isBurning = burning;
@@ -64,7 +65,6 @@ public class Ball extends MovableObject {
 
     /**
      * Đặt lại vị trí quả bóng trên paddle.
-     * @param paddle
      */
     public void resetBallPosition(Paddle paddle) {
         this.stuckToPaddle = true;
@@ -147,14 +147,11 @@ public class Ball extends MovableObject {
 
     /**
      * Kiểm tra xem quả bóng có đang dính vào paddle không.
-     * @return
      */
     public boolean isStuckToPaddle() { return stuckToPaddle; }
 
     /**
      * Kiểm tra va chạm giữa quả bóng và đối tượng khác.
-     * @param other Đối tượng để kiểm tra va chạm.
-     * @return true nếu có va chạm, false nếu không.
      */
     public boolean checkCollision(GameObject other) {
         return this.getBounds().intersects(other.getBounds()) && !this.isStuckToPaddle();
@@ -199,8 +196,6 @@ public class Ball extends MovableObject {
 
     /**
      * Cập nhật trạng thái của quả bóng dựa trên đầu vào và vị trí paddle.
-     * @param inputHandler
-     * @param paddle
      */
     public void update(InputHandler inputHandler, Paddle paddle) {
         if(!stuckToPaddle) {
@@ -249,7 +244,7 @@ public class Ball extends MovableObject {
                     sm.scaleWidth(this.width), sm.scaleHeight(this.height));
         }
 
-        // 2. Vẽ hiệu ứng lửa nếu đang cháy
+        // Vẽ hiệu ứng lửa nếu đang cháy
         if (isBurning) {
             if (System.currentTimeMillis() - lastFireFrameTime > FIRE_FRAME_DURATION) {
                 fireAnimationFrameIndex = (fireAnimationFrameIndex + 1) % FIRE_FRAME_COUNT;

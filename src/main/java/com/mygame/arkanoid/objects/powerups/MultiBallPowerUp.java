@@ -15,7 +15,7 @@ public class MultiBallPowerUp extends PowerUp {
     private String imageName = "multiBallPowerUp";
     public static final int BALL_COUNT = 3;
 
-    // THÊM: Biến góc xoay và tốc độ xoay
+    // Góc xoay hiện tại của power-up
     private double rotationAngle = 0;
     private final double ROTATION_SPEED = 4.5;
 
@@ -25,7 +25,6 @@ public class MultiBallPowerUp extends PowerUp {
 
     /**
      * ÁP DỤNG HIỆU ỨNG: Tạo thêm nhiều bóng từ vị trí bóng chính.
-     * @param gameManager
      */
     @Override public void applyEffect(GameManager gameManager) {
         Ball mainBall = gameManager.getBall();

@@ -18,7 +18,6 @@ public class ExtraLifePowerUp extends PowerUp {
 
     /**
      * ÁP DỤNG HIỆU ỨNG: Thêm 1 mạng cho người chơi.
-     * @param gameManager
      */
     @Override public void applyEffect(GameManager gameManager) {
         int pre_lives = gameManager.getLives();

@@ -26,7 +26,7 @@ public class ScoreManager {
     private final GameManager gameManager;
     private InputHandler inputHandler;
 
-    private int highScore; // Điểm cao nhất MỘT LẦN CHƠI
+    private int highScore; // Điểm cao nhất một lần chơi
     private long fastestTime = Long.MAX_VALUE; // Thời gian nhanh nhất HOÀN THÀNH GAME
 
     private List<Integer> topScores = new ArrayList<>(6); // Top 5 điểm
@@ -58,9 +58,6 @@ public class ScoreManager {
 
     /**
      * Xử lý kết quả khi kết thúc một lượt chơi (Game Over hoặc Game Win).
-     * @param finalScore Điểm cuối cùng của lượt chơi.
-     * @param totalTime Tổng thời gian chơi của lượt đó (milliseconds).
-     * @param didWin true nếu người chơi thắng game, false nếu thua.
      */
     public synchronized void submitSessionResult(int finalScore, long totalTime, boolean didWin) {
         boolean changed = false;
@@ -119,7 +116,7 @@ public class ScoreManager {
     }
 
     /**
-     * Gửi kết quả của một màn chơi (level) để lưu lại
+     * Gửi kết quả của một màn chơi (level) để lưu lại.
      */
     public synchronized void submitLevelResult(int levelIndex, int levelScore, long levelTime) {
         if (levelIndex < 0 || levelIndex >= totalLevels) return;
@@ -141,8 +138,6 @@ public class ScoreManager {
 
     /**
      * Lấy điểm cao nhất của một màn chơi cụ thể.
-     * @param levelIndex
-     * @return
      */
     public int getBestScoreForLevel(int levelIndex) {
         return perLevelHighScores.getOrDefault(levelIndex, 0);
@@ -153,8 +148,6 @@ public class ScoreManager {
 
     /**
      * Định dạng thời gian từ milliseconds sang định dạng mm:ss.SSS.
-     * @param millis
-     * @return
      */
     private String formatTime(long millis) {
         if (millis == Long.MAX_VALUE || millis <= 0) {
@@ -339,7 +332,6 @@ public class ScoreManager {
 
     /**
      * Xác định vị trí file lưu điểm dựa trên hệ thống.
-     * @return Path đến file điểm hoặc null nếu không tìm được vị trí phù hợp.
      */
     private static Path resolveResourceBackedScoreFile() {
         // Ưu tiên 1: Thư mục người dùng (ổn định nhất)
@@ -477,8 +469,6 @@ public class ScoreManager {
             initializeDefaultScores(); // Khởi tạo mặc định nếu đọc file lỗi
         }
     }
-
-    // --- THÊM HÀM MỚI: Khởi tạo điểm mặc định ---
 
     /**
      * Khởi tạo điểm số mặc định trong bộ nhớ khi file bị lỗi.

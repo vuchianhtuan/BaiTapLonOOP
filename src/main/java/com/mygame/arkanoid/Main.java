@@ -11,12 +11,14 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-// LỚP KHỞI ĐỘNG TRÒ CHƠI
+/**
+ * Lớp Main là điểm khởi đầu của trò chơi.
+ */
 public class Main {
     public static JFrame window;
 
     public static void main(String[] args) {
-        // TẠO CỬA SỔ CHƠI, KHỞI TẠO HỆ THỐNG VÀ BẮT ĐẦU VÒNG LẶP TRÒ CHƠI
+        // Khởi tạo cửa sổ trò chơi
         window = new JFrame("Arkanoid");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(true);

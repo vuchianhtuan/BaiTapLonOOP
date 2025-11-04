@@ -13,9 +13,7 @@ public class ScoreUI {
         this.gameManager = gm;
     }
 
-    public void update() {
-        // Hiện chưa có logic gì để update
-    }
+    public void update() {}
 
     /**
      * Vẽ điểm số lên màn hình.
@@ -36,7 +34,6 @@ public class ScoreUI {
         g.setColor(Color.WHITE);
         g.drawString(scoreText, sm.scaleX(logicX), sm.scaleY(logicY_title));
 
-        // 2. Vẽ điểm số (đã scale)
         baseFont = new Font("Arial", Font.PLAIN, 22);
         scaledFont = baseFont.deriveFont((float)(baseFont.getSize() * sm.getScale()));
 

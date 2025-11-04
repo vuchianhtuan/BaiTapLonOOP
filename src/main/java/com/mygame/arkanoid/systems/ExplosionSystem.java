@@ -15,9 +15,6 @@ public class ExplosionSystem {
 
     /**
      * Xử lý vụ nổ từ một viên gạch nổ, ảnh hưởng đến các viên gạch lân cận trong bán kính nhất định.
-     * @param sourceBrick Viên gạch nổ phát ra vụ nổ
-     * @param radius Bán kính ảnh hưởng của vụ nổ
-     * @param gm Quản lý game để truy cập các đối tượng khác
      */
     public void explode(Brick sourceBrick, double radius, GameManager gm) {
         int sourceCenterX = sourceBrick.getX() + sourceBrick.getWidth() / 2;
@@ -44,9 +41,6 @@ public class ExplosionSystem {
             if (distance <= radius) {
 
                 // Tính toán độ trễ dựa trên khoảng cách
-                // (distance / radius) là tỉ lệ từ 0.0 đến 1.0
-                // Gạch ở gần (distance = 0) -> delay = 0
-                // Gạch ở xa (distance = radius) -> delay = MAX_PROPAGATION_FRAMES
                 int delay = (int) ((distance / radius) * MAX_PROPAGATION_FRAMES);
 
                 // Kiểm tra xem gạch lân cận có phải là gạch nổ không

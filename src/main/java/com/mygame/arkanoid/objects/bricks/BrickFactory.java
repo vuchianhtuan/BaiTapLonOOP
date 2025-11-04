@@ -14,12 +14,16 @@ public final class BrickFactory {
 
     private BrickFactory() {}
 
-    // Nhanh gọn với kích thước mặc định
+    /**
+     * Tạo gạch theo loại với kích thước mặc định.
+     */
     public static Brick create(char type, int x, int y) {
         return create(x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, type);
     }
 
-    // Tạo theo loại với kích thước tuỳ chỉnh
+    /**
+     * Tạo gạch theo loại với kích thước tùy chỉnh.
+     */
     public static Brick create(int x, int y, int width, int height, char type) {
         switch (type) {
             case '1': return new NormalBrick(x, y, width, height);
@@ -31,7 +35,6 @@ public final class BrickFactory {
             case 'T': return new StrongBrick(x, y, width, height, 3); // Máu 3
             case 'C': return new LaserShooterBrick(x, y, width, height, 5);
             case '_': case '0': default: return null;
-            //default: throw new IllegalArgumentException("Unsupported BrickType: " + type);
         }
     }
 }

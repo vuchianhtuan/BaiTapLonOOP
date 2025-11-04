@@ -1,6 +1,6 @@
 package com.mygame.arkanoid.engine;
 
-import com.mygame.arkanoid.util.config.AssetDefinition;
+import com.mygame.arkanoid.config.AssetDefinition;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -42,8 +42,6 @@ public class AssetManager {
     /**
      * Tải một ảnh toàn cục (global asset).
      * Chỉ tải nếu chưa có.
-     * @param name Tên key (ví dụ: "heart")
-     * @param path Đường dẫn đầy đủ (ví dụ: "/images/heart.png")
      */
     public void loadImage(String name, String path) {
         if (images.containsKey(name)) {
@@ -62,9 +60,6 @@ public class AssetManager {
     /**
      * Tải một ảnh theo chủ đề (themed asset) với cơ chế fallback.
      * Sẽ thử tải "themePrefix + baseFileName", nếu thất bại, sẽ tải "baseFileName".
-     * @param name Tên key (ví dụ: "normalBrick")
-     * @param themePrefix Tiền tố theme (ví dụ: "ice_")
-     * @param baseFileName Tên file gốc (ví dụ: "normalBrick.png")
      */
     public void loadThemedImage(String name, String themePrefix, String baseFileName) {
         // Các đường dẫn để thử tải
@@ -88,10 +83,6 @@ public class AssetManager {
 
     /**
      * Tải một chuỗi ảnh animation.
-     * @param namePrefix Tiền tố key (ví dụ: "explosion_render")
-     * @param fileNamePrefix Tiền tố file (ví dụ: "explosion_render")
-     * @param frameCount Số lượng frame (ví dụ: 8)
-     * @param fileExtension Đuôi file (ví dụ: ".png")
      */
     public void loadAnimation(String namePrefix, String fileNamePrefix, int frameCount, String fileExtension) {
         for (int i = 1; i <= frameCount; i++) {

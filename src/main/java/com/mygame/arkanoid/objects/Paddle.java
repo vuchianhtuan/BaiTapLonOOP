@@ -7,7 +7,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent;
 import com.mygame.arkanoid.systems.ScalingManager;
-import com.mygame.arkanoid.util.config.GameConstants;
+import com.mygame.arkanoid.config.GameConstants;
 
 /**
  * Lớp Paddle đại diện cho thanh điều khiển trong trò chơi Arkanoid.
@@ -29,22 +29,31 @@ public class Paddle extends MovableObject {
 
     /**
      * Đặt tính năng dính bóng cho paddle.
-     * @param sticky true để bật tính năng dính bóng, false để tắt.
      */
     public void setSticky(boolean sticky) {
         this.isSticky = sticky;
     }
 
+    /**
+     * Di chuyển paddle sang trái.
+     */
     public void moveLeft() {
         x -= speed;
         if (x < 0) x = 0;
     }
+
+    /**
+     * Di chuyển paddle sang phải.
+     */
     public void moveRight() {
         x += speed;
         int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
         if (x + width > gameAreaWidth) x = gameAreaWidth - width;
     }
 
+    /**
+     * Khởi tạo một paddle tại vị trí (x, y) với kích thước và skin cụ thể.
+     */
     public Paddle(int x, int y, int width, int height, String skinKey) {
         super(x, y, width, height);
         this.imageName = skinKey;
@@ -53,7 +62,6 @@ public class Paddle extends MovableObject {
 
     /**
      * Mở rộng chiều rộng paddle.
-     * @param amount
      */
     public void expand(int amount) {
         // Tăng chiều rộng và điều chỉnh lại vị trí x để nó mở rộng đều 2 bên

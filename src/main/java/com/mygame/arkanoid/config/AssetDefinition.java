@@ -1,4 +1,4 @@
-package com.mygame.arkanoid.util.config;
+package com.mygame.arkanoid.config;
 
 /**
  * Định nghĩa các tài sản (assets) của game.

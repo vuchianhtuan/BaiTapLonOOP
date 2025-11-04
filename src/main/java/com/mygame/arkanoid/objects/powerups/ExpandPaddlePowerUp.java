@@ -19,7 +19,6 @@ public class ExpandPaddlePowerUp extends PowerUp {
     private String imageName;
     private static final int EXPAND_AMOUNT = 50;
 
-    // THÊM: Biến mờ dần
     private float fadeTimer = 0;
     private float currentAlpha = 1.0f;
     private static final float FADE_SPEED = 0.03f; // Tốc độ mờ/rõ (điều chỉnh để mượt hơn)
@@ -27,7 +26,6 @@ public class ExpandPaddlePowerUp extends PowerUp {
     @Override public void update() {
         this.y += fallSpeed;
 
-        // CẬP NHẬT: Tính toán độ trong suốt (alpha) dựa trên hàm sin
         this.fadeTimer += FADE_SPEED;
 
         // Math.abs(sin(x)) dao động từ 0 (mờ nhất) đến 1 (rõ nhất)
@@ -41,7 +39,6 @@ public class ExpandPaddlePowerUp extends PowerUp {
 
     /**
      * ÁP DỤNG HIỆU ỨNG: Mở rộng chiều rộng paddle.
-     * @param gameManager
      */
     @Override
     public void applyEffect(GameManager gameManager) {
@@ -58,7 +55,6 @@ public class ExpandPaddlePowerUp extends PowerUp {
     public void render(Graphics g, ScalingManager sm) {
         Graphics2D g2d = (Graphics2D) g.create();
 
-        // ÁP DỤNG: Thiết lập độ trong suốt
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, this.currentAlpha));
 
         BufferedImage img = AssetManager.getInstance().getImage(this.imageName);

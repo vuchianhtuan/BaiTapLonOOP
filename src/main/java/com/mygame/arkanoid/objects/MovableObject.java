@@ -9,7 +9,7 @@ public abstract class MovableObject extends GameObject {
 
     public MovableObject(int x, int y, int width, int height) {
         super(x, y, width, height);
-        this.dx = 0; // Vận tốc ban đầu bằng 0
+        this.dx = 0;
         this.dy = 0;
     }
 

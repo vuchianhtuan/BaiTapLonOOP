@@ -30,7 +30,6 @@ public class Thumb extends GameObject {
 
     /**
      * Cập nhật tọa độ x của Thumb và vùng chứa.
-     * @param x tọa độ x mới.
      */
     public void setX(int x) {
         this.x = x; // Cập nhật tọa độ x (thừa hưởng từ GameObject)

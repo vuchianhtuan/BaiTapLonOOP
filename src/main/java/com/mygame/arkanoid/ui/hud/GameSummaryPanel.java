@@ -55,10 +55,6 @@ public class GameSummaryPanel {
 
     /**
      * Vẽ hộp thống kê
-     * @param g Graphics context
-     * @param title "YOU WIN!" hoặc "GAME OVER"
-     * @param score Điểm số cuối cùng
-     * @param playtimeMillis Thời gian chơi cuối cùng
      */
     public void draw(Graphics g, String title, int score, long playtimeMillis) {
         ScalingManager sm = ScalingManager.getInstance();

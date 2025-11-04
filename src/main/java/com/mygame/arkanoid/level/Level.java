@@ -2,7 +2,6 @@ package com.mygame.arkanoid.level;
 
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.PowerUpType;
-import com.mygame.arkanoid.util.ErrorHandler;
 import static com.mygame.arkanoid.objects.bricks.BrickFactory.create;
 
 import java.io.BufferedReader;
@@ -28,14 +27,16 @@ public class Level {
     private String themeBackground = "";
 
     // Các hằng số để căn chỉnh layout
-    private static final int BRICK_WIDTH = 45;      // Cũ: 40
-    private static final int BRICK_HEIGHT = 20;     // Cũ: 20
-    private static final int PADDING_X = 4;         // Cũ: 10
-    private static final int PADDING_Y = 4;         // Cũ: 10
-    private static final int START_OFFSET_X = 40;   // Cũ: 50
+    private static final int BRICK_WIDTH = 45;
+    private static final int BRICK_HEIGHT = 20;
+    private static final int PADDING_X = 4;
+    private static final int PADDING_Y = 4;
+    private static final int START_OFFSET_X = 40;
     private static final int START_OFFSET_Y = 30;
 
-    // Khởi tạo level từ file
+    /**
+     * Khởi tạo level từ file định dạng văn bản.
+     */
     public Level(String filePath) {
         this.bricks = new ArrayList<>();
         this.bossBricks = new ArrayList<>();
@@ -101,8 +102,6 @@ public class Level {
 
     /**
      * Kiểm tra xem loại gạch có phải là gạch trùm không.
-     * @param type
-     * @return
      */
     private boolean isBossBrickType(char type) {
         return type == 'B' || type == 'T' || type == 'C';
@@ -111,7 +110,6 @@ public class Level {
     /**
      * Phân tích một dòng trong phần header để lấy cấu hình.
      * Hỗ trợ loại bỏ comment (phần sau dấu #).
-     * @param line Dòng văn bản từ file level
      */
     private void parseHeaderLine(String line) {
         String[] parts = line.split(":", 2); // Chia thành 2 phần: key và value

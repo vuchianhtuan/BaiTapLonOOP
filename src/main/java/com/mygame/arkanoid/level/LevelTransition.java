@@ -4,7 +4,7 @@ package com.mygame.arkanoid.level;
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.objects.Paddle;
 import com.mygame.arkanoid.systems.ScalingManager;
-import com.mygame.arkanoid.util.config.GameConstants;
+import com.mygame.arkanoid.config.GameConstants;
 
 import java.awt.*;
 
@@ -211,13 +211,11 @@ public class LevelTransition {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
                 g2d.setColor(Color.BLACK);
 
-                // --- SỬA DÒNG NÀY ---
                 // Vẽ overlay bên trong vùng đã scale
                 g2d.fillRect(
                         sm.scaleX(0), sm.scaleY(0),
                         sm.scaleWidth(sm.NATIVE_WIDTH),
                         sm.scaleHeight(sm.NATIVE_HEIGHT));
-                // --- KẾT THÚC SỬA ĐỔI ---
 
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
             }
@@ -225,8 +223,6 @@ public class LevelTransition {
         else if (currentState == State.COUNTDOWN) {
 
             g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-            // --- BẮT ĐẦU SỬA ĐỔI KHỐI COUNTDOWN ---
 
             // Scale font
             Font scaledFont = this.countdownFont.deriveFont((float)(this.countdownFont.getSize() * sm.getScale()));

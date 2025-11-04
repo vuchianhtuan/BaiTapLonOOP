@@ -18,8 +18,6 @@ import java.util.List;
  * Lớp SettingManager quản lý màn hình cài đặt trong trò chơi Arkanoid.
  */
 public class SettingManager {
-    // --- KHAI BÁO BIẾN ---
-
     private InputHandler inputHandler;
     private GameManager gameManager;
     private SoundManager soundManager;
@@ -29,7 +27,7 @@ public class SettingManager {
     private String selectedPaddleSkinKey = "skin_paddle_1";
 
 
-    // --- Thanh trượt âm lượng (Giữ nguyên) ---
+    // Thanh trượt âm lượng
     private Thumb thumbMaster, thumbMusic, thumbSfx;
     private Track trackMaster, trackMusic, trackSfx;
     private Rectangle muteButtonRect;
@@ -103,7 +101,7 @@ public class SettingManager {
         this.BackgroundImage = AssetManager.getInstance().getImage("settingBackground");
         this.backButton = new BackButton(10, 10, 40, 40);
 
-        // 1. Khởi tạo thanh Âm lượng (Giữ nguyên)
+        // 1. Khởi tạo thanh Âm lượng
         this.trackMaster = new Track(trackX, masterTrackY, trackWidth, trackHeight);
         float masterVol = soundManager.getMasterVolume();
         int masterThumbX = calculateThumbX(trackMaster, masterVol);
@@ -197,6 +195,9 @@ public class SettingManager {
         paddleGroupBounds.height += groupPadding * 2;
     }
 
+    /**
+     * Lấy khóa skin bóng đã chọn.
+     */
     private int calculateThumbX(Track track, float volume) {
         int x = track.getX() + (int) (track.getWidth() * volume) - (thumbWidth / 2);
         return Math.max(track.getX() - thumbWidth / 2, Math.min(x, track.getX() + track.getWidth() - thumbWidth / 2));
@@ -309,7 +310,9 @@ public class SettingManager {
         }
     }
 
-    // Phương thức vẽ khung chữ nhật hiện đại
+    /**
+     * Thiết lập khóa skin bóng đã chọn.
+     */
     private void drawModernBox(Graphics g, ScalingManager sm, Rectangle box) {
         Color fillColor = new Color(0, 0, 0, 100);
         Color borderColor = new Color(200, 200, 200, 255);
@@ -333,7 +336,9 @@ public class SettingManager {
         g2d.setStroke(new BasicStroke(1));
     }
 
-    // Phương thức vẽ nút với hiệu ứng hover
+    /**
+     * Thiết lập khóa skin bóng đã chọn.
+     */
     private void drawButtonImageWithHover(Graphics g, ScalingManager sm, Rectangle bounds, String imageKey, int virtualMouseX, int virtualMouseY) {
         Graphics2D g2d = (Graphics2D) g.create(); // Sử dụng g.create() để thao tác trên bản sao
 
@@ -470,15 +475,6 @@ public class SettingManager {
 
     /**
      * Vẽ hình ảnh với hiệu ứng trượt.
-     * @param g
-     * @param sm
-     * @param skins
-     * @param currentIndex
-     * @param prevIndex
-     * @param box
-     * @param slideOffset
-     * @param slideDirection
-     * @param imageSize
      */
     private void renderSlidingImage(Graphics g, ScalingManager sm, List<String> skins, int currentIndex, int prevIndex, Rectangle box, float slideOffset, int slideDirection, int imageSize) {
 
@@ -508,7 +504,7 @@ public class SettingManager {
 
             int scaledOffset = sm.scaleWidth((int)slideOffset);
 
-            // 1. Skin MỚI (current)
+            // 1. Skin mới (current)
             int newX = scaledBoxX + (scaledBoxWidth - scaledImgWidth) / 2;
             if (slideDirection == 1) {
                 newX += (scaledBoxWidth - scaledOffset);
@@ -517,7 +513,7 @@ public class SettingManager {
             }
             g.drawImage(currentImg, newX, drawY, scaledImgWidth, scaledImgHeight, null);
 
-            // 2. Skin CŨ (previous)
+            // 2. Skin cũ (previous)
             int oldX = scaledBoxX + (scaledBoxWidth - scaledImgWidth) / 2;
             if (slideDirection == 1) {
                 oldX -= scaledOffset;

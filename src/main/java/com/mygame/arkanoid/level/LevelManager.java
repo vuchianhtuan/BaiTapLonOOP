@@ -28,8 +28,6 @@ public class LevelManager {
 
     /**
      * Tải trực tiếp một màn chơi theo chỉ số (index).
-     * @param index Chỉ số của màn (0, 1, 2...)
-     * @return true nếu tải thành công, false nếu chỉ số không hợp lệ.
      */
     public boolean loadSpecificLevel(int index) {
         if (index >= 0 && index < levelFiles.size()) {

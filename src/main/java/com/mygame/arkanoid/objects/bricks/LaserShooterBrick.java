@@ -16,6 +16,9 @@ public class LaserShooterBrick extends StrongBrick {
     private int shootCooldown;
     private static final int SHOOT_INTERVAL = 180; // Bắn mỗi 3 giây (180 frames @ 60 FPS)
 
+    /**
+     * Khởi tạo một viên gạch bắn laser tại vị trí (x, y) với kích thước và số lần bắn cụ thể.
+     */
     public LaserShooterBrick(int x, int y, int width, int height, int hits) {
         super(x, y, width, height, hits);
         this.shootCooldown = (int) (Math.random() * SHOOT_INTERVAL); // Ngẫu nhiên hóa thời gian bắn ban đầu
@@ -61,7 +64,6 @@ public class LaserShooterBrick extends StrongBrick {
                     null);
         } else {
             // Phương án dự phòng: nếu không tìm thấy ảnh, vẽ như StrongBrick hoặc một màu nào đó
-            // Bạn có thể giữ super.render(g, sm); để vẽ StrongBrick mặc định
             super.render(g, sm);
             // Hoặc vẽ một hình chữ nhật màu đỏ để biết đây là shooter bị thiếu ảnh
             g.setColor(Color.RED);

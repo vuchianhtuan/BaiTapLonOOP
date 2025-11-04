@@ -13,7 +13,9 @@ import com.mygame.arkanoid.systems.ScalingManager;
 public class StickyPaddlePowerUp extends PowerUp {
     private String imageName = "stickyPowerUp";
 
-    // THÊM: Biến góc xoay và tốc độ xoay
+    /**
+     * Góc xoay hiện tại của vật phẩm.
+     */
     private double rotationAngle = 0;
     private final double ROTATION_SPEED = 5.0; // Xoay 5 độ mỗi lần cập nhật
 
@@ -23,7 +25,6 @@ public class StickyPaddlePowerUp extends PowerUp {
 
     /**
      * ÁP DỤNG HIỆU ỨNG: Cho phép paddle dính bóng.
-     * @param gameManager
      */
     @Override public void applyEffect(GameManager gameManager) {
         gameManager.getPaddle().setSticky(true);
@@ -36,7 +37,6 @@ public class StickyPaddlePowerUp extends PowerUp {
     @Override public void update() {
         this.y += fallSpeed;
 
-        // CẬP NHẬT GÓC XOAY
         this.rotationAngle += ROTATION_SPEED;
         if (this.rotationAngle >= 360) {
             this.rotationAngle -= 360;

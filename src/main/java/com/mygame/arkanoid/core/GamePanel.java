@@ -27,6 +27,10 @@ public class GamePanel extends JPanel {
     private final LevelTransition levelTransition;
     private final Renderer renderer;
 
+    /**
+     * Khởi tạo bảng điều khiển trò chơi với GameManager.
+     * @param gameManager Đối tượng quản lý trò chơi.
+     */
     public GamePanel(GameManager gameManager) {
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setFocusable(true);

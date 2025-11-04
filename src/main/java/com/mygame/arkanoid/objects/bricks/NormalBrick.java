@@ -19,6 +19,9 @@ public class NormalBrick extends Brick {
         }
     }
 
+    /**
+     * Khởi tạo một viên gạch thường tại vị trí (x, y) với kích thước cụ thể.
+     */
     public NormalBrick(int x, int y, int width, int height) {
         // Gạch thường có 1 máu, loại "normal"
         super(x, y, width, height, 1, "normal", "normalBrick");

@@ -78,8 +78,6 @@ public class ScalingManager {
         return (int) (logicHeight * scale);
     }
 
-    // --- CÁC HÀM "UN-SCALE" (Vẫn cần thiết cho InputHandler) ---
-
     /** Chuyển tọa độ X màn hình (ví dụ: chuột) sang X logic */
     public int unscaleX(int screenX) {
         if (scale == 0) return 0;

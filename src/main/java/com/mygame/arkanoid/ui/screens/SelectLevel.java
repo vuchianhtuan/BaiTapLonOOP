@@ -74,6 +74,9 @@ public class SelectLevel {
         }
     }
 
+    /**
+     * Vẽ màn hình chọn level.
+     */
     public void render(Graphics g) {
         ScalingManager sm = ScalingManager.getInstance();
         Graphics2D g2d = (Graphics2D) g; // Dùng Graphics2D

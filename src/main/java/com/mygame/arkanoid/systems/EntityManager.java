@@ -6,7 +6,7 @@ import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.PowerUp;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.level.Level;
-import com.mygame.arkanoid.util.config.GameConstants;
+import com.mygame.arkanoid.config.GameConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,7 +149,7 @@ public class EntityManager {
      */
     public void hydrateLevel(Level currentLevel) {
         Boss newBoss = null;
-        // 1. Tạo Boss nếu có
+        // Tạo Boss nếu có
         if (currentLevel.isBossLevel() && !currentLevel.getBossBricks().isEmpty()) {
             java.awt.Rectangle bossBounds = currentLevel.getBossInitialBounds();
             float startX = (ScalingManager.getInstance().GAME_AREA_WIDTH / 2.0f) - (bossBounds.width / 2.0f);
@@ -160,7 +160,7 @@ public class EntityManager {
 
         this.boss = newBoss; // Gán boss vừa tạo
 
-        // 2. Gán ID cho gạch (Logic đã chuyển từ GameManager)
+        // Gán ID cho gạch (Logic đã chuyển từ GameManager)
         // Chúng ta phải gán ID cho gạch GỐC trong 'currentLevel'
         int idCounter = 0;
         for (Brick b : currentLevel.getBricks()) {
@@ -172,7 +172,7 @@ public class EntityManager {
             }
         }
 
-        // 3. Nạp gạch vào danh sách
+        // Nạp gạch vào danh sách
         bricks.clear();
         laserShooters.clear();
 
@@ -192,7 +192,7 @@ public class EntityManager {
     }
 
     /**
-     * Nạp gạch từ SaveData
+     * Nạp gạch từ SaveData.
      */
     public void hydrateFromSave(Level currentLevel, Set<Integer> aliveBrickIds) {
         bricks.clear();
@@ -259,8 +259,7 @@ public class EntityManager {
     public void addActivePowerUp(PowerUp p) { activePowerUps.add(p); }
 
     /**
-     * Thay đổi skin của paddle
-     * @param skinKey
+     * Thay đổi skin của paddle.
      */
     public void setPaddleSkin(String skinKey) {
         if (paddle != null) {
@@ -269,8 +268,7 @@ public class EntityManager {
     }
 
     /**
-     * Thay đổi skin của tất cả các quả bóng
-     * @param skinKey
+     * Thay đổi skin của tất cả các quả bóng.
      */
     public void setBallSkin(String skinKey) {
         if (balls != null) {

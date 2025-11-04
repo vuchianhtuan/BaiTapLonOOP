@@ -46,9 +46,6 @@ public class CollisionSystem {
 
     /**
      * Kiểm tra va chạm giữa Laser và Paddle, cũng như loại bỏ Laser ra.
-     * @param gm
-     * @param paddle
-     * @param screenHeight
      */
     private void checkLaserVsPaddle(GameManager gm, Paddle paddle, int screenHeight) {
         Iterator<Laser> laserIterator = gm.getLasers().iterator(); // Sử dụng iterator để dễ dàng xóa phần tử
@@ -75,8 +72,6 @@ public class CollisionSystem {
 
     /**
      * Kiểm tra va chạm giữa Ball và Paddle.
-     * @param gm
-     * @param paddle
      */
     private void checkBallVsPaddle(GameManager gm, Paddle paddle) {
         for (Ball b : gm.getBalls()) {
@@ -93,9 +88,6 @@ public class CollisionSystem {
 
     /**
      * Kiểm tra va chạm giữa PowerUp và Paddle.
-     * @param gm
-     * @param paddle
-     * @param screenHeight
      */
     private void checkPowerUpVsPaddle(GameManager gm, Paddle paddle, int screenHeight) {
         // gm.getPowerUps() là danh sách power-up đang rơi
@@ -105,7 +97,7 @@ public class CollisionSystem {
 
             if (paddle.getBounds().intersects(p.getBounds())) {
                 // Kích hoạt power-up mới
-                gm.activatePowerUp(p); // <-- Phương thức này cần được đổi thành public
+                gm.activatePowerUp(p);
                 fallingPowerUpIterator.remove(); // Xóa khỏi danh sách đang rơi
             }
             // Nếu power-up rơi ra ngoài màn hình
@@ -117,7 +109,6 @@ public class CollisionSystem {
 
     /**
      * Kiểm tra va chạm giữa Ball và tất cả các loại gạch (bao gồm LaserShooter).
-     * @param gm
      */
     private void checkBallVsBricks(GameManager gm) {
         // Xây dựng danh sách mục tiêu
@@ -136,7 +127,7 @@ public class CollisionSystem {
                     gm.getSoundManager().playSound(SoundManager.SFX_BRICK_HIT);
                     boolean detonatedImmediately = false;
 
-                    // 1. KIỂM TRA GẠCH NỔ
+                    // Kiểm tra nếu là gạch nổ và đang chờ nổ
                     if (target instanceof ExplosiveBrick) {
                         ExplosiveBrick eb = (ExplosiveBrick) target;
                         if (eb.isAwaitingDetonation()) {
@@ -147,7 +138,7 @@ public class CollisionSystem {
                         }
                     }
 
-                    // 2. XỬ LÝ VA CHẠM THƯỜNG
+                    // Xử lý gạch bình thường và gạch nổ không bị kích nổ ngay
                     if (!detonatedImmediately) {
                         if (target.getHitPoints() > 1) {
                             target.shatterHit(gm.getActiveShards());
@@ -157,7 +148,7 @@ public class CollisionSystem {
                         gm.addScore(10); // <-- Dùng phương thức mới
                         b.bounceOff(target);
 
-                        // B. KIỂM TRA PHÁ HỦY HOÀN TOÀN
+                        // Kiểm tra nếu gạch đã bị phá hủy
                         if (target.isDestroyed()) {
                             if (!(target instanceof ExplosiveBrick)) {
                                 gm.getActiveShards().addAll(target.shatter());

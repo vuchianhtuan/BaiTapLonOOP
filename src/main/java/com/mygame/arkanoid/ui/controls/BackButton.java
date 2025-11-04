@@ -31,10 +31,7 @@ public class BackButton {
     }
 
     /**
-     * KIỂM TRA NÚT CÓ ĐƯỢC NHẤN HAY KHÔNG.
-     * @param mx tọa độ x của con trỏ chuột.
-     * @param my tọa độ x, y của con trỏ chuột.
-     * @return true nếu tọa độ (mx, my) nằm trong vùng nút, ngược lại false.
+     * Kiểm tra xem nút có được nhấn tại tọa độ (mx, my) hay không.
      */
     public boolean contains(int mx, int my) {
         return bounds.contains(mx, my);

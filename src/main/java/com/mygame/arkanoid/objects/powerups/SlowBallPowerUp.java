@@ -23,7 +23,6 @@ public class SlowBallPowerUp extends PowerUp {
 
     /**
      * ÁP DỤNG HIỆU ỨNG: Giảm tốc độ bóng.
-     * @param gameManager
      */
     @Override
     public void applyEffect(GameManager gameManager) {

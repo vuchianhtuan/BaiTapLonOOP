@@ -32,7 +32,9 @@ public abstract class PowerUp extends GameObject {
         }
     }
 
-    // Thêm phương thức để kiểm tra hết hạn
+    /**
+     * Kiểm tra xem power-up đã hết hiệu lực chưa.
+     */
     public boolean isExpired() {
         return duration <= 0;
     }
@@ -45,6 +47,9 @@ public abstract class PowerUp extends GameObject {
         this.y += fallSpeed;
     }
 
+    /**
+     * Vẽ power-up trên màn hình.
+     */
     @Override
     public abstract void render(Graphics g, ScalingManager sm);
 

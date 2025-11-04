@@ -2,7 +2,6 @@ package com.mygame.arkanoid.ui.hud;
 
 import com.mygame.arkanoid.core.GameManager;
 import com.mygame.arkanoid.engine.InputHandler;
-import com.mygame.arkanoid.ui.controls.BackButton;
 import com.mygame.arkanoid.systems.ScalingManager;
 
 import java.awt.*;

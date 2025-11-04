@@ -71,7 +71,6 @@ public abstract class Brick extends GameObject {
 
     /**
      * Phương thức tạo mảnh vụn khi gạch bị đánh trúng.
-     * @param targetList
      */
     public void shatterHit(List<Shard> targetList) {
         final int NUM_SHARDS = 4; // Số lượng mảnh vụn ít hơn (3-5 hạt)
@@ -108,8 +107,6 @@ public abstract class Brick extends GameObject {
     @Override
     public abstract void render(Graphics g, ScalingManager sm);
 
-    // KHẮC PHỤC: XÓA phương thức public abstract Color getColor();
-    // vì nó không còn được sử dụng và cần được triển khai nữa.
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 }

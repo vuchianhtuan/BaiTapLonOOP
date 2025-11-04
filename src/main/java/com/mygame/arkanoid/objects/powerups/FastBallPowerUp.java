@@ -22,7 +22,6 @@ public class FastBallPowerUp extends PowerUp {
 
     /**
      * ÁP DỤNG HIỆU ỨNG: Tăng tốc độ bóng và đặt trạng thái cháy
-     * @param gameManager
      */
     @Override public void applyEffect(GameManager gameManager) {
         Ball targetBall = gameManager.getBall();
@@ -50,9 +49,7 @@ public class FastBallPowerUp extends PowerUp {
         int scaledWidth = sm.scaleWidth(this.width);
         int scaledHeight = sm.scaleHeight(this.height);
 
-        // --- BẮT ĐẦU HIỆU ỨNG THÊM SINH ĐỘNG: VỆT SÁNG ---
-
-        // 1. Vẽ các vệt sáng
+        // Vẽ các vệt sáng
         BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
         Color baseColor = Color.ORANGE;
 
@@ -77,12 +74,10 @@ public class FastBallPowerUp extends PowerUp {
             }
         }
 
-        // 2. Phục hồi độ trong suốt về mặc định (RẤT QUAN TRỌNG)
+        // Phục hồi độ trong suốt về mặc định (RẤT QUAN TRỌNG)
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
-        // --- KẾT THÚC VỆT SÁNG ---
-
-        // 3. Vẽ vật phẩm chính (không mờ)
+        // Vẽ vật phẩm chính (không mờ)
         if (img != null) {
             g2d.drawImage(img, scaledX, scaledY, scaledWidth, scaledHeight, null);
         } else {

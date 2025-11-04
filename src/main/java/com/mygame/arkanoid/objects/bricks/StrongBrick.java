@@ -9,7 +9,8 @@ import java.awt.image.BufferedImage;
  */
 public class StrongBrick extends Brick {
 
-    @Override public void update() {
+    @Override
+    public void update() {
         if (hitPoints == 2) {
             this.imageName = "strongBrick1";
         } else if (hitPoints == 1) {
@@ -21,8 +22,6 @@ public class StrongBrick extends Brick {
 
     /**
      * Lấy tên hình ảnh ban đầu dựa trên số máu.
-     * @param health số máu ban đầu của gạch.
-     * @return tên hình ảnh ban đầu.
      */
     private static String getInitialImageName(int health) {
         if (health == 2) {
@@ -35,7 +34,8 @@ public class StrongBrick extends Brick {
         return "strongBrick";
     }
 
-    @Override public void render(Graphics g, ScalingManager sm) {
+    @Override
+    public void render(Graphics g, ScalingManager sm) {
         BufferedImage img = AssetManager.getInstance().getImage(this.imageName);
         if (img != null) {
             g.drawImage(img,
@@ -44,6 +44,9 @@ public class StrongBrick extends Brick {
         }
     }
 
+    /**
+     * Khởi tạo một viên gạch cứng tại vị trí (x, y) với kích thước và máu cụ thể.
+     */
     public StrongBrick(int x, int y, int width, int height, int health) {
         super(x, y, width, height, health, "StrongBrick", getInitialImageName(health));
     }

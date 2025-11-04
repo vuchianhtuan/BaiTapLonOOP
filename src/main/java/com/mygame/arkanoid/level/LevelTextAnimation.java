@@ -111,7 +111,6 @@ public class LevelTextAnimation {
 
     /**
      * Vẽ hoạt ảnh chữ LEVEL lên màn hình.
-     * @param g
      */
     public void render(Graphics g) {
         if (currentState == AnimState.IDLE || this.alpha <= 0.0f) {

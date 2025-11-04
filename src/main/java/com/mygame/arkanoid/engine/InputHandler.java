@@ -4,13 +4,18 @@ import com.mygame.arkanoid.systems.ScalingManager;
 import java.awt.event.*;
 
 
-// Xử lý đầu vào từ bàn phím và chuột
+/**
+ * Xử lý tất cả các sự kiện đầu vào từ bàn phím và chuột.
+ */
 public class InputHandler implements KeyListener, MouseMotionListener, MouseListener {
     private final boolean[] keys = new boolean[256];
     private int mouseX, mouseY;
     private boolean mouseClicked = false;
     private boolean isCurrentlyPressed = false;
 
+    /**
+     * Khởi tạo InputHandler với trạng thái ban đầu.
+     */
     public InputHandler() {
         this.mouseX = 0;
         this.mouseY = 0;
@@ -18,7 +23,6 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
 
     /**
      * Kiểm tra xem phím có đang được nhấn không.
-     * @param keyCode
      * @return true nếu phím đang được nhấn, false nếu không.
      */
     public boolean isKeyDown(int keyCode) {
@@ -54,7 +58,6 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
 
     /**
      * Xử lý sự kiện khi một phím được nhấn.
-     * @param e the event to be processed
      */
     @Override
     public void keyPressed(KeyEvent e) {
@@ -66,7 +69,6 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
 
     /**
      * Xử lý sự kiện khi một phím được thả.
-     * @param e the event to be processed
      */
     @Override
     public void keyReleased(KeyEvent e) {
@@ -78,7 +80,6 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
 
     /**
      * Xử lý sự kiện khi chuột di chuyển.
-     * @param e the event to be processed
      */
     @Override
     public void mouseMoved(MouseEvent e) {
@@ -88,7 +89,6 @@ public class InputHandler implements KeyListener, MouseMotionListener, MouseList
 
     /**
      * Xử lý sự kiện khi chuột được nhấn.
-     * @param e the event to be processed
      */
     @Override
     public void mousePressed(MouseEvent e) {

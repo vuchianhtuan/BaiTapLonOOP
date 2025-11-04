@@ -30,8 +30,10 @@ public class MenuManager {
     private int buttonHeight = 55; // Chiều cao logic của nút
     private int buttonArc = 25; // Độ bo tròn góc
     private int buttonSpacing = 70; // Khoảng cách Y giữa các nút
-    // --- Kết thúc ---
 
+    /**
+     * Khởi tạo MenuManager với GameManager và InputHandler.
+     */
     public MenuManager(GameManager gameManager, InputHandler inputHandler) {
         this.gameManager = gameManager;
         this.inputHandler = inputHandler;
@@ -42,7 +44,6 @@ public class MenuManager {
 
     /**
      * Cập nhật trạng thái có thể tiếp tục trò chơi hay không.
-     * @param continueAvailable
      */
     public void setContinueAvailable(boolean continueAvailable) {
         this.continueAvailable = continueAvailable;
@@ -96,7 +97,6 @@ public class MenuManager {
 
     /**
      * Vẽ menu chính.
-     * @param g
      */
     public void render(Graphics g) {
         ScalingManager sm = ScalingManager.getInstance();
@@ -169,7 +169,6 @@ public class MenuManager {
             int mainTextX = drawX + (drawW - textWidth) / 2;
             int mainTextY = drawY + (drawH - fm.getHeight()) / 2 + fm.getAscent();
 
-            // --- THÊM VIỀN CHỮ ---
             Color outlineColor = Color.BLACK; // Chọn màu viền (ví dụ: đen)
             int outlineOffset = sm.scaleWidth(2); // Độ dày viền (đã scale)
 
@@ -184,7 +183,6 @@ public class MenuManager {
              g.drawString(optionText, mainTextX + outlineOffset, mainTextY);
              g.drawString(optionText, mainTextX, mainTextY - outlineOffset);
              g.drawString(optionText, mainTextX, mainTextY + outlineOffset);
-            // --- KẾT THÚC VIỀN CHỮ ---
 
             // Vẽ chữ chính (màu gốc) đè lên trên viền
             g.setColor(textColor); // Màu chữ trắng (hoặc màu bạn đã định nghĩa)

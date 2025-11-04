@@ -7,7 +7,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-// Quản lý âm thanh của trò chơi: nhạc nền và hiệu ứng âm thanh (SFX)
+/**
+ * Quản lý âm thanh trong game: nhạc nền và hiệu ứng âm thanh (SFX).
+ */
 public class SoundManager {
 
     // --- Hằng số tên file SFX (đặt trong /sounds/) ---
@@ -39,10 +41,6 @@ public class SoundManager {
             System.err.println("Không thể tải trước SFX: " + e.getMessage());
         }
     }
-
-    // =====================
-    // Background music APIs
-    // =====================
 
     /**
      * Phát nhạc nền từ file đã cho.
@@ -118,14 +116,8 @@ public class SoundManager {
         }
     }
 
-    // =====================
-    // Preload and fast play
-    // =====================
-
     /**
      * Preload một file âm thanh vào bộ nhớ để phát nhanh sau này.
-     * @param soundName
-     * @throws LoadException
      */
     public void preloadSound(String soundName) throws LoadException {
         try {
@@ -164,7 +156,9 @@ public class SoundManager {
         }
     }
 
-    // Preload các SFX chính; gọi ở constructor hoặc màn loading
+    /**
+     * Preload tất cả SFX.
+     */
     public void preloadAllSfx() throws LoadException {
         preloadSound(SFX_BRICK_HIT);
         preloadSound(SFX_PADDLE_HIT);
@@ -172,7 +166,10 @@ public class SoundManager {
         preloadSound(SFX_EXPLOSION);
     }
 
-    // Phát SFX nhanh từ bộ nhớ đã preload. Nếu chưa preload, sẽ cố gắng preload rồi phát.
+    /**
+     * Phát một hiệu ứng âm thanh nhanh từ bộ nhớ đã preload.
+     * Nếu chưa preload, sẽ thử preload ngay lúc này (chậm lần đầu).
+     */
     public void playSound(String soundName) {
         if (muted) return;
 
@@ -224,10 +221,6 @@ public class SoundManager {
         }
     }
 
-    // =====================
-    // Volume helpers
-    // =====================
-
     /**
      * Cập nhật âm lượng nhạc nền dựa trên thiết lập hiện tại.
      */
@@ -240,8 +233,6 @@ public class SoundManager {
 
     /**
      * Đặt âm lượng cho một Clip cụ thể.
-     * @param clip
-     * @param volume
      */
     private void setClipVolume(Clip clip, float volume) {
         if (volume < 0f) volume = 0f;
@@ -274,8 +265,6 @@ public class SoundManager {
 
     /**
      * Giới hạn giá trị từ 0.0 đến 1.0
-     * @param value
-     * @return
      */
     private float clamp(float value) {
         if (value < 0f) return 0f;
@@ -283,13 +272,8 @@ public class SoundManager {
         return value;
     }
 
-    // =====================
-    // Public setters / getters
-    // =====================
-
     /**
      * Đặt âm lượng tổng (master volume).
-     * @param volume
      */
     public void setMasterVolume(float volume) {
         this.masterVolume = clamp(volume);
@@ -298,7 +282,6 @@ public class SoundManager {
 
     /**
      * Đặt âm lượng nhạc nền.
-     * @param volume
      */
     public void setMusicVolume(float volume) {
         this.musicVolume = clamp(volume);

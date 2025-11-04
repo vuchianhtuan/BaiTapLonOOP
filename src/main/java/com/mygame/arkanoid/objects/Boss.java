@@ -41,7 +41,7 @@ public class Boss {
     public void update() {
         x += dx;
 
-        // ... (Logic tính toán va chạm tường không đổi, nó đã đúng) ...
+        // Tính toán chiều rộng tổng thể của khối gạch
         int minRelX = Integer.MAX_VALUE;
         int maxRelX = Integer.MIN_VALUE;
         // Tìm ra offset tương đối trái nhất và phải nhất của khối gạch

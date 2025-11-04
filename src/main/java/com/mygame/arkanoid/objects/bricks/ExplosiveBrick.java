@@ -12,7 +12,9 @@ import java.util.List;
  */
 public class ExplosiveBrick extends Brick {
 
-    // 1. THÊM TRẠNG THÁI 'IGNITED'
+    /**
+     * Trạng thái của gạch nổ.
+     */
     private enum State {
         ALIVE,      // Sống, bình thường
         IGNITED,    // Bị kích hoạt, đang đếm giờ chờ nổ
@@ -27,6 +29,9 @@ public class ExplosiveBrick extends Brick {
     private static BufferedImage[] explosionFrames;
     private static final int FRAME_COUNT = 8;
 
+    /**
+     * Khởi tạo một viên gạch nổ tại vị trí (x, y) với kích thước cụ thể.
+     */
     public ExplosiveBrick(int x, int y, int width, int height) {
         super(x, y, width, height, 1, "Explosive", "explosiveBrick");
         this.currentState = State.ALIVE;
@@ -36,6 +41,9 @@ public class ExplosiveBrick extends Brick {
         }
     }
 
+    /**
+     * Tải các khung hình hoạt ảnh nổ từ AssetManager.
+     */
     private static void loadExplosionFrames() {
         explosionFrames = new BufferedImage[FRAME_COUNT];
         for (int i = 0; i < FRAME_COUNT; i++) {
@@ -48,8 +56,6 @@ public class ExplosiveBrick extends Brick {
         }
     }
 
-    // 2. TẠO HÀM HELPER ĐỂ TRÁNH TRÙNG LẶP CODE
-
     /**
      * Bắt đầu vụ nổ ngay lập tức.
      */
@@ -60,7 +66,6 @@ public class ExplosiveBrick extends Brick {
         this.explosionEffect = new ExplosionEffect(centerX, centerY);
     }
 
-    // 3. THÊM PHƯƠNG THỨC MỚI ĐỂ KÍCH HOẠT VỤ NỔ CHUỖI
     /**
      * Kích hoạt vụ nổ này sau một khoảng thời gian chờ (delay).
      * @param delayFrames Số frame phải chờ trước khi nổ.
@@ -73,7 +78,10 @@ public class ExplosiveBrick extends Brick {
         }
     }
 
-    // Phương thức helper để GameManager kiểm tra
+    /**
+     * Kiểm tra xem gạch có đang sống hay không.
+     * @return true nếu gạch còn sống, false nếu không.
+     */
     public boolean isAlive() {
         return this.currentState == State.ALIVE;
     }
@@ -83,7 +91,9 @@ public class ExplosiveBrick extends Brick {
         return this.currentState == State.IGNITED;
     }
 
-    // 4. CẬP NHẬT CÁC PHƯƠNG THỨC CŨ
+    /**
+     * Gạch bị đánh trúng.
+     */
     @Override
     public void takeHit() {
         if (currentState == State.ALIVE || currentState == State.IGNITED) {
@@ -99,13 +109,11 @@ public class ExplosiveBrick extends Brick {
 
     /**
      * Kích hoạt vụ nổ ngay khi bị đánh trúng.
-     * @param activeShards
-     * @return
      */
     public boolean detonateOnHit(List<Shard> activeShards) {
         if (this.currentState == State.IGNITED) {
 
-            // 1. TẠO VỠ VỤN TỨC THÌ (tương đương với bị phá hủy)
+            // 1. Tạo vỡ vụn tức thì
             activeShards.addAll(this.shatter());
 
             // 2. Kích hoạt vụ nổ (chuyển sang EXPLODING)
@@ -181,10 +189,6 @@ public class ExplosiveBrick extends Brick {
                 break;
         }
     }
-
-    // ==================================================================
-    // 5. CLASS NỘI BỘ (KHÔNG THAY ĐỔI)
-    // ==================================================================
 
     /**
      * Lớp nội bộ để quản lý hiệu ứng nổ.

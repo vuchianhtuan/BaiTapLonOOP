@@ -19,14 +19,17 @@ public class Shard {
 
     private static final double GRAVITY = 0.2; // Gia tốc trọng trường
     private static final double DRAG = 0.98; // Lực cản không khí
-    
+
+    /**
+     * Khởi tạo một mảnh vụn tại vị trí (startX, startY) với màu sắc cụ thể.
+     */
     public Shard(int startX, int startY, Color c) {
         this.x = startX;
         this.y = startY;
         this.color = c;
         this.lifetime = 30;
 
-        // 1. Thiết lập góc ngẫu nhiên (vẫn giữ 0 đến 360 độ)
+        // 1. THIẾT LẬP GÓC VÀ TỐC ĐỘ BAN ĐẦU NGẪU NHIÊN
         double angle = Math.random() * 2 * Math.PI;
         double speed = 2.0 + Math.random() * 3.0;
 

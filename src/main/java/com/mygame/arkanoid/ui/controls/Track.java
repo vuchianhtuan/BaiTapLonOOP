@@ -19,10 +19,7 @@ public class Track extends GameObject {
     }
 
     @Override
-    public void update() {
-        // Cập nhật logic của Track nếu cần thiết
-
-    }
+    public void update() {}
 
     @Override
     public void render(Graphics g, ScalingManager sm) {
