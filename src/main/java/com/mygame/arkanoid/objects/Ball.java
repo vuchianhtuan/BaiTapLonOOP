@@ -4,22 +4,26 @@ import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.SoundManager;
 import com.mygame.arkanoid.systems.ScalingManager;
+import com.mygame.arkanoid.config.GameConstants;
+
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent;
 
 /**
- * Đại diện cho **quả bóng**. Có chức năng **di chuyển**, **va chạm**, và **gắn** vào thanh đỡ.
+ * Lớp Ball đại diện cho quả bóng trong game.
  */
 public class Ball extends MovableObject {
-    private static final double MAX_REFLECT_ANGLE_DEG = 60.0; // Góc tối đa
+    private static final double MIN_REFLECT_ANGLE_DEG = 30.0;
+    private static final double MAX_REFLECT_ANGLE_DEG = 60.0;
+    private static final double CENTER_EPS = 0.02;
 
-    private double speed = 7;
-    private final double originalSpeed;
-    private boolean stuckToPaddle = true;
-    private String imageName;
-    private int paddleOffsetX;
+    private double speed = GameConstants.BALL_SPEED; // tốc độ di chuyển của bóng
+    private final double originalSpeed; // tốc độ gốc của bóng
+    private boolean stuckToPaddle = true; // trạng thái dính vào paddle
+    private String imageName; // tên hình ảnh của quả bóng
+    private int paddleOffsetX; // khoảng cách từ quả bóng đến paddle khi dính
 
     // Thuộc tính lửa.
     private boolean isBurning = false;
@@ -33,11 +37,16 @@ public class Ball extends MovableObject {
     private double rotationAngle = 0;
     private double rotationSpeed = 0.15; // radian mỗi frame (có thể chỉnh để xoay nhanh/chậm hơn)
 
-    // Phương thức tính toán góc quay của bóng
+    /**
+     * Lấy góc quay hiện tại của quả bóng dựa trên hướng di chuyển.
+     */
     private double getRotationAngle() {
         return Math.atan2(this.dy, this.dx);
     }
 
+    /**
+     * Đặt trạng thái cháy của quả bóng.
+     */
     public void setBurning(boolean burning) {
         this.isBurning = burning;
         if (!burning) {
@@ -45,13 +54,17 @@ public class Ball extends MovableObject {
         }
     }
 
+    /**
+     * Kiểm tra xem quả bóng có đang cháy không.
+     * @return true nếu đang cháy, false nếu không.
+     */
     public void stickToPaddle(Paddle paddle) {
         this.stuckToPaddle = true;
         this.paddleOffsetX = this.x - paddle.getX();
     }
 
     /**
-     * Đặt lại vị trí bóng và **gắn** vào thanh đỡ.
+     * Đặt lại vị trí quả bóng trên paddle.
      */
     public void resetBallPosition(Paddle paddle) {
         this.stuckToPaddle = true;
@@ -61,57 +74,91 @@ public class Ball extends MovableObject {
     }
 
     /**
-     * **Xử lý nảy** của bóng khi va chạm (cả với Paddle).
+     * Xử lý va chạm và tính toán góc phản xạ khi bóng chạm vào đối tượng khác.
+     * @param other Đối tượng mà bóng va chạm.
      */
     public void bounceOff(GameObject other) {
         if (other instanceof Paddle) {
             Paddle paddle = (Paddle) other;
+
+            // Tính toán vị trí tương đối của bóng so với tâm paddle
             double paddleCenterX = paddle.getX() + paddle.getWidth() / 2.0;
             double ballCenterX = this.x + this.width / 2.0;
 
+            // Tính toán góc phản xạ dựa trên vị trí chạm
             double relativeIntersectX = ballCenterX - paddleCenterX;
             double normalizedRelativeIntersectionX = relativeIntersectX / (paddle.getWidth() / 2.0);
-            double reflectAngleDeg = normalizedRelativeIntersectionX * MAX_REFLECT_ANGLE_DEG;
+
+            // Áp dụng vùng chết ở giữa để tránh góc quá nhỏ (gần thẳng đứng)
+            if (Math.abs(normalizedRelativeIntersectionX) < CENTER_EPS) {
+                normalizedRelativeIntersectionX = 0;
+            }
+
+            // Tính góc phản xạ mới
+            double reflectAngleDeg = normalizedRelativeIntersectionX * (MAX_REFLECT_ANGLE_DEG - MIN_REFLECT_ANGLE_DEG);
+            if (reflectAngleDeg > 0) {
+                reflectAngleDeg += MIN_REFLECT_ANGLE_DEG;
+            } else if (reflectAngleDeg < 0) {
+                reflectAngleDeg -= MIN_REFLECT_ANGLE_DEG;
+            }
+
+            // Chuyển góc sang radian
             double reflectAngleRad = Math.toRadians(reflectAngleDeg);
 
             this.dx = Math.sin(reflectAngleRad);
             this.dy = -Math.cos(reflectAngleRad);
 
             int gameAreaWidth = ScalingManager.getInstance().GAME_AREA_WIDTH;
+
+            // Nếu bóng đang ở mép TRÁI (do bị kẹp từ hàm move())
+            // VÀ logic nảy (ở trên) vô tình tính ra dx < 0 (muốn đi sang trái)
             if (this.x <= 0 && this.dx < 0) {
+                // Ép nó nảy sang phải, bất kể logic tính toán góc
                 this.dx = Math.abs(this.dx);
+                // Bạn cũng có thể gán cứng: this.dx = 0.5; (hoặc một giá trị dương)
             }
+
+            // Tương tự, nếu bóng ở mép PHẢI
+            // VÀ logic nảy vô tình tính ra dx > 0 (muốn đi sang phải)
             else if (this.x + this.width >= gameAreaWidth && this.dx > 0) {
+                // Ép nó nảy sang trái
                 this.dx = -Math.abs(this.dx);
             }
-        }
-        if (this.getBounds().intersects(new Rectangle(other.x, other.y, other.width, 1))) {
-            this.dy = -Math.abs(this.dy);
-        } else if (this.getBounds().intersects(new Rectangle(other.x, other.y + other.height - 1, other.width, 1))) {
-            this.dy = Math.abs(this.dy);
-        } else if (this.getBounds().intersects(new Rectangle(other.x, other.y, 1, other.height))) {
-            this.dx = -Math.abs(this.dx);
-        } else if (this.getBounds().intersects(new Rectangle(other.x + other.width - 1, other.y, 1, other.height))) {
-            this.dx = Math.abs(this.dx);
         } else {
-            // Trường hợp chạm góc hoặc không xác định
-            this.dx = -this.dx;
-            this.dy = -this.dy;
+            if (this.getBounds().intersects(new Rectangle(other.x, other.y, other.width, 1))) {
+                // Chạm cạnh trên
+                this.dy = -Math.abs(this.dy);
+            } else if (this.getBounds().intersects(new Rectangle(other.x, other.y + other.height - 1, other.width, 1))) {
+                // Chạm cạnh dưới
+                this.dy = Math.abs(this.dy);
+            } else if (this.getBounds().intersects(new Rectangle(other.x, other.y, 1, other.height))) {
+                // Chạm cạnh trái
+                this.dx = -Math.abs(this.dx);
+            } else if (this.getBounds().intersects(new Rectangle(other.x + other.width - 1, other.y, 1, other.height))) {
+                // Chạm cạnh phải
+                this.dx = Math.abs(this.dx);
+            } else {
+                // Trường hợp chạm góc hoặc không xác định
+                this.dx = -this.dx;
+                this.dy = -this.dy;
+            }
         }
     }
 
+    /**
+     * Kiểm tra xem quả bóng có đang dính vào paddle không.
+     */
     public boolean isStuckToPaddle() { return stuckToPaddle; }
 
     /**
-     * Kiểm tra **va chạm** với đối tượng khác.
-     * @param other Đối tượng va chạm.
+     * Kiểm tra va chạm giữa quả bóng và đối tượng khác.
      */
     public boolean checkCollision(GameObject other) {
         return this.getBounds().intersects(other.getBounds()) && !this.isStuckToPaddle();
     }
 
     /**
-     * **Di chuyển** bóng và **xử lý va chạm** tường.
+     * Cập nhật vị trí của quả bóng và xử lý va chạm với tường.
      */
     @Override public void move() {
         this.x += this.dx * speed;
@@ -126,26 +173,30 @@ public class Ball extends MovableObject {
             this.dx = Math.abs(this.dx);
             if (sm != null) {
                 sm.playSound(sm.SFX_PADDLE_HIT);
-            }
+            }// Luôn đảm bảo dx LÀ SỐ DƯƠNG (để đi sang phải)
         }
+        // Xử lý tường phải
         else if (this.x + this.width >= gameAreaWidth) {
-            this.x = gameAreaWidth - this.width;
+            this.x = gameAreaWidth - this.width; // KẸT bóng lại ở mép tường
             this.dx = -Math.abs(this.dx);
             if (sm != null) {
                 sm.playSound(sm.SFX_PADDLE_HIT);
-            }
+            }// Luôn đảm bảo dx LÀ SỐ ÂM (để đi sang trái)
         }
 
+        // Xử lý tường trên
         if (this.y <= 0) {
             this.y = 0; // KẸT bóng lại
             this.dy = Math.abs(this.dy);
             if (sm != null) {
                 sm.playSound(sm.SFX_PADDLE_HIT);
-            }
+            }// Luôn đảm bảo dy LÀ SỐ DƯƠNG (để đi xuống)
         }
     }
 
-    // thêm phương thức update cho Ball với InputHandler, Paddle
+    /**
+     * Cập nhật trạng thái của quả bóng dựa trên đầu vào và vị trí paddle.
+     */
     public void update(InputHandler inputHandler, Paddle paddle) {
         if(!stuckToPaddle) {
             move();
@@ -193,7 +244,7 @@ public class Ball extends MovableObject {
                     sm.scaleWidth(this.width), sm.scaleHeight(this.height));
         }
 
-        // 2. Vẽ hiệu ứng lửa nếu đang cháy
+        // Vẽ hiệu ứng lửa nếu đang cháy
         if (isBurning) {
             if (System.currentTimeMillis() - lastFireFrameTime > FIRE_FRAME_DURATION) {
                 fireAnimationFrameIndex = (fireAnimationFrameIndex + 1) % FIRE_FRAME_COUNT;
@@ -242,11 +293,11 @@ public class Ball extends MovableObject {
         }
     }
 
-    public Ball(int x, int y, int width, int height, String skinKey) { // <--- THÊM THAM SỐ
+    public Ball(int x, int y, int width, int height, String skinKey) {
         super(x, y, width, height);
         dx = 1;
         dy = -1;
-        this.imageName = skinKey; // <--- SỬA LẠI DÒNG NÀY
+        this.imageName = skinKey;
         this.originalSpeed = this.speed;
     }
 
@@ -296,3 +347,4 @@ public class Ball extends MovableObject {
         return originalSpeed;
     }
 }
+
