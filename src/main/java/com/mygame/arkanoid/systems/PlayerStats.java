@@ -1,6 +1,6 @@
 package com.mygame.arkanoid.systems;
 
-import com.mygame.arkanoid.util.config.GameConstants;
+import com.mygame.arkanoid.config.GameConstants;
 
 /**
  * Quản lý chỉ số người chơi trong game Arkanoid.

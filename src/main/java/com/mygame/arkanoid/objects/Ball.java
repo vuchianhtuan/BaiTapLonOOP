@@ -4,7 +4,7 @@ import com.mygame.arkanoid.engine.AssetManager;
 import com.mygame.arkanoid.engine.InputHandler;
 import com.mygame.arkanoid.engine.SoundManager;
 import com.mygame.arkanoid.systems.ScalingManager;
-import com.mygame.arkanoid.util.config.GameConstants;
+import com.mygame.arkanoid.config.GameConstants;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

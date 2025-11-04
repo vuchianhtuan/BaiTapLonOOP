@@ -2,7 +2,7 @@ package com.mygame.arkanoid.level;
 
 import com.mygame.arkanoid.objects.bricks.*;
 import com.mygame.arkanoid.objects.powerups.PowerUpType;
-import com.mygame.arkanoid.util.ErrorHandler;
+
 import static com.mygame.arkanoid.objects.bricks.BrickFactory.create;
 
 import java.io.BufferedReader;

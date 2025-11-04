@@ -7,7 +7,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyEvent;
 import com.mygame.arkanoid.systems.ScalingManager;
-import com.mygame.arkanoid.util.config.GameConstants;
+import com.mygame.arkanoid.config.GameConstants;
 
 /**
  * Lớp Paddle đại diện cho thanh điều khiển trong trò chơi Arkanoid.

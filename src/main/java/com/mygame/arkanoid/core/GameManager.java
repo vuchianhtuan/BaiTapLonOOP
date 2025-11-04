@@ -26,7 +26,7 @@ import com.mygame.arkanoid.ui.screens.MenuManager;
 import com.mygame.arkanoid.ui.screens.SettingManager;
 import com.mygame.arkanoid.save.SaveData;
 import com.mygame.arkanoid.save.SaveSystem;
-import com.mygame.arkanoid.util.config.GameConstants;
+import com.mygame.arkanoid.config.GameConstants;
 
 import java.awt.*;
 import java.util.*;
