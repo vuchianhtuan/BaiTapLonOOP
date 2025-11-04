@@ -19,14 +19,14 @@ class LevelTest {
 
     @BeforeAll
     static void setupGlobal() {
-        // Phải tải assets trước, vì hàm new Level()
-        // sẽ gián tiếp tạo ExplosiveBrick
+        // Bắt buộc: Tải assets trước, vì Level() sẽ tạo gạch (vd: ExplosiveBrick)
+        // yêu cầu assets phải được tải.
         AssetManager.getInstance().loadGlobalAssets();
     }
 
     @BeforeEach
     void setUp() {
-        // --- HÀNH ĐỘNG (Act) ---
+        // Tải level trước mỗi bài test
         level = new Level(REAL_LEVEL_PATH);
     }
 
@@ -34,13 +34,10 @@ class LevelTest {
     @DisplayName("Đọc file Level1.txt và phân tích Header chính xác")
     void testRealLevelHeaderParsing() {
         // --- XÁC MINH (Assert) ---
-
         assertNotNull(level, "Không thể tải file Level. File có thể bị sai đường dẫn.");
 
         // CHỈ CẦN KIỂM TRA BẰNG HÀM isBossLevel()
         assertFalse(level.isBossLevel(), "Loại level phải là 'normal' (isBossLevel() nên là false)");
-
-        // --- KẾT THÚC SỬA LỖI ---
 
         assertEquals("Forest.wav", level.getThemeMusic(), "Tên file nhạc bị sai");
         assertEquals("forest_", level.getThemeAssetPrefix(), "Tiền tố asset bị sai");
@@ -53,10 +50,11 @@ class LevelTest {
     void testRealLevelBrickParsing() {
         // --- XÁC MINH (Assert) ---
 
-        // (Code này giữ nguyên, nó đã đúng)
+        // Level 1 không được có gạch boss
         List<Brick> bossBricks = level.getBossBricks();
         assertEquals(0, bossBricks.size(), "Level 1 không được có gạch boss");
 
+        // Đếm tổng số gạch thường
         List<Brick> normalBricks = level.getBricks();
         assertEquals(101, normalBricks.size(), "Tổng số gạch (1, 2, E, L, M) đếm được bị sai");
     }

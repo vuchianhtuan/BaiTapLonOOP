@@ -22,20 +22,17 @@ class EntityManagerTest {
 
     @BeforeEach
     void setUp() {
-        // --- SẮP XẾP (Arrange) ---
         entityManager = new EntityManager();
 
-        // 1. Tạo các quả bóng
         ball_in_bounds = new Ball(100, 100, 18, 18, "skin");
         ball_out_of_bounds = new Ball(100, 9999, 18, 18, "skin"); // Y > 720
 
         entityManager.addBall(ball_in_bounds);
         entityManager.addBall(ball_out_of_bounds);
 
-        // 2. Tạo các viên gạch
         brick_alive = new NormalBrick(200, 200, 45, 20);
         brick_destroyed = new NormalBrick(300, 300, 45, 20);
-        brick_destroyed.takeHit(); // Làm cho nó bị vỡ
+        brick_destroyed.takeHit();
 
         entityManager.getBricks().add(brick_alive);
         entityManager.getBricks().add(brick_destroyed);
@@ -44,22 +41,15 @@ class EntityManagerTest {
     @Test
     @DisplayName("Dọn dẹp (cleanup) các đối tượng đã bị phá hủy")
     void testCleanupDestroyedObjects() {
-        // --- Kiểm tra trạng thái ban đầu ---
         assertEquals(2, entityManager.getBalls().size(), "Phải có 2 quả bóng trước khi dọn dẹp");
         assertEquals(2, entityManager.getBricks().size(), "Phải có 2 viên gạch trước khi dọn dẹp");
 
-        // --- HÀNH ĐỘNG (Act) ---
-        // Chạy hàm dọn dẹp, truyền vào chiều cao màn hình
         entityManager.cleanupDestroyedObjects(SCREEN_HEIGHT);
 
-        // --- XÁC MINH (Assert) ---
-
-        // 1. Kiểm tra List Bóng
         assertEquals(1, entityManager.getBalls().size(), "Chỉ 1 quả bóng được giữ lại");
         assertTrue(entityManager.getBalls().contains(ball_in_bounds), "Bóng trong màn hình phải được giữ lại");
         assertFalse(entityManager.getBalls().contains(ball_out_of_bounds), "Bóng ngoài màn hình phải bị xóa");
 
-        // 2. Kiểm tra List Gạch
         assertEquals(1, entityManager.getBricks().size(), "Chỉ 1 viên gạch được giữ lại");
         assertTrue(entityManager.getBricks().contains(brick_alive), "Gạch còn sống phải được giữ lại");
         assertFalse(entityManager.getBricks().contains(brick_destroyed), "Gạch đã vỡ phải bị xóa");
