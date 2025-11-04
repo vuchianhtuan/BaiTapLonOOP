@@ -5,31 +5,60 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Lớp SaveData đại diện cho cấu trúc dữ liệu lưu trữ tiến trình trò chơi Arkanoid.
- * Lớp này triển khai Serializable để có thể tuần tự hóa và ghi vào file.
+ * Đại diện cho cấu trúc dữ liệu "sạch" (Plain Old Java Object - POJO)
+ * dùng để lưu trữ trạng thái (state) của trò chơi.
+ * <p>
+ * Lớp này triển khai (implements) {@link Serializable} để cho phép
+ * Java tuần tự hóa (serialize) toàn bộ đối tượng này thành một dòng byte,
+ * sẵn sàng để ghi ra tệp tin (file).
+ * <p>
+ * Nó chỉ chứa dữ liệu, không chứa logic nghiệp vụ (business logic).
  */
 public class SaveData implements Serializable {
+    /**
+     * Mã phiên bản (version ID) duy nhất cho việc tuần tự hóa.
+     * Nếu bạn thay đổi cấu trúc của lớp này (ví dụ: thêm/xóa/đổi tên trường),
+     * bạn nên thay đổi giá trị này để các file save cũ (với serialVersionUID cũ)
+     * không được tải (gây ra InvalidClassException).
+     */
     private static final long serialVersionUID = 1L;
 
-    // Versioning để tương thích về sau
+    /** Phiên bản (version) của logic save, dùng để xử lý tương thích (migration) về sau. */
     private int version = 1;
 
-    // Game progress
+    // --- Trạng thái tiến trình (Game progress) ---
+    /** Chỉ số (index) của màn chơi (level) hiện tại (ví dụ: 0, 1, 2...). */
     private int levelIndex;
+    /** Tổng điểm số của người chơi. */
     private int score;
+    /** Số mạng (lives) còn lại của người chơi. */
     private int lives;
 
-    // Thời gian chơi
-    private long playtimeMillis;              // Tổng thời gian phiên chơi
-    private long currentLevelPlaytimeMillis;  // Thời gian của màn hiện tại
+    // --- Thời gian chơi ---
+    /** Tổng thời gian đã chơi trong toàn bộ phiên (session) này (tính bằng mili giây). */
+    private long playtimeMillis;
+    /** Thời gian đã chơi chỉ trong màn (level) hiện tại (tính bằng mili giây). */
+    private long currentLevelPlaytimeMillis;
 
-    private boolean canContinue; // Cho phép tiếp tục từ save này
-    private long savedAtEpochMillis; // Thời gian lưu (epoch millis)
-    private List<Integer> aliveBrickIds = new ArrayList<>(); // IDs của các viên gạch còn sống
+    /** Cờ (flag) cho biết file save này có thể được "Tiếp tục" (Continue) từ menu không. */
+    private boolean canContinue;
+    /** Dấu thời gian (timestamp) khi file save này được tạo (tính bằng epoch milliseconds). */
+    private long savedAtEpochMillis;
+    /**
+     * Danh sách các ID duy nhất của những viên gạch (Brick) *còn sống*
+     * trong màn chơi tại thời điểm lưu.
+     */
+    private List<Integer> aliveBrickIds = new ArrayList<>();
 
+    /**
+     * Constructor mặc định (không tham số).
+     * Bắt buộc phải có để thư viện tuần tự hóa (như Jackson hoặc Java Serialization)
+     * hoạt động chính xác.
+     */
     public SaveData() {}
 
-    // Getters/Setters
+    // --- Getters/Setters ---
+
     public int getVersion() { return version; }
     public void setVersion(int version) { this.version = version; }
 

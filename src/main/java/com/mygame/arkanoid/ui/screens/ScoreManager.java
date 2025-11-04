@@ -20,12 +20,26 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
- * Lớp ScoreManager quản lý điểm số và thời gian chơi trong trò chơi Arkanoid.
+ * Quản lý logic, hiển thị (render) và lưu trữ (persistence)
+ * tất cả các loại điểm số và thành tích của trò chơi.
+ * <p>
+ * Trách nhiệm bao gồm:
+ * <ul>
+ * <li>Theo dõi điểm cao nhất (High Score) và thời gian thắng nhanh nhất (Fastest Win).</li>
+ * <li>Duy trì Top 5 điểm và Top 5 thời gian thắng.</li>
+ * <li>Theo dõi điểm/thời gian tốt nhất cho từng màn chơi (level) riêng lẻ.</li>
+ * <li>Xử lý việc lưu ({@link #saveScoresToFile}) và tải ({@link #loadScoresFromFile})
+ * toàn bộ dữ liệu này vào một tệp {@code .properties} an toàn
+ * trong thư mục người dùng.</li>
+ * <li>Cung cấp giao diện (UI) để hiển thị các điểm số này ({@link #render}).</li>
+ * <li>Xử lý input (nhấn nút Back) trong màn hình điểm số ({@link #update}).</li>
+ * </ul>
  */
 public class ScoreManager {
     private final GameManager gameManager;
     private InputHandler inputHandler;
 
+    // --- Biến lưu trữ điểm (trong bộ nhớ) ---
     private int highScore; // Điểm cao nhất MỘT LẦN CHƠI
     private long fastestTime = Long.MAX_VALUE; // Thời gian nhanh nhất HOÀN THÀNH GAME
 
@@ -33,14 +47,27 @@ public class ScoreManager {
     private List<Long> topTimes = new ArrayList<>(6); // Top 5 thời gian (WIN)
     private Map<Integer, Integer> perLevelHighScores;
     private Map<Integer, Long> perLevelFastestTimes;
-    private int totalLevels = 3;
+    private int totalLevels = 3; // Tổng số level, dùng để lặp khi lưu/tải
 
+    // --- Biến UI ---
     private Image BackgroundImage;
     private BackButton backButton;
 
+    // --- Biến hệ thống file (File System) ---
+    /** Đường dẫn (Path) động đến tệp lưu điểm (ví dụ: ".../.arkanoidGame/scores.properties"). */
     private static final Path SCORE_FILE = resolveResourceBackedScoreFile();
-    private static final Path SCORE_DIR = (SCORE_FILE != null) ? SCORE_FILE.getParent() : null; // Kiểm tra null
+    /** Đường dẫn (Path) đến thư mục chứa tệp điểm. */
+    private static final Path SCORE_DIR = (SCORE_FILE != null) ? SCORE_FILE.getParent() : null;
 
+    /**
+     * Khởi tạo trình quản lý điểm số.
+     * <p>
+     * Tải (load) điểm số đã lưu từ tệp tin ngay lập tức.
+     * Khởi tạo nút "Back" cho UI.
+     *
+     * @param gameManager  Tham chiếu đến GameManager (để chuyển trạng thái).
+     * @param inputHandler Tham chiếu đến InputHandler (để kiểm tra click chuột).
+     */
     public ScoreManager(GameManager gameManager, InputHandler inputHandler) {
         this.highScore = 0;
         this.gameManager = gameManager;
@@ -53,32 +80,38 @@ public class ScoreManager {
         this.perLevelFastestTimes = new HashMap<>();
 
         loadScoresFromFile(); // Tải dữ liệu đã lưu
-        backButton = new BackButton(10, 10, 40, 40);
+        backButton = new BackButton(10, 10, 40, 40); // Tọa độ logic (native)
     }
 
     /**
-     * Xử lý kết quả khi kết thúc một lượt chơi (Game Over hoặc Game Win).
+     * Gửi (submit) kết quả của một phiên (session) chơi
+     * (khi Game Over hoặc Game Win).
+     * <p>
+     * So sánh kết quả mới với các kỷ lục (record) hiện tại
+     * (High Score, Fastest Time, Top 5) và cập nhật nếu cần.
+     * Tự động gọi {@link #saveScoresToFile()} nếu có thay đổi.
+     *
      * @param finalScore Điểm cuối cùng của lượt chơi.
-     * @param totalTime Tổng thời gian chơi của lượt đó (milliseconds).
-     * @param didWin true nếu người chơi thắng game, false nếu thua.
+     * @param totalTime  Tổng thời gian chơi của lượt đó (milliseconds).
+     * @param didWin     {@code true} nếu người chơi thắng game
+     * (chỉ khi thắng mới xét Fastest Time).
      */
     public synchronized void submitSessionResult(int finalScore, long totalTime, boolean didWin) {
-        boolean changed = false;
+        // (Biến 'changed' không còn cần thiết vì saveScoresToFile()
+        // được gọi một lần ở cuối)
 
         // 1. Cập nhật High Score (Điểm cao nhất mọi thời đại)
         if (finalScore > highScore) {
             highScore = finalScore;
-            changed = true;
         }
 
         // 2. Thêm điểm vào Top 5 Scores
         if (finalScore > 0) {
             topScores.add(finalScore);
-            topScores.sort(Comparator.reverseOrder());
-            while (topScores.size() > 5) { // Dùng while để xóa nhiều nếu cần
+            topScores.sort(Comparator.reverseOrder()); // Sắp xếp giảm dần
+            while (topScores.size() > 5) { // Giữ lại 5 điểm cao nhất
                 topScores.remove(5);
             }
-            // Không cần set changed = true ở đây, sẽ check ở cuối
         }
 
         // 3. Chỉ cập nhật thời gian nếu người chơi THẮNG và có thời gian hợp lệ
@@ -86,21 +119,19 @@ public class ScoreManager {
             // Cập nhật Fastest Time (Thời gian nhanh nhất mọi thời đại)
             if (totalTime < fastestTime) {
                 fastestTime = totalTime;
-                changed = true;
             }
 
             // Thêm thời gian vào Top 5 Times
             topTimes.add(totalTime);
-            topTimes.sort(Comparator.naturalOrder());
-            while (topTimes.size() > 5) { // Dùng while
+            topTimes.sort(Comparator.naturalOrder()); // Sắp xếp tăng dần
+            while (topTimes.size() > 5) { // Giữ lại 5 thời gian nhanh nhất
                 topTimes.remove(5);
             }
-            // Không cần set changed = true ở đây
         }
 
+        // 4. Lưu tất cả thay đổi vào file
         saveScoresToFile();
     }
-
 
     public int getHighScore() { return highScore; }
     public long getFastestTime() { return fastestTime; }
@@ -108,42 +139,56 @@ public class ScoreManager {
     public List<Long> getTopTimes() { return new ArrayList<>(topTimes); }
 
     /**
-     * Hàm này sẽ được gọi bên trong GameManager.updateGame() khi ở state "HIGH_SCORES".
+     * Cập nhật logic của màn hình High Scores
+     * (được gọi mỗi frame bởi GameManager
+     * khi {@code gameState == "HIGH_SCORES"}).
+     * <p>
+     * Chỉ kiểm tra xem người dùng có click vào nút "Back" hay không.
      */
     public void update() {
         int virtualMouseX = inputHandler.getVirtualMouseX();
         int virtualMouseY = inputHandler.getVirtualMouseY();
         if (inputHandler.isMouseClicked() && backButton.contains(virtualMouseX, virtualMouseY)) {
-            gameManager.setGameState("MENU");
+            gameManager.setGameState("MENU"); // Quay về Menu
         }
     }
 
     /**
-     * Gửi kết quả của một màn chơi (level) để lưu lại
+     * Gửi (submit) kết quả của một màn chơi (level) riêng lẻ
+     * (khi vừa hoàn thành level).
+     * <p>
+     * So sánh điểm/thời gian của màn này với kỷ lục (record)
+     * của chính màn đó.
+     * Tự động gọi {@link #saveScoresToFile()} nếu có kỷ lục mới.
+     *
+     * @param levelIndex Chỉ số (index) của màn vừa hoàn thành.
+     * @param levelScore Điểm số đạt được trong màn đó.
+     * @param levelTime  Thời gian hoàn thành màn đó (milliseconds).
      */
     public synchronized void submitLevelResult(int levelIndex, int levelScore, long levelTime) {
-        if (levelIndex < 0 || levelIndex >= totalLevels) return;
+        if (levelIndex < 0 || levelIndex >= totalLevels) return; // Bỏ qua nếu index không hợp lệ
         boolean changed = false;
+
+        // Cập nhật điểm cao nhất của màn
         int currentBestScore = perLevelHighScores.getOrDefault(levelIndex, 0);
         if (levelScore > currentBestScore) {
             perLevelHighScores.put(levelIndex, levelScore);
             changed = true;
         }
+
+        // Cập nhật thời gian nhanh nhất của màn (chỉ khi thời gian > 0)
         long currentBestTime = perLevelFastestTimes.getOrDefault(levelIndex, Long.MAX_VALUE);
         if (levelTime < currentBestTime && levelTime > 0) {
             perLevelFastestTimes.put(levelIndex, levelTime);
             changed = true;
         }
+
+        // Chỉ lưu vào file nếu có thay đổi
         if (changed) {
             saveScoresToFile();
         }
     }
 
-    /**
-     * Lấy điểm cao nhất của một màn chơi cụ thể.
-     * @param levelIndex
-     * @return
-     */
     public int getBestScoreForLevel(int levelIndex) {
         return perLevelHighScores.getOrDefault(levelIndex, 0);
     }
@@ -152,9 +197,11 @@ public class ScoreManager {
     }
 
     /**
-     * Định dạng thời gian từ milliseconds sang định dạng mm:ss.SSS.
-     * @param millis
-     * @return
+     * Định dạng thời gian từ mili-giây sang chuỗi "mm:ss.SSS"
+     * (phút:giây.mili-giây).
+     *
+     * @param millis Tổng số mili-giây.
+     * @return Chuỗi đã định dạng, hoặc "--:--.---" nếu giá trị không hợp lệ.
      */
     private String formatTime(long millis) {
         if (millis == Long.MAX_VALUE || millis <= 0) {
@@ -167,11 +214,20 @@ public class ScoreManager {
         return String.format("%02d:%02d.%03d", minutes, seconds, milliseconds);
     }
 
+    /**
+     * Vẽ (render) toàn bộ màn hình High Scores.
+     * <p>
+     * Chịu trách nhiệm vẽ nền, các panel (bo góc, bán trong suốt)
+     * và tất cả văn bản (Tiêu đề, Kỷ lục, Top 5) đã được
+     * co giãn (scale) và căn chỉnh (align).
+     *
+     * @param g Đối tượng Graphics (sẽ được cast sang Graphics2D).
+     */
     public void render(Graphics g) {
         ScalingManager sm = ScalingManager.getInstance();
         Graphics2D g2d = (Graphics2D) g;
 
-        // Bật khử răng cưa
+        // Bật khử răng cưa (anti-aliasing)
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -181,31 +237,31 @@ public class ScoreManager {
                     sm.scaleX(0), sm.scaleY(0),
                     sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT),
                     null);
-        } else { // Vẽ nền đen dự phòng nếu ảnh lỗi
+        } else { // Fallback: nền đen
             g.setColor(Color.BLACK);
             g.fillRect(
                     sm.scaleX(0), sm.scaleY(0),
                     sm.scaleWidth(sm.NATIVE_WIDTH), sm.scaleHeight(sm.NATIVE_HEIGHT));
         }
 
-        // Một số thiết lập chung
-        Color panelColor = new Color(50, 50, 50, 200); // Màu xám đậm, bán trong suốt (alpha=200)
-        int panelArc = 20; // Độ bo tròn góc panel
-        int panelPadding = 15; // Khoảng cách từ chữ đến mép panel (logic)
+        // --- Các thiết lập chung cho Panel UI ---
+        Color panelColor = new Color(50, 50, 50, 200); // Xám đậm, bán trong suốt
+        int panelArc = 20; // Độ bo tròn góc (logic)
+        int panelPadding = 15; // Padding (logic)
 
-        // 2. Chuẩn bị Font
+        // 2. Chuẩn bị Fonts (gốc, chưa scale)
         Font titleFont = new Font("Arial", Font.BOLD, 48);
         Font recordFont = new Font("Arial", Font.BOLD, 28);
         Font listFont = new Font("Arial", Font.PLAIN, 24);
 
+        // Lấy các phiên bản font đã scale
         Font scaledTitleFont = titleFont.deriveFont((float)(titleFont.getSize() * sm.getScale()));
         Font scaledRecordFont = recordFont.deriveFont((float)(recordFont.getSize() * sm.getScale()));
         Font scaledListFont = listFont.deriveFont((float)(listFont.getSize() * sm.getScale()));
 
-        // Lưu composite mặc định
-        Composite defaultComposite = g2d.getComposite();
+        Composite defaultComposite = g2d.getComposite(); // Lưu lại composite mặc định
 
-        // 3. Vẽ Tiêu đề và Panel nền
+        // --- 3. Vẽ Tiêu đề "HIGH SCORES" và Panel nền của nó ---
         g2d.setFont(scaledTitleFont);
         g2d.setColor(Color.WHITE);
         String title = "HIGH SCORES";
@@ -213,14 +269,15 @@ public class ScoreManager {
         int titleWidth = fmTitle.stringWidth(title);
         int titleHeight = fmTitle.getHeight();
         int titleAscent = fmTitle.getAscent();
-        int titleLogicX = (sm.NATIVE_WIDTH - titleWidth) / 2;
+        int titleLogicX = (sm.NATIVE_WIDTH - titleWidth) / 2; // Căn giữa logic
         int titleLogicY = 80;
 
-        // Vẽ panel nền cho tiêu đề
+        // Tính toán panel nền cho tiêu đề
         int titlePanelX = titleLogicX - panelPadding;
         int titlePanelY = titleLogicY - titleAscent - panelPadding; // Căn Y dựa vào ascent
         int titlePanelW = titleWidth + 2 * panelPadding;
         int titlePanelH = titleHeight + 2 * panelPadding;
+        // Vẽ panel nền (bo góc)
         g2d.setColor(panelColor);
         g2d.fillRoundRect(sm.scaleX(titlePanelX), sm.scaleY(titlePanelY),
                 sm.scaleWidth(titlePanelW), sm.scaleHeight(titlePanelH),
@@ -230,27 +287,28 @@ public class ScoreManager {
         g2d.drawString(title, sm.scaleX(titleLogicX), sm.scaleY(titleLogicY));
 
 
-        // 4. Vẽ Kỷ lục và Panel nền
+        // --- 4. Vẽ Kỷ lục (Best Score / Fastest Win) và Panel nền ---
         g2d.setFont(scaledRecordFont);
         FontMetrics fmRecord = g2d.getFontMetrics();
         int recordHeight = fmRecord.getHeight();
         int recordAscent = fmRecord.getAscent();
 
+        // Chuẩn bị văn bản kỷ lục
         String bestScoreText = "Best Score: " + highScore;
         int bestScoreWidth = fmRecord.stringWidth(bestScoreText);
-        int bestScoreLogicX = (sm.NATIVE_WIDTH - bestScoreWidth) / 2;
-        int bestScoreLogicY = 160; // Dịch xuống
+        int bestScoreLogicX = (sm.NATIVE_WIDTH - bestScoreWidth) / 2; // Căn giữa
+        int bestScoreLogicY = 160;
 
         String fastestTimeText = "Fastest Win: " + formatTime(fastestTime);
         int fastestTimeWidth = fmRecord.stringWidth(fastestTimeText);
-        int fastestTimeLogicX = (sm.NATIVE_WIDTH - fastestTimeWidth) / 2;
+        int fastestTimeLogicX = (sm.NATIVE_WIDTH - fastestTimeWidth) / 2; // Căn giữa
         int fastestTimeLogicY = bestScoreLogicY + recordHeight + sm.scaleHeight(10); // Dưới dòng điểm
 
         // Tính kích thước panel chung cho 2 dòng kỷ lục
         int recordPanelW = Math.max(bestScoreWidth, fastestTimeWidth) + 2 * panelPadding;
-        int recordPanelH = (recordHeight + sm.scaleHeight(10)) * 2 + 2 * panelPadding; // 2 dòng + padding
-        int recordPanelX = (sm.NATIVE_WIDTH - recordPanelW) / 2;
-        int recordPanelY = bestScoreLogicY - recordAscent - panelPadding;
+        int recordPanelH = (recordHeight + sm.scaleHeight(10)) * 2 + 2 * panelPadding;
+        int recordPanelX = (sm.NATIVE_WIDTH - recordPanelW) / 2; // Căn giữa
+        int recordPanelY = bestScoreLogicY - recordAscent - panelPadding; // Căn Y
 
         // Vẽ panel nền kỷ lục
         g2d.setColor(panelColor);
@@ -263,68 +321,68 @@ public class ScoreManager {
         g2d.drawString(fastestTimeText, sm.scaleX(fastestTimeLogicX), sm.scaleY(fastestTimeLogicY));
 
 
-        // 5. Vẽ 2 cột danh sách và Panel nền
+        // --- 5. Vẽ 2 cột danh sách (Top 5) và Panel nền ---
         g2d.setFont(scaledListFont);
         FontMetrics fmList = g2d.getFontMetrics();
-        int listStartY = 280; // Dịch danh sách xuống
+        int listStartY = 280; // Vị trí Y (logic) bắt đầu của dòng 1
         int listTitleY = listStartY - fmList.getHeight() - sm.scaleHeight(5); // Vị trí tiêu đề cột
-        int lineHeight = fmList.getHeight() + sm.scaleHeight(10);
-        int listPanelH = lineHeight * 6 + 2 * panelPadding; // Panel cao đủ cho tiêu đề + 5 dòng + padding
+        int lineHeight = fmList.getHeight() + sm.scaleHeight(10); // Khoảng cách (logic) giữa các dòng
+        int listPanelH = lineHeight * 6 + 2 * panelPadding; // Panel cao đủ cho tiêu đề + 5 dòng
         int listPanelArc = 15; // Bo tròn ít hơn
 
         // --- Cột Top Scores ---
-        int scoreColXLogic = sm.NATIVE_WIDTH / 4; // Tọa độ logic X cột điểm
+        int scoreColXLogic = sm.NATIVE_WIDTH / 4; // Tọa độ X (logic) cột điểm (1/4 màn hình)
         String scoreTitle = "Top 5 Scores";
         int scoreTitleWidth = fmList.stringWidth(scoreTitle);
-        // Tính kích thước panel cột điểm
-        int scorePanelW = scoreTitleWidth + 4 * panelPadding; // Rộng hơn 1 chút
-        int scorePanelX = scoreColXLogic - scorePanelW / 2;
-        int scorePanelY = listTitleY - fmList.getAscent() - panelPadding;
-        // Vẽ panel nền cột điểm
+        // Tính kích thước panel
+        int scorePanelW = scoreTitleWidth + 4 * panelPadding;
+        int scorePanelX = scoreColXLogic - scorePanelW / 2; // Căn giữa
+        int scorePanelY = listTitleY - fmList.getAscent() - panelPadding; // Căn Y
+        // Vẽ panel nền
         g2d.setColor(panelColor);
         g2d.fillRoundRect(sm.scaleX(scorePanelX), sm.scaleY(scorePanelY),
                 sm.scaleWidth(scorePanelW), sm.scaleHeight(listPanelH),
                 sm.scaleWidth(listPanelArc), sm.scaleHeight(listPanelArc));
-        // Vẽ tiêu đề cột điểm
-        g2d.setColor(Color.ORANGE); // Màu khác cho tiêu đề cột
+        // Vẽ tiêu đề cột
+        g2d.setColor(Color.ORANGE);
         g2d.drawString(scoreTitle, sm.scaleX(scoreColXLogic) - scoreTitleWidth / 2, sm.scaleY(listTitleY));
-        // Vẽ danh sách điểm
+        // Vẽ 5 dòng điểm
         g2d.setColor(Color.WHITE);
         for (int i = 0; i < 5; i++) { // Luôn vẽ 5 dòng
             String entryText;
             if (i < topScores.size()) {
                 entryText = String.format("%d. %d", i + 1, topScores.get(i));
             } else {
-                entryText = String.format("%d. ---", i + 1);
+                entryText = String.format("%d. ---", i + 1); // Dòng trống
             }
             int entryWidth = fmList.stringWidth(entryText);
             g2d.drawString(entryText, sm.scaleX(scoreColXLogic) - entryWidth / 2, sm.scaleY(listStartY + i * lineHeight));
         }
 
         // --- Cột Top Times ---
-        int timeColXLogic = sm.NATIVE_WIDTH * 3 / 4; // Tọa độ logic X cột thời gian
+        int timeColXLogic = sm.NATIVE_WIDTH * 3 / 4; // Tọa độ X (logic) cột thời gian (3/4 màn hình)
         String timeTitle = "Top 5 Times (Win)";
         int timeTitleWidth = fmList.stringWidth(timeTitle);
-        // Tính kích thước panel cột thời gian
-        int timePanelW = timeTitleWidth + 4 * panelPadding; // Rộng hơn 1 chút
-        int timePanelX = timeColXLogic - timePanelW / 2;
-        int timePanelY = listTitleY - fmList.getAscent() - panelPadding; // Cùng Y với panel điểm
-        // Vẽ panel nền cột thời gian
+        // Tính kích thước panel
+        int timePanelW = timeTitleWidth + 4 * panelPadding;
+        int timePanelX = timeColXLogic - timePanelW / 2; // Căn giữa
+        int timePanelY = listTitleY - fmList.getAscent() - panelPadding; // Cùng Y
+        // Vẽ panel nền
         g2d.setColor(panelColor);
         g2d.fillRoundRect(sm.scaleX(timePanelX), sm.scaleY(timePanelY),
                 sm.scaleWidth(timePanelW), sm.scaleHeight(listPanelH),
                 sm.scaleWidth(listPanelArc), sm.scaleHeight(listPanelArc));
-        // Vẽ tiêu đề cột thời gian
-        g2d.setColor(Color.CYAN); // Màu khác cho tiêu đề cột
+        // Vẽ tiêu đề cột
+        g2d.setColor(Color.CYAN);
         g2d.drawString(timeTitle, sm.scaleX(timeColXLogic) - timeTitleWidth / 2, sm.scaleY(listTitleY));
-        // Vẽ danh sách thời gian
+        // Vẽ 5 dòng thời gian
         g2d.setColor(Color.WHITE);
-        for (int i = 0; i < 5; i++) { // Luôn vẽ 5 dòng
+        for (int i = 0; i < 5; i++) {
             String entryText;
             if (i < topTimes.size()) {
                 entryText = String.format("%d. %s", i + 1, formatTime(topTimes.get(i)));
             } else {
-                entryText = String.format("%d. --:--.---", i + 1);
+                entryText = String.format("%d. --:--.---", i + 1); // Dòng trống
             }
             int entryWidth = fmList.stringWidth(entryText);
             g2d.drawString(entryText, sm.scaleX(timeColXLogic) - entryWidth / 2, sm.scaleY(listStartY + i * lineHeight));
@@ -333,25 +391,32 @@ public class ScoreManager {
         // 6. Vẽ nút Back
         backButton.draw(g, sm);
 
-        // Reset composite về mặc định (quan trọng nếu dùng alpha)
+        // Reset composite về mặc định
         g2d.setComposite(defaultComposite);
     }
 
     /**
-     * Xác định vị trí file lưu điểm dựa trên hệ thống.
-     * @return Path đến file điểm hoặc null nếu không tìm được vị trí phù hợp.
+     * Xác định (resolve) đường dẫn (Path) tin cậy để lưu tệp điểm.
+     * <p>
+     * Thử các vị trí theo thứ tự ưu tiên:
+     * 1. Thư mục người dùng ({@code user.home}/.arkanoidGame) - Ưu tiên hàng đầu, ổn định.
+     * 2. Thư mục làm việc hiện tại ({@code user.dir}) - Dùng cho môi trường phát triển (dev).
+     * <p>
+     * Sẽ tự động kiểm tra quyền ghi và tạo thư mục nếu cần.
+     *
+     * @return Path đến tệp {@code scores.properties}, hoặc {@code null}
+     * nếu không tìm được vị trí nào có thể ghi.
      */
     private static Path resolveResourceBackedScoreFile() {
         // Ưu tiên 1: Thư mục người dùng (ổn định nhất)
         try {
-            Path homeDir = Paths.get(System.getProperty("user.home"), ".arkanoidGame"); // Đặt tên thư mục rõ ràng hơn
+            Path homeDir = Paths.get(System.getProperty("user.home"), ".arkanoidGame");
             // Kiểm tra hoặc tạo thư mục
             if (Files.notExists(homeDir)) {
                 try {
                     Files.createDirectories(homeDir);
                 } catch (IOException e) {
                     System.err.println("Không thể tạo thư mục lưu điểm trong thư mục người dùng: " + homeDir + " | " + e.getMessage());
-                    // Chuyển sang thử vị trí khác nếu không tạo được
                 }
             }
             // Kiểm tra quyền ghi
@@ -366,7 +431,6 @@ public class ScoreManager {
         // Ưu tiên 2: Thư mục làm việc hiện tại (cho phát triển)
         try {
             Path currentDir = Paths.get(System.getProperty("user.dir"));
-            // Chỉ dùng nếu có thể ghi
             if (Files.isDirectory(currentDir) && Files.isWritable(currentDir)) {
                 return currentDir.resolve("scores.properties");
             }
@@ -376,12 +440,16 @@ public class ScoreManager {
 
         // Nếu tất cả thất bại
         System.err.println("Không tìm thấy vị trí phù hợp để lưu file điểm số.");
-        return null; // Trả về null nếu không tìm được vị trí
+        return null;
     }
 
     /**
-     * Đảm bảo file điểm tồn tại, nếu không thì tạo mới với giá trị mặc định.
-     * @throws IOException nếu không thể tạo file.
+     * Đảm bảo tệp {@code scores.properties} tồn tại.
+     * <p>
+     * Nếu tệp chưa tồn tại, hàm này sẽ tạo mới nó với các giá trị mặc định
+     * (ví dụ: highScore=0, fastestTime=MAX_VALUE).
+     *
+     * @throws IOException nếu không thể tạo thư mục hoặc tệp.
      */
     private void ensureFileExists() throws IOException {
         if (SCORE_FILE == null || SCORE_DIR == null) {
@@ -394,6 +462,7 @@ public class ScoreManager {
         // Kiểm tra và tạo file nếu cần
         if (Files.notExists(SCORE_FILE)) {
             Properties p = new Properties();
+            // Đặt giá trị mặc định
             p.setProperty("highScore", "0");
             p.setProperty("fastestTime", String.valueOf(Long.MAX_VALUE));
             p.setProperty("topScores", "");
@@ -402,9 +471,10 @@ public class ScoreManager {
                 p.setProperty("level." + i + ".score", "0");
                 p.setProperty("level." + i + ".time", String.valueOf(Long.MAX_VALUE));
             }
+            // Ghi tệp mặc định
             try (OutputStream os = Files.newOutputStream(
                     SCORE_FILE,
-                    StandardOpenOption.CREATE, // Chỉ tạo nếu chưa có
+                    StandardOpenOption.CREATE,
                     StandardOpenOption.WRITE)) {
                 p.store(os, "Arkanoid scores");
             }
@@ -412,7 +482,13 @@ public class ScoreManager {
     }
 
     /**
-     * Phương thức tải điểm từ file.
+     * Tải (load) dữ liệu điểm từ tệp {@code scores.properties}
+     * (đã được xác định bởi {@code SCORE_FILE}) vào bộ nhớ.
+     * <p>
+     * Sử dụng {@link java.util.Properties} để đọc tệp.
+     * Có xử lý lỗi (ví dụ: {@code NumberFormatException}) nếu dữ liệu
+     * trong tệp bị hỏng, và sẽ gọi {@link #initializeDefaultScores()}
+     * nếu có lỗi nghiêm trọng.
      */
     private void loadScoresFromFile() {
         if (SCORE_FILE == null) {
@@ -421,21 +497,21 @@ public class ScoreManager {
             return;
         }
         try {
-            ensureFileExists(); // Đảm bảo file tồn tại
+            ensureFileExists(); // Đảm bảo file tồn tại (hoặc tạo mới)
             Properties p = new Properties();
             try (InputStream is = Files.newInputStream(SCORE_FILE, StandardOpenOption.READ)) {
                 p.load(is);
             }
 
-            // Load HighScore tổng
+            // Tải HighScore tổng
             try { highScore = Integer.parseInt(p.getProperty("highScore", "0").trim()); }
             catch (NumberFormatException ignored) { highScore = 0; }
 
-            // Load FastestTime tổng
+            // Tải FastestTime tổng
             try { fastestTime = Long.parseLong(p.getProperty("fastestTime", String.valueOf(Long.MAX_VALUE)).trim()); }
             catch (NumberFormatException ignored) { fastestTime = Long.MAX_VALUE; }
 
-            // Load Top 5 Scores
+            // Tải Top 5 Scores (dạng "100,50,10")
             topScores.clear();
             String ts = p.getProperty("topScores", "").trim();
             if (!ts.isEmpty()) {
@@ -446,7 +522,7 @@ public class ScoreManager {
                 while (topScores.size() > 5) { topScores.remove(5); }
             }
 
-            // Load Top 5 Times
+            // Tải Top 5 Times (dạng "12345,67890")
             topTimes.clear();
             String tt = p.getProperty("topTimes", "").trim();
             if (!tt.isEmpty()) {
@@ -457,7 +533,7 @@ public class ScoreManager {
                 while (topTimes.size() > 5) { topTimes.remove(5); }
             }
 
-            // Load điểm/thời gian từng màn
+            // Tải điểm/thời gian từng màn (dạng "level.0.score=100")
             perLevelHighScores.clear();
             perLevelFastestTimes.clear();
             for (int i = 0; i < totalLevels; i++) {
@@ -467,6 +543,7 @@ public class ScoreManager {
                     long time = Long.parseLong(p.getProperty("level." + i + ".time", String.valueOf(Long.MAX_VALUE)));
                     perLevelFastestTimes.put(i, time);
                 } catch(NumberFormatException ignored) {
+                    // Đặt giá trị mặc định nếu có lỗi
                     perLevelHighScores.put(i, 0);
                     perLevelFastestTimes.put(i, Long.MAX_VALUE);
                 }
@@ -478,10 +555,9 @@ public class ScoreManager {
         }
     }
 
-    // --- THÊM HÀM MỚI: Khởi tạo điểm mặc định ---
-
     /**
-     * Khởi tạo điểm số mặc định trong bộ nhớ khi file bị lỗi.
+     * Khởi tạo điểm số mặc định (trong bộ nhớ)
+     * trong trường hợp tệp tin bị lỗi hoặc không thể truy cập.
      */
     private void initializeDefaultScores() {
         highScore = 0;
@@ -498,7 +574,12 @@ public class ScoreManager {
     }
 
     /**
-     * Phương thức lưu điểm vào file.
+     * Lưu (save) dữ liệu điểm số hiện tại (trong bộ nhớ)
+     * vào tệp {@code scores.properties}.
+     * <p>
+     * Chuyển đổi các danh sách (List) Top 5 thành chuỗi (String)
+     * được phân tách bằng dấu phẩy (comma-separated)
+     * (ví dụ: "100,50,10") để lưu trữ trong tệp {@link Properties}.
      */
     private void saveScoresToFile() {
         if (SCORE_FILE == null) {
@@ -506,18 +587,17 @@ public class ScoreManager {
             return;
         }
         try {
-            // Không cần ensureFileExists() nữa vì nó được gọi trong load và submit
             Properties p = new Properties();
 
             // Lưu HighScore và FastestTime tổng
             p.setProperty("highScore", String.valueOf(highScore));
             p.setProperty("fastestTime", String.valueOf(fastestTime));
 
-            // Lưu Top 5 Scores
+            // Lưu Top 5 Scores (chuyển List<Integer> thành "100,50,10")
             String ts = topScores.stream().limit(5).map(String::valueOf).collect(Collectors.joining(","));
             p.setProperty("topScores", ts);
 
-            // Lưu Top 5 Times
+            // Lưu Top 5 Times (chuyển List<Long> thành "12345,67890")
             String tt = topTimes.stream().limit(5).map(String::valueOf).collect(Collectors.joining(","));
             p.setProperty("topTimes", tt);
 
@@ -527,18 +607,16 @@ public class ScoreManager {
                 p.setProperty("level." + i + ".time", String.valueOf(perLevelFastestTimes.getOrDefault(i, Long.MAX_VALUE)));
             }
 
-            // Ghi vào file
+            // Ghi vào file (tạo mới, ghi đè nội dung cũ)
             try (OutputStream os = Files.newOutputStream(
                     SCORE_FILE,
-                    StandardOpenOption.CREATE, // Tạo nếu chưa có
-                    StandardOpenOption.TRUNCATE_EXISTING, // Ghi đè nội dung cũ
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING,
                     StandardOpenOption.WRITE)) {
                 p.store(os, "Arkanoid scores");
-                // System.out.println("Đã lưu điểm vào: " + SCORE_FILE); // Debug
             }
         } catch (IOException e) {
             System.err.println("Lỗi nghiêm trọng khi lưu điểm vào file: " + SCORE_FILE + " | " + e.getMessage());
-            // Có thể hiển thị thông báo lỗi cho người dùng ở đây
         }
     }
 }

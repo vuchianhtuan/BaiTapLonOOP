@@ -10,16 +10,33 @@ import static org.junit.jupiter.api.Assertions.*;
 // Import các lớp cần thiết
 import com.mygame.arkanoid.systems.ScalingManager;
 
+/**
+ * Lớp kiểm thử (test class) JUnit 5 dành cho {@link Paddle}.
+ * <p>
+ * Lớp này xác minh logic di chuyển (movement) của Paddle,
+ * đặc biệt là hành vi "kẹp" (clamping) - tức là ngăn
+ * Paddle di chuyển ra ngoài các biên (tường) của khu vực chơi game.
+ */
 @DisplayName("Kiểm tra logic của Paddle")
 class PaddleTest {
 
+    /** Đối tượng Paddle (SUT - System Under Test) cho mỗi kiểm thử. */
     private Paddle paddle;
+    /** Bản sao (local copy) của chiều rộng khu vực chơi game (lấy từ ScalingManager). */
     private static int GAME_AREA_WIDTH;
+    /** Chiều rộng mặc định của Paddle dùng cho kiểm thử. */
     private static final int PADDLE_WIDTH = 120;
+    /** Tốc độ di chuyển mặc định của Paddle dùng cho kiểm thử. */
     private static final int PADDLE_SPEED = 15;
 
-    // !!! GIẢI PHÁP CHO SINGLETON !!!
-    // Hàm này chạy MỘT LẦN DUY NHẤT trước tất cả các test trong class này
+    /**
+     * Thiết lập (setup) toàn cục, chạy một lần duy nhất trước tất cả các test.
+     * <p>
+     * <b>Quan trọng:</b> Logic của {@link Paddle#moveRight()} phụ thuộc vào
+     * {@link ScalingManager} để biết chiều rộng màn hình ({@code GAME_AREA_WIDTH}).
+     * Do đó, chúng ta phải 'giả lập' (initialize) ScalingManager
+     * trước khi bất kỳ test nào chạy để tránh {@code NullPointerException}.
+     */
     @BeforeAll
     static void setupGlobal() {
         // Chúng ta phải "giả lập" việc game khởi động và
@@ -31,7 +48,12 @@ class PaddleTest {
         GAME_AREA_WIDTH = sm.GAME_AREA_WIDTH; // Sẽ là 960
     }
 
-    // Hàm này chạy trước MỖI test
+    /**
+     * Thiết lập (setup) chạy trước *mỗi* phương thức {@code @Test}.
+     * <p>
+     * Khởi tạo một đối tượng {@link Paddle} mới, "sạch"
+     * tại vị trí chính giữa màn hình cho mỗi kiểm thử.
+     */
     @BeforeEach
     void setUp() {
         // Tạo paddle ở giữa màn hình game
@@ -39,6 +61,10 @@ class PaddleTest {
         paddle = new Paddle(startX, 600, PADDLE_WIDTH, 20, "skin_test");
     }
 
+    /**
+     * Kiểm tra trường hợp cơ bản: Paddle di chuyển sang phải
+     * một khoảng cách bằng {@code PADDLE_SPEED}.
+     */
     @Test
     @DisplayName("Di chuyển sang phải (không chạm tường)")
     void testMoveRight() {
@@ -47,6 +73,10 @@ class PaddleTest {
         assertEquals(initialX + PADDLE_SPEED, paddle.getX(), "Paddle di chuyển phải thất bại");
     }
 
+    /**
+     * Kiểm tra trường hợp cơ bản: Paddle di chuyển sang trái
+     * một khoảng cách bằng {@code PADDLE_SPEED}.
+     */
     @Test
     @DisplayName("Di chuyển sang trái (không chạm tường)")
     void testMoveLeft() {
@@ -55,6 +85,11 @@ class PaddleTest {
         assertEquals(initialX - PADDLE_SPEED, paddle.getX(), "Paddle di chuyển trái thất bại");
     }
 
+    /**
+     * Kiểm tra logic "kẹp" (clamping) ở biên phải.
+     * Xác minh rằng Paddle không thể di chuyển VƯỢT QUÁ
+     * vị trí tối đa ({@code GAME_AREA_WIDTH - PADDLE_WIDTH}).
+     */
     @Test
     @DisplayName("Không thể di chuyển qua mép phải")
     void testMoveRightAtEdge() {
@@ -72,6 +107,11 @@ class PaddleTest {
         assertEquals(max_x, paddle.getX(), "Paddle vẫn di chuyển dù đã ở mép phải");
     }
 
+    /**
+     * Kiểm tra logic "kẹp" (clamping) ở biên trái.
+     * Xác minh rằng Paddle không thể di chuyển VƯỢT QUÁ
+     * vị trí tối thiểu (x = 0).
+     */
     @Test
     @DisplayName("Không thể di chuyển qua mép trái")
     void testMoveLeftAtEdge() {

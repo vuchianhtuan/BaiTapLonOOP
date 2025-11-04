@@ -5,18 +5,41 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Lớp kiểm thử (test class) JUnit 5 dành cho {@link StrongBrick}.
+ * <p>
+ * Mục đích là xác minh logic cốt lõi của Gạch Cứng:
+ * <ol>
+ * <li>Việc giảm máu (hit points) và trạng thái bị phá hủy (destroyed).</li>
+ * <li>Việc cập nhật {@code imageName} (skin)
+ * một cách chính xác khi máu giảm.</li>
+ * </ol>
+ */
 @DisplayName("Kiểm tra logic của Gạch Cứng (StrongBrick)")
 class StrongBrickTest {
 
+    /** Đối tượng Gạch Cứng (SUT - System Under Test) cho mỗi kiểm thử. */
     private StrongBrick brick;
 
-    // Hàm này chạy trước mỗi @Test
+    /**
+     * Thiết lập (setup) chạy trước *mỗi* phương thức {@code @Test}.
+     * <p>
+     * Khởi tạo một đối tượng {@code StrongBrick} mới với 3 HP
+     * để đảm bảo mỗi kiểm thử là độc lập (isolated).
+     */
     @BeforeEach
     void setUp() {
         // Tạo một viên gạch mới với 3 HP cho mỗi lần test
         brick = new StrongBrick(100, 100, 45, 20, 3);
     }
 
+    /**
+     * Kiểm tra kịch bản (scenario) hoàn chỉnh của vòng đời một viên gạch.
+     * Xác minh rằng máu (HP) giảm chính xác sau mỗi lần {@code takeHit()}
+     * và trạng thái {@code isDestroyed()} chỉ chuyển thành {@code true}
+     * khi máu (HP) bằng 0.
+     * Cũng kiểm tra rằng máu không bị âm.
+     */
     @Test
     @DisplayName("Gạch mất máu và bị phá hủy chính xác")
     void testTakeHitAndDestroy() {
@@ -45,6 +68,11 @@ class StrongBrickTest {
         assertTrue(brick.isDestroyed(), "Gạch vẫn phải ở trạng thái vỡ");
     }
 
+    /**
+     * Kiểm tra rằng logic trong {@code update()}
+     * cập nhật chính xác trường {@code imageName} (asset key)
+     * tương ứng với số máu (HP) còn lại sau mỗi lần {@code takeHit()}.
+     */
     @Test
     @DisplayName("Tên ảnh (imageName) cập nhật đúng theo số máu")
     void testImageNameUpdatesOnHit() {
